@@ -25,34 +25,6 @@ const SITE_CONTENT_DEFAULTS = {
   }
 };
 
-function extractDriveFileId(url) {
-  if (!url) return null;
-  const m1 = url.match(/\/d\/([a-zA-Z0-9_-]+)/);
-  if (m1) return m1[1];
-  const m2 = url.match(/[?&]id=([a-zA-Z0-9_-]+)/);
-  if (m2) return m2[1];
-  return null;
-}
-
-function formatDuration(totalMinutes) {
-  if (!totalMinutes) return '';
-  if (totalMinutes < 60) return Math.round(totalMinutes) + ' min';
-  const hrs = Math.round((totalMinutes / 60) * 10) / 10;
-  return hrs + ' hr';
-}
-
-function fetchDriveVideoDurationMinutes(driveUrl) {
-  const fileId = extractDriveFileId(driveUrl);
-  if (!fileId || !DRIVE_API_KEY || DRIVE_API_KEY === 'YOUR_GOOGLE_DRIVE_API_KEY') return Promise.resolve(null);
-  const url = `https://www.googleapis.com/drive/v3/files/${fileId}?fields=videoMediaMetadata&key=${DRIVE_API_KEY}`;
-  return fetch(url).then(r => r.json()).then(data => {
-    if (data.videoMediaMetadata && data.videoMediaMetadata.durationMillis) {
-      return Math.round(Number(data.videoMediaMetadata.durationMillis) / 60000);
-    }
-    return null;
-  }).catch(() => null);
-}
-
 function applySiteTheme(theme) {
   if (!theme) return;
   const root = document.documentElement;

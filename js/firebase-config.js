@@ -15,7 +15,3 @@ const db = firebase.firestore();
 
 // এই ইমেইল দিয়ে লগইন করলে admin panel পাবে — নিজের ইমেইল বসাও
 const ADMIN_EMAILS = ["ampplifyacademy@gmail.com"];
-
-// Google Cloud Console > APIs & Services > Credentials এ বানানো API Key (Drive API enabled, HTTP referrer restricted)
-// video duration auto-detect করার জন্য লাগে — না বসালে admin panel এ duration manually লিখতে হবে
-const DRIVE_API_KEY = "YOUR_GOOGLE_DRIVE_API_KEY";

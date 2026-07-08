@@ -263,15 +263,11 @@ function renderModuleRows() {
               <button onclick="addLessonLink(${i})">+ Add Lesson</button>
             </div>
             ${(m.lessonLinks || []).map((l, li) => `
-              <div style="margin-bottom:.7rem;">
-                <div style="display:grid; grid-template-columns:1fr 1.4fr auto; gap:.5rem; align-items:center;">
-                  <input placeholder="Lesson title" value="${(l.title || '').replace(/"/g, '&quot;')}" oninput="moduleRows[${i}].lessonLinks[${li}].title = this.value" style="margin:0;">
-                  <input placeholder="Google Drive link" value="${(l.driveLink || '').replace(/"/g, '&quot;')}" oninput="moduleRows[${i}].lessonLinks[${li}].driveLink = this.value" onblur="autoFetchDuration(${i},${li})" style="margin:0;">
-                  <button class="danger" onclick="removeLessonLink(${i},${li})">✕</button>
-                </div>
-                <div style="font-size:.78rem; color:var(--text-muted); margin-top:.25rem;">
-                  ${l._fetching ? '⏳ Detecting duration…' : (l.durationMin ? '⏱ ' + formatDuration(l.durationMin) + ' (auto-detected)' : (l.driveLink ? 'Duration will auto-detect when you click away from the link field' : ''))}
-                </div>
+              <div style="display:grid; grid-template-columns:1.2fr 1.6fr .8fr auto; gap:.5rem; margin-bottom:.5rem; align-items:center;">
+                <input placeholder="Lesson title" value="${(l.title || '').replace(/"/g, '&quot;')}" oninput="moduleRows[${i}].lessonLinks[${li}].title = this.value" style="margin:0;">
+                <input placeholder="Google Drive link" value="${(l.driveLink || '').replace(/"/g, '&quot;')}" oninput="moduleRows[${i}].lessonLinks[${li}].driveLink = this.value" style="margin:0;">
+                <input placeholder="Duration (e.g. 5 min)" value="${(l.duration || '').replace(/"/g, '&quot;')}" oninput="moduleRows[${i}].lessonLinks[${li}].duration = this.value" style="margin:0;">
+                <button class="danger" onclick="removeLessonLink(${i},${li})">✕</button>
               </div>`).join('') || '<p style="color:var(--text-faint); font-size:.82rem;">No lessons added yet.</p>'}
           </div>
 
@@ -306,37 +302,13 @@ function removeModuleRow(i) {
 
 function addLessonLink(i) {
   if (!moduleRows[i].lessonLinks) moduleRows[i].lessonLinks = [];
-  moduleRows[i].lessonLinks.push({ title: '', driveLink: '' });
+  moduleRows[i].lessonLinks.push({ title: '', driveLink: '', duration: '' });
   renderModuleRows();
 }
 
 function removeLessonLink(i, li) {
   moduleRows[i].lessonLinks.splice(li, 1);
-  recomputeModuleDuration(i);
   renderModuleRows();
-}
-
-function autoFetchDuration(i, li) {
-  const lesson = moduleRows[i].lessonLinks[li];
-  if (!lesson.driveLink) return;
-  lesson._fetching = true;
-  renderModuleRows();
-  fetchDriveVideoDurationMinutes(lesson.driveLink).then(minutes => {
-    lesson._fetching = false;
-    if (minutes != null) {
-      lesson.durationMin = minutes;
-      if (!lesson.title) lesson.title = 'Lesson ' + (li + 1);
-      recomputeModuleDuration(i);
-    }
-    renderModuleRows();
-  });
-}
-
-function recomputeModuleDuration(i) {
-  const links = moduleRows[i].lessonLinks || [];
-  const totalMin = links.reduce((sum, l) => sum + (l.durationMin || 0), 0);
-  moduleRows[i].lessons = links.length;
-  if (totalMin > 0) moduleRows[i].duration = formatDuration(totalMin);
 }
 
 function saveSiteContent() {
@@ -385,7 +357,7 @@ function saveModules() {
   const privateModules = moduleRows.filter(m => m.title.trim()).map(m => ({
     title: m.title,
     lessonLinks: (m.lessonLinks || []).filter(l => l.title.trim() && l.driveLink.trim()).map(l => ({
-      title: l.title, driveLink: l.driveLink, durationMin: l.durationMin || null
+      title: l.title, driveLink: l.driveLink, duration: l.duration || ''
     }))
   }));
   Promise.all([
