@@ -35,7 +35,7 @@ h1, h2, h3, .disp { font-family: var(--font-display); }
 /* ===== Auth card (signup / login / forgot) ===== */
 .card { background: var(--surface-alt); padding: 2.2rem; border-radius: var(--radius-lg); width: 100%; max-width: 400px; box-shadow: 0 20px 60px rgba(0,0,0,.5); border: 1px solid var(--border); }
 .card-icon { font-size: 1.8rem; margin-bottom: .6rem; }
-.brand { display: flex; align-items: center; gap: .5rem; margin-bottom: 1.6rem; font: 800 19px var(--font-display); }
+.brand { display: inline-flex; align-items: center; margin-bottom: 1.6rem; font: 800 19px var(--font-display); }
 .brand .a { color: var(--accent); }
 .brand .badge-tag { background: var(--warning-bg); color: var(--warning); font: 700 11px var(--font-display); padding: 3px 10px; border-radius: 999px; letter-spacing: .04em; }
 h1 { font-size: 1.6rem; font-weight: 800; margin-bottom: .4rem; }
