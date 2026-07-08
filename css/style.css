@@ -93,7 +93,8 @@ body.landing { display: block; padding: 0; background: radial-gradient(circle at
 .top-bar h1 { margin-bottom: 0; }
 .top-bar button, .card button { width: auto; margin-top: 0; }
 .course-list { list-style: none; }
-.course-list li { padding: .9rem 1rem; background: var(--surface); border: 1px solid var(--border); border-radius: var(--radius-sm); margin: .6rem 0; display: flex; justify-content: space-between; align-items: center; }
+.course-list li { padding: .9rem 1rem; background: var(--surface); border: 1px solid var(--border); border-radius: var(--radius-sm); margin: .6rem 0; display: flex; justify-content: space-between; align-items: center; gap: 1rem; }
+.course-list li button { width: auto; margin: 0; padding: .5rem 1rem; flex-shrink: 0; }
 h2 { font-size: 1.05rem; font-weight: 700; color: var(--text-soft); }
 
 /* ===== Shared table (admin) ===== */
