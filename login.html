@@ -3,20 +3,35 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<title>Log In · Course Portal</title>
+<title>Sign In · Ampplify Academy</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@500;600;700;800&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
 <link rel="stylesheet" href="css/style.css">
 </head>
-<body>
-<div class="card">
-  <div class="card-icon">👋</div>
-  <h1>Welcome Back</h1>
-  <p class="subtitle">Log in to access your courses.</p>
-  <input id="email" type="email" placeholder="Email">
-  <input id="password" type="password" placeholder="Password">
-  <button onclick="doLogin()">Log In</button>
-  <p class="msg" id="msg"></p>
-  <p class="link"><a href="forgot.html">Forgot your password?</a></p>
-  <p class="link">Don't have an account? <a href="signup.html">Sign up</a></p>
+<body class="split">
+<div class="split-wrap">
+  <div class="split-brand">
+    <span class="brand"><span class="a">A</span>mpplify Academy</span>
+    <h1>Welcome back. Let's keep building.</h1>
+    <p>Sign in to continue your courses — pick up right where you left off.</p>
+  </div>
+
+  <div class="split-form">
+    <div class="inner">
+      <h1>Sign In</h1>
+      <p class="subtitle">Enter your details to access your dashboard.</p>
+
+      <label for="email">Email</label>
+      <input id="email" type="email" placeholder="you@example.com">
+      <label for="password">Password</label>
+      <input id="password" type="password" placeholder="••••••••">
+      <button onclick="doLogin()">Sign In to Dashboard</button>
+      <p class="msg" id="msg"></p>
+
+      <p class="link"><a href="forgot.html">Forgot your password?</a></p>
+      <p class="link">New to Ampplify Academy? <a href="signup.html">Enroll now</a></p>
+    </div>
+  </div>
 </div>
 
 <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-app-compat.js"></script>

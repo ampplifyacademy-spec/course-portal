@@ -3,14 +3,17 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<title>My Courses · Course Portal</title>
+<title>My Courses · Ampplify Academy</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@500;600;700;800&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
 <link rel="stylesheet" href="css/style.css">
 </head>
 <body>
 <div class="card wide">
+  <span class="brand"><span class="a">A</span>mpplify Academy</span>
   <div class="top-bar">
     <h1>My Courses</h1>
-    <button class="secondary" style="width:auto;" onclick="doLogout()">Log Out</button>
+    <button class="secondary" onclick="doLogout()">Log Out</button>
   </div>
   <ul class="course-list" id="courseList"></ul>
 </div>
@@ -62,7 +65,7 @@ function loadCourses(blockedCourses) {
     visible.forEach(doc => {
       const c = doc.data();
       const li = document.createElement('li');
-      li.innerHTML = `<span>${c.name}</span><a href="${c.driveLink}" target="_blank"><button style="width:auto;">View</button></a>`;
+      li.innerHTML = `<span>${c.name}</span><a href="${c.driveLink}" target="_blank"><button>View</button></a>`;
       list.appendChild(li);
     });
   });

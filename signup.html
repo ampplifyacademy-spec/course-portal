@@ -3,18 +3,25 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<title>Sign Up · Course Portal</title>
+<title>Enroll · Ampplify Academy</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@500;600;700;800&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
 <link rel="stylesheet" href="css/style.css">
 </head>
 <body>
 <div class="card">
-  <div class="card-icon">🎓</div>
+  <span class="brand"><span class="a">A</span>mpplify Academy</span>
   <h1>Create Account</h1>
   <p class="subtitle">Pay via bank transfer, then sign up with your transaction reference. We'll approve your account once payment is verified.</p>
-  <input id="name" placeholder="Full name">
-  <input id="email" type="email" placeholder="Email">
-  <input id="password" type="password" placeholder="Password (min 6 characters)">
-  <input id="txn" placeholder="Bank transaction ID / reference">
+
+  <label for="name">Full name</label>
+  <input id="name" placeholder="Your full name">
+  <label for="email">Email</label>
+  <input id="email" type="email" placeholder="you@example.com">
+  <label for="password">Password</label>
+  <input id="password" type="password" placeholder="Min 6 characters">
+  <label for="txn">Bank transaction ID</label>
+  <input id="txn" placeholder="Transaction reference">
   <button onclick="doSignup()">Sign Up</button>
   <p class="msg" id="msg"></p>
   <p class="link">Already have an account? <a href="login.html">Log in</a></p>
@@ -46,7 +53,7 @@ function doSignup() {
       });
     })
     .then(() => {
-      msg.style.color = '#4fdc7c';
+      msg.style.color = 'var(--success)';
       msg.textContent = "Signup successful! We'll notify you by email once your account is approved.";
     })
     .catch(err => { msg.textContent = err.message; });

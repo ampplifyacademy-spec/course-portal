@@ -3,30 +3,72 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<title>Admin Panel · Course Portal</title>
+<title>Admin Panel · Ampplify Academy</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@500;600;700;800&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
 <link rel="stylesheet" href="css/style.css">
 </head>
-<body>
-<div class="card wide">
-  <div class="top-bar">
-    <h1>Admin Panel</h1>
-    <button class="secondary" style="width:auto;" onclick="doLogout()">Log Out</button>
+<body class="admin-shell">
+<div class="admin-shell-grid">
+
+  <div class="sidebar">
+    <span class="brand"><span class="a">A</span>mpplify Admin</span>
+    <div class="nav-item active" data-tab="overview" onclick="switchTab('overview')"><span>📊</span><span>Overview</span></div>
+    <div class="nav-item" data-tab="students" onclick="switchTab('students')"><span>👥</span><span>Students</span></div>
+    <div class="nav-item" data-tab="courses" onclick="switchTab('courses')"><span>🎓</span><span>Courses</span></div>
+    <div class="sidebar-footer">
+      <div class="avatar" id="adminAvatar">A</div>
+      <div>
+        <div class="name">Admin</div>
+        <div class="role">Ampplify Academy</div>
+      </div>
+    </div>
+    <button class="secondary" style="margin-top:1rem;" onclick="doLogout()">Log Out</button>
   </div>
 
-  <h2 style="margin-top:1rem;">User Requests</h2>
-  <table>
-    <thead><tr><th>Name</th><th>Email</th><th>Txn ID</th><th>Status</th><th>Action</th><th>Course Access</th></tr></thead>
-    <tbody id="userRows"></tbody>
-  </table>
+  <div class="admin-main">
+    <div class="admin-header">
+      <div>
+        <h1 id="pageTitle">Dashboard Overview</h1>
+        <p id="pageSubtitle">Here's what's happening with Ampplify Academy today.</p>
+      </div>
+    </div>
 
-  <h2 style="margin-top:2rem;">Add Course</h2>
-  <input id="courseName" placeholder="Course name">
-  <input id="driveLink" placeholder="Google Drive link (unlisted)">
-  <button onclick="addCourse()">Add Course</button>
-  <p class="msg" id="courseMsg"></p>
+    <!-- OVERVIEW -->
+    <div class="tab-section active" id="tab-overview">
+      <div class="stat-grid">
+        <div class="stat-card"><div class="label">Total Students</div><div class="value" id="statTotal">—</div></div>
+        <div class="stat-card"><div class="label">Pending Approval</div><div class="value" id="statPending">—</div></div>
+        <div class="stat-card"><div class="label">Approved</div><div class="value" id="statApproved">—</div></div>
+        <div class="stat-card"><div class="label">Courses Published</div><div class="value" id="statCourses">—</div></div>
+      </div>
+    </div>
 
-  <h2 style="margin-top:2rem;">Current Courses</h2>
-  <ul class="course-list" id="courseList"></ul>
+    <!-- STUDENTS -->
+    <div class="tab-section" id="tab-students">
+      <div class="panel">
+        <table>
+          <thead><tr><th>Name</th><th>Email</th><th>Txn ID</th><th>Status</th><th>Action</th><th>Course Access</th></tr></thead>
+          <tbody id="userRows"></tbody>
+        </table>
+      </div>
+    </div>
+
+    <!-- COURSES -->
+    <div class="tab-section" id="tab-courses">
+      <div class="panel" style="margin-bottom:1.5rem;">
+        <h2 style="margin-bottom:1rem;">Add Course</h2>
+        <input id="courseName" placeholder="Course name">
+        <input id="driveLink" placeholder="Google Drive link (unlisted)">
+        <button onclick="addCourse()">Add Course</button>
+        <p class="msg" id="courseMsg"></p>
+      </div>
+      <div class="panel">
+        <h2 style="margin-bottom:1rem;">Current Courses</h2>
+        <ul class="course-list" id="courseList"></ul>
+      </div>
+    </div>
+  </div>
 </div>
 
 <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-app-compat.js"></script>
@@ -35,30 +77,56 @@
 <script src="js/firebase-config.js"></script>
 <script>
 let allCourses = [];
+let allUsers = [];
+
+const TAB_META = {
+  overview: ['Dashboard Overview', "Here's what's happening with Ampplify Academy today."],
+  students: ['Students', 'Manage enrolled students and their course access.'],
+  courses: ['Courses', 'Manage the courses available to approved students.']
+};
+
+function switchTab(tab) {
+  document.querySelectorAll('.nav-item').forEach(el => el.classList.toggle('active', el.dataset.tab === tab));
+  document.querySelectorAll('.tab-section').forEach(el => el.classList.remove('active'));
+  document.getElementById('tab-' + tab).classList.add('active');
+  document.getElementById('pageTitle').textContent = TAB_META[tab][0];
+  document.getElementById('pageSubtitle').textContent = TAB_META[tab][1];
+}
 
 auth.onAuthStateChanged(user => {
   if (!user || !ADMIN_EMAILS.includes(user.email)) {
     location.href = 'login.html';
     return;
   }
+  document.getElementById('adminAvatar').textContent = user.email.charAt(0).toUpperCase();
   loadCourses().then(loadUsers);
 });
 
+function updateStats() {
+  const total = allUsers.length;
+  const pending = allUsers.filter(u => u.status === 'pending').length;
+  const approved = allUsers.filter(u => u.status === 'approved').length;
+  document.getElementById('statTotal').textContent = total;
+  document.getElementById('statPending').textContent = pending;
+  document.getElementById('statApproved').textContent = approved;
+  document.getElementById('statCourses').textContent = allCourses.length;
+}
+
 function loadUsers() {
-  db.collection('users').orderBy('createdAt', 'desc').get().then(snap => {
+  return db.collection('users').orderBy('createdAt', 'desc').get().then(snap => {
+    allUsers = snap.docs.map(doc => ({ id: doc.id, ...doc.data() }));
     const rows = document.getElementById('userRows');
     rows.innerHTML = '';
-    snap.forEach(doc => {
-      const u = doc.data();
+    allUsers.forEach(u => {
       const blocked = u.blockedCourses || [];
       const tr = document.createElement('tr');
 
-      let accessHtml = '<span style="color:#666;">—</span>';
+      let accessHtml = '<span style="color:var(--text-faint);">—</span>';
       if (u.status === 'approved' && allCourses.length) {
         accessHtml = '<ul class="course-access-list">' + allCourses.map(c => {
           const isBlocked = blocked.includes(c.id);
           return `<li><span>${c.name}</span>
-            <button class="${isBlocked ? '' : 'danger'}" onclick="toggleCourseAccess('${doc.id}','${c.id}',${isBlocked})">${isBlocked ? 'Restore' : 'Remove'}</button></li>`;
+            <button class="${isBlocked ? 'secondary' : 'danger'}" onclick="toggleCourseAccess('${u.id}','${c.id}',${isBlocked})">${isBlocked ? 'Restore' : 'Remove'}</button></li>`;
         }).join('') + '</ul>';
       }
 
@@ -68,12 +136,13 @@ function loadUsers() {
         <td>${u.txn || ''}</td>
         <td><span class="status-${u.status}">${u.status}</span></td>
         <td>
-          <button style="width:auto;" onclick="setStatus('${doc.id}','approved')">Approve</button>
-          <button class="danger" style="width:auto;" onclick="setStatus('${doc.id}','rejected')">Reject</button>
+          <button onclick="setStatus('${u.id}','approved')">Approve</button>
+          <button class="danger" onclick="setStatus('${u.id}','rejected')">Reject</button>
         </td>
         <td>${accessHtml}</td>`;
       rows.appendChild(tr);
     });
+    updateStats();
   });
 }
 
@@ -96,7 +165,7 @@ function addCourse() {
   db.collection('courses').add({ name, driveLink }).then(() => {
     document.getElementById('courseName').value = '';
     document.getElementById('driveLink').value = '';
-    msg.style.color = '#4fdc7c';
+    msg.style.color = 'var(--success)';
     msg.textContent = "Course added";
     loadCourses().then(loadUsers);
   });
@@ -111,9 +180,10 @@ function loadCourses() {
       const c = doc.data();
       allCourses.push({ id: doc.id, name: c.name });
       const li = document.createElement('li');
-      li.innerHTML = `<span>${c.name}</span><button class="danger" style="width:auto;" onclick="deleteCourse('${doc.id}')">Delete</button>`;
+      li.innerHTML = `<span>${c.name}</span><button class="danger" onclick="deleteCourse('${doc.id}')">Delete</button>`;
       list.appendChild(li);
     });
+    updateStats();
   });
 }
 
