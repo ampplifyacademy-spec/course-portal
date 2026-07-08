@@ -1,30 +1,31 @@
 <!DOCTYPE html>
-<html lang="bn">
+<html lang="en">
 <head>
 <meta charset="UTF-8">
-<title>এডমিন প্যানেল</title>
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Admin Panel · Course Portal</title>
 <link rel="stylesheet" href="css/style.css">
 </head>
 <body>
 <div class="card wide">
   <div class="top-bar">
-    <h1>এডমিন প্যানেল</h1>
-    <button class="secondary" style="width:auto;" onclick="doLogout()">লগআউট</button>
+    <h1>Admin Panel</h1>
+    <button class="secondary" style="width:auto;" onclick="doLogout()">Log Out</button>
   </div>
 
-  <h2 style="margin-top:1rem;">ইউজার রিকোয়েস্ট</h2>
+  <h2 style="margin-top:1rem;">User Requests</h2>
   <table>
-    <thead><tr><th>নাম</th><th>ইমেইল</th><th>Txn ID</th><th>স্ট্যাটাস</th><th>একশন</th><th>কোর্স এক্সেস</th></tr></thead>
+    <thead><tr><th>Name</th><th>Email</th><th>Txn ID</th><th>Status</th><th>Action</th><th>Course Access</th></tr></thead>
     <tbody id="userRows"></tbody>
   </table>
 
-  <h2 style="margin-top:2rem;">কোর্স যোগ করো</h2>
-  <input id="courseName" placeholder="কোর্সের নাম">
-  <input id="driveLink" placeholder="Google Drive লিংক (unlisted)">
-  <button onclick="addCourse()">কোর্স যোগ করো</button>
+  <h2 style="margin-top:2rem;">Add Course</h2>
+  <input id="courseName" placeholder="Course name">
+  <input id="driveLink" placeholder="Google Drive link (unlisted)">
+  <button onclick="addCourse()">Add Course</button>
   <p class="msg" id="courseMsg"></p>
 
-  <h2 style="margin-top:2rem;">বর্তমান কোর্স</h2>
+  <h2 style="margin-top:2rem;">Current Courses</h2>
   <ul class="course-list" id="courseList"></ul>
 </div>
 
@@ -65,7 +66,7 @@ function loadUsers() {
         <td>${u.name || ''}</td>
         <td>${u.email}</td>
         <td>${u.txn || ''}</td>
-        <td class="status-${u.status}">${u.status}</td>
+        <td><span class="status-${u.status}">${u.status}</span></td>
         <td>
           <button style="width:auto;" onclick="setStatus('${doc.id}','approved')">Approve</button>
           <button class="danger" style="width:auto;" onclick="setStatus('${doc.id}','rejected')">Reject</button>
@@ -91,12 +92,12 @@ function addCourse() {
   const name = document.getElementById('courseName').value.trim();
   const driveLink = document.getElementById('driveLink').value.trim();
   const msg = document.getElementById('courseMsg');
-  if (!name || !driveLink) { msg.textContent = "নাম আর লিংক দুটোই দাও"; return; }
+  if (!name || !driveLink) { msg.textContent = "Please enter both name and link"; return; }
   db.collection('courses').add({ name, driveLink }).then(() => {
     document.getElementById('courseName').value = '';
     document.getElementById('driveLink').value = '';
     msg.style.color = '#4fdc7c';
-    msg.textContent = "কোর্স যোগ হয়েছে";
+    msg.textContent = "Course added";
     loadCourses().then(loadUsers);
   });
 }
@@ -110,7 +111,7 @@ function loadCourses() {
       const c = doc.data();
       allCourses.push({ id: doc.id, name: c.name });
       const li = document.createElement('li');
-      li.innerHTML = `<span>${c.name}</span><button class="danger" style="width:auto;" onclick="deleteCourse('${doc.id}')">মুছো</button>`;
+      li.innerHTML = `<span>${c.name}</span><button class="danger" style="width:auto;" onclick="deleteCourse('${doc.id}')">Delete</button>`;
       list.appendChild(li);
     });
   });

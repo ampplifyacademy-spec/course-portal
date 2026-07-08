@@ -1,15 +1,16 @@
 <!DOCTYPE html>
-<html lang="bn">
+<html lang="en">
 <head>
 <meta charset="UTF-8">
-<title>স্টুডেন্ট প্যানেল</title>
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>My Courses · Course Portal</title>
 <link rel="stylesheet" href="css/style.css">
 </head>
 <body>
 <div class="card wide">
   <div class="top-bar">
-    <h1>তোমার কোর্সসমূহ</h1>
-    <button class="secondary" style="width:auto;" onclick="doLogout()">লগআউট</button>
+    <h1>My Courses</h1>
+    <button class="secondary" style="width:auto;" onclick="doLogout()">Log Out</button>
   </div>
   <ul class="course-list" id="courseList"></ul>
 </div>
@@ -45,7 +46,7 @@ function watchSession(uid, mySession) {
 }
 
 function kickOut(uid) {
-  alert('তোমার অ্যাকাউন্ট অন্য একটি ডিভাইসে লগইন করা হয়েছে। নিরাপত্তার জন্য এই ডিভাইস থেকে লগআউট করা হলো।');
+  alert('Your account was logged in on another device. For security, you have been logged out here.');
   auth.signOut().then(() => location.href = 'login.html');
 }
 
@@ -54,14 +55,14 @@ function loadCourses(blockedCourses) {
     const list = document.getElementById('courseList');
     const visible = snap.docs.filter(doc => !blockedCourses.includes(doc.id));
     if (visible.length === 0) {
-      list.innerHTML = '<li>এখনো কোনো কোর্স যোগ করা হয়নি।</li>';
+      list.innerHTML = '<li>No courses available yet.</li>';
       return;
     }
     list.innerHTML = '';
     visible.forEach(doc => {
       const c = doc.data();
       const li = document.createElement('li');
-      li.innerHTML = `<span>${c.name}</span><a href="${c.driveLink}" target="_blank"><button style="width:auto;">দেখো</button></a>`;
+      li.innerHTML = `<span>${c.name}</span><a href="${c.driveLink}" target="_blank"><button style="width:auto;">View</button></a>`;
       list.appendChild(li);
     });
   });

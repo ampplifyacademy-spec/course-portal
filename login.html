@@ -1,19 +1,22 @@
 <!DOCTYPE html>
-<html lang="bn">
+<html lang="en">
 <head>
 <meta charset="UTF-8">
-<title>লগইন</title>
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Log In · Course Portal</title>
 <link rel="stylesheet" href="css/style.css">
 </head>
 <body>
 <div class="card">
-  <h1>লগইন</h1>
-  <input id="email" type="email" placeholder="ইমেইল">
-  <input id="password" type="password" placeholder="পাসওয়ার্ড">
-  <button onclick="doLogin()">লগইন করো</button>
+  <div class="card-icon">👋</div>
+  <h1>Welcome Back</h1>
+  <p class="subtitle">Log in to access your courses.</p>
+  <input id="email" type="email" placeholder="Email">
+  <input id="password" type="password" placeholder="Password">
+  <button onclick="doLogin()">Log In</button>
   <p class="msg" id="msg"></p>
-  <p class="link"><a href="forgot.html">পাসওয়ার্ড ভুলে গেছো?</a></p>
-  <p class="link">অ্যাকাউন্ট নাই? <a href="signup.html">সাইনআপ করো</a></p>
+  <p class="link"><a href="forgot.html">Forgot your password?</a></p>
+  <p class="link">Don't have an account? <a href="signup.html">Sign up</a></p>
 </div>
 
 <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-app-compat.js"></script>
@@ -41,10 +44,10 @@ function doLogin() {
             location.href = 'student.html';
           });
         } else if (status === 'rejected') {
-          msg.textContent = "তোমার অ্যাকাউন্ট reject হয়েছে। এডমিনের সাথে যোগাযোগ করো।";
+          msg.textContent = "Your account has been rejected. Please contact the admin.";
           auth.signOut();
         } else {
-          msg.textContent = "এখনো approve হয়নি। একটু অপেক্ষা করো।";
+          msg.textContent = "Your account is still pending approval. Please wait.";
           auth.signOut();
         }
       });

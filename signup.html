@@ -1,20 +1,23 @@
 <!DOCTYPE html>
-<html lang="bn">
+<html lang="en">
 <head>
 <meta charset="UTF-8">
-<title>সাইনআপ</title>
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Sign Up · Course Portal</title>
 <link rel="stylesheet" href="css/style.css">
 </head>
 <body>
 <div class="card">
-  <h1>নতুন অ্যাকাউন্ট</h1>
-  <input id="name" placeholder="তোমার নাম">
-  <input id="email" type="email" placeholder="ইমেইল">
-  <input id="password" type="password" placeholder="পাসওয়ার্ড (কমপক্ষে ৬ ক্যারেক্টার)">
-  <input id="txn" placeholder="ব্যাংক ট্রান্জেকশন আইডি / রেফারেন্স">
-  <button onclick="doSignup()">সাইনআপ করো</button>
+  <div class="card-icon">🎓</div>
+  <h1>Create Account</h1>
+  <p class="subtitle">Pay via bank transfer, then sign up with your transaction reference. We'll approve your account once payment is verified.</p>
+  <input id="name" placeholder="Full name">
+  <input id="email" type="email" placeholder="Email">
+  <input id="password" type="password" placeholder="Password (min 6 characters)">
+  <input id="txn" placeholder="Bank transaction ID / reference">
+  <button onclick="doSignup()">Sign Up</button>
   <p class="msg" id="msg"></p>
-  <p class="link">আগে থেকে অ্যাকাউন্ট আছে? <a href="login.html">লগইন করো</a></p>
+  <p class="link">Already have an account? <a href="login.html">Log in</a></p>
 </div>
 
 <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-app-compat.js"></script>
@@ -30,7 +33,7 @@ function doSignup() {
   const msg = document.getElementById('msg');
 
   if (!name || !email || !password || !txn) {
-    msg.textContent = "সব ফিল্ড পূরণ করো";
+    msg.textContent = "Please fill in all fields";
     return;
   }
 
@@ -44,7 +47,7 @@ function doSignup() {
     })
     .then(() => {
       msg.style.color = '#4fdc7c';
-      msg.textContent = "সাইনআপ সফল! এডমিন approve করলে email এ জানবা।";
+      msg.textContent = "Signup successful! We'll notify you by email once your account is approved.";
     })
     .catch(err => { msg.textContent = err.message; });
 }

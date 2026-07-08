@@ -1,18 +1,20 @@
 <!DOCTYPE html>
-<html lang="bn">
+<html lang="en">
 <head>
 <meta charset="UTF-8">
-<title>পাসওয়ার্ড রিসেট</title>
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Reset Password · Course Portal</title>
 <link rel="stylesheet" href="css/style.css">
 </head>
 <body>
 <div class="card">
-  <h1>পাসওয়ার্ড ভুলে গেছেন?</h1>
-  <p style="margin-bottom:1rem; color:#aaa; font-size:.9rem;">তোমার ইমেইল দাও, রিসেট লিংক পাঠায় দিব।</p>
-  <input id="email" type="email" placeholder="ইমেইল">
-  <button onclick="sendReset()">রিসেট লিংক পাঠাও</button>
+  <div class="card-icon">🔑</div>
+  <h1>Forgot Password?</h1>
+  <p class="subtitle">Enter your email and we'll send you a reset link.</p>
+  <input id="email" type="email" placeholder="Email">
+  <button onclick="sendReset()">Send Reset Link</button>
   <p class="msg" id="msg"></p>
-  <p class="link"><a href="login.html">লগইনে ফিরে যাও</a></p>
+  <p class="link"><a href="login.html">Back to login</a></p>
 </div>
 
 <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-app-compat.js"></script>
@@ -23,12 +25,12 @@
 function sendReset() {
   const email = document.getElementById('email').value.trim();
   const msg = document.getElementById('msg');
-  if (!email) { msg.textContent = "ইমেইল দাও"; return; }
+  if (!email) { msg.textContent = "Please enter your email"; return; }
 
   auth.sendPasswordResetEmail(email)
     .then(() => {
       msg.style.color = '#4fdc7c';
-      msg.textContent = "রিসেট লিংক পাঠানো হয়েছে, ইমেইল চেক করো (স্প্যাম ফোল্ডারও দেখো)।";
+      msg.textContent = "Reset link sent — check your inbox (and spam folder).";
     })
     .catch(err => { msg.style.color = '#ff8080'; msg.textContent = err.message; });
 }
