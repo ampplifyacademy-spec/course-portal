@@ -32,6 +32,7 @@
     <div class="nav-item active" data-tab="overview" onclick="switchTab('overview')"><span>📊</span><span>Overview</span></div>
     <div class="nav-item" data-tab="students" onclick="switchTab('students')"><span>👥</span><span>Students</span></div>
     <div class="nav-item" data-tab="courses" onclick="switchTab('courses')"><span>🎓</span><span>Courses</span></div>
+    <div class="nav-item" data-tab="modules" onclick="switchTab('modules')"><span>🧩</span><span>Modules</span></div>
     <div class="nav-item" data-tab="payments" onclick="switchTab('payments')"><span>💳</span><span>Payments</span></div>
     <div class="nav-item" data-tab="site" onclick="switchTab('site')"><span>🎨</span><span>Site Content</span></div>
     <div class="sidebar-footer">
@@ -153,16 +154,18 @@
         <input id="mentorBio">
       </div>
 
-      <div class="panel" style="margin-bottom:1.5rem;">
-        <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:1.25rem;">
-          <h2>Course Modules</h2>
-          <button onclick="addModuleRow()" style="width:auto; margin:0;">+ Add Module</button>
-        </div>
-        <div id="moduleEditor"></div>
-      </div>
-
       <button onclick="saveSiteContent()">Save All Site Content</button>
       <p class="msg" id="siteMsg"></p>
+    </div>
+
+    <!-- MODULES -->
+    <div class="tab-section" id="tab-modules">
+      <div style="display:flex; justify-content:flex-end; margin-bottom:1rem;">
+        <button onclick="addModuleRow()" style="width:auto; margin:0;">+ Add Module</button>
+      </div>
+      <div id="moduleEditor"></div>
+      <button onclick="saveModules()" style="margin-top:.5rem;">Save Modules</button>
+      <p class="msg" id="modulesMsg"></p>
     </div>
   </div>
 </div>
@@ -181,8 +184,9 @@ const TAB_META = {
   overview: ['Dashboard Overview', "Here's what's happening with Ampplify Academy today."],
   students: ['Students', 'Manage enrolled students and their course access.'],
   courses: ['Courses', 'Manage the courses available to approved students.'],
+  modules: ['Courses & Modules', 'Manage your Amazon Selling Course content.'],
   payments: ['Payments', 'Track revenue and order history.'],
-  site: ['Site Content', 'Edit colors, text, pricing, and modules shown on the public site.']
+  site: ['Site Content', 'Edit colors, text, and pricing shown on the public site.']
 };
 
 function switchTab(tab) {
@@ -303,6 +307,18 @@ function saveSiteContent() {
   db.collection('siteContent').doc('main').set(data).then(() => {
     msg.style.color = 'var(--success)';
     msg.textContent = 'Site content saved. Changes are live immediately.';
+  }).catch(err => {
+    msg.style.color = 'var(--danger)';
+    msg.textContent = err.message;
+  });
+}
+
+function saveModules() {
+  const msg = document.getElementById('modulesMsg');
+  const modules = moduleRows.filter(m => m.title.trim());
+  db.collection('siteContent').doc('main').set({ course: { modules } }, { merge: true }).then(() => {
+    msg.style.color = 'var(--success)';
+    msg.textContent = 'Modules saved. Changes are live immediately.';
   }).catch(err => {
     msg.style.color = 'var(--danger)';
     msg.textContent = err.message;
