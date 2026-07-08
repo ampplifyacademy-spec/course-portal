@@ -8,10 +8,19 @@
 <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@500;600;700;800&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
 <link rel="stylesheet" href="css/style.css">
 <style>
-  .module-row { border: 1px solid var(--border); border-radius: var(--radius-sm); padding: 1rem; margin-bottom: 1rem; }
-  .module-row .row-top { display: flex; justify-content: space-between; align-items: center; margin-bottom: .5rem; }
-  .module-row .row-top span { font-weight: 700; color: var(--text-soft); }
-  .module-row button { width: auto; margin: 0; padding: .3rem .7rem; font-size: .78rem; }
+  .module-manage-card { background: var(--bg); border: 1px solid var(--border); border-radius: var(--radius); padding: 1.1rem 1.3rem; margin-bottom: .85rem; display: flex; align-items: center; gap: 1.25rem; }
+  .module-manage-card .mm-num { width: 40px; height: 40px; border-radius: var(--radius-sm); background: var(--info-bg); color: var(--accent); display: flex; align-items: center; justify-content: center; font: 800 .95rem var(--font-display); flex-shrink: 0; }
+  .module-manage-card .mm-body { flex: 1; }
+  .module-manage-card .mm-body .mm-title { font: 700 .95rem var(--font-display); }
+  .module-manage-card .mm-body .mm-meta { color: var(--text-muted); font-size: .8rem; margin-top: .2rem; }
+  .module-manage-card .mm-pill { font-size: .75rem; font-weight: 700; padding: .25rem .65rem; border-radius: 999px; flex-shrink: 0; }
+  .module-manage-card .mm-pill.published { color: var(--success); background: var(--success-bg); }
+  .module-manage-card .mm-pill.draft { color: var(--text-muted); background: rgba(255,255,255,.06); }
+  .module-manage-card button { width: auto; margin: 0; padding: .5rem 1rem; font-size: .82rem; flex-shrink: 0; }
+  .module-edit-card { border: 1px solid var(--border); border-radius: var(--radius); padding: 1.25rem; margin-bottom: .85rem; }
+  .module-edit-card .row-top { display: flex; justify-content: space-between; align-items: center; margin-bottom: .6rem; }
+  .module-edit-card .row-top span { font-weight: 700; color: var(--text-soft); }
+  .module-edit-card button { width: auto; margin: 0; padding: .35rem .8rem; font-size: .78rem; }
   input[type="color"] { padding: .3rem; height: 44px; cursor: pointer; }
 </style>
 </head>
@@ -144,9 +153,11 @@
       </div>
 
       <div class="panel" style="margin-bottom:1.5rem;">
-        <h2 style="margin-bottom:1rem;">Course Modules</h2>
+        <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:1.25rem;">
+          <h2>Course Modules</h2>
+          <button onclick="addModuleRow()" style="width:auto; margin:0;">+ Add Module</button>
+        </div>
         <div id="moduleEditor"></div>
-        <button class="secondary" onclick="addModuleRow()">+ Add Module</button>
       </div>
 
       <button onclick="saveSiteContent()">Save All Site Content</button>
@@ -215,34 +226,51 @@ function loadSiteContentIntoForm() {
   });
 }
 
+let editingModuleIndex = null;
+
 function renderModuleRows() {
   const container = document.getElementById('moduleEditor');
-  container.innerHTML = moduleRows.map((m, i) => `
-    <div class="module-row">
-      <div class="row-top">
-        <span>Module ${i + 1}</span>
-        <label style="display:flex; align-items:center; gap:.4rem; font-size:.82rem; color:var(--text-soft); margin:0;">
-          <input type="checkbox" style="width:auto; margin:0;" ${m.published !== false ? 'checked' : ''} onchange="moduleRows[${i}].published = this.checked">
-          Published
-        </label>
-        <button class="danger" onclick="removeModuleRow(${i})">Remove</button>
-      </div>
-      <input placeholder="Title" value="${(m.title || '').replace(/"/g, '&quot;')}" oninput="moduleRows[${i}].title = this.value">
-      <input placeholder="Description" value="${(m.desc || '').replace(/"/g, '&quot;')}" oninput="moduleRows[${i}].desc = this.value">
-      <div style="display:grid; grid-template-columns:1fr 1fr; gap:.6rem;">
-        <input placeholder="Lessons (e.g. 4)" value="${m.lessons || ''}" oninput="moduleRows[${i}].lessons = this.value">
-        <input placeholder="Duration (e.g. 45 min)" value="${(m.duration || '').replace(/"/g, '&quot;')}" oninput="moduleRows[${i}].duration = this.value">
-      </div>
-    </div>`).join('');
+  container.innerHTML = moduleRows.map((m, i) => {
+    if (i === editingModuleIndex) {
+      return `
+        <div class="module-edit-card">
+          <div class="row-top"><span>Module ${i + 1}</span><button onclick="editingModuleIndex=null; renderModuleRows();">Done</button></div>
+          <input placeholder="Title" value="${(m.title || '').replace(/"/g, '&quot;')}" oninput="moduleRows[${i}].title = this.value">
+          <input placeholder="Description" value="${(m.desc || '').replace(/"/g, '&quot;')}" oninput="moduleRows[${i}].desc = this.value">
+          <div style="display:grid; grid-template-columns:1fr 1fr; gap:.6rem;">
+            <input placeholder="Lessons (e.g. 4)" value="${m.lessons || ''}" oninput="moduleRows[${i}].lessons = this.value">
+            <input placeholder="Duration (e.g. 45 min)" value="${(m.duration || '').replace(/"/g, '&quot;')}" oninput="moduleRows[${i}].duration = this.value">
+          </div>
+          <label style="display:flex; align-items:center; gap:.4rem; font-size:.85rem; color:var(--text-soft);">
+            <input type="checkbox" style="width:auto; margin:0;" ${m.published !== false ? 'checked' : ''} onchange="moduleRows[${i}].published = this.checked">
+            Published
+          </label>
+          <button class="danger" onclick="removeModuleRow(${i})">Remove Module</button>
+        </div>`;
+    }
+    const published = m.published !== false;
+    return `
+      <div class="module-manage-card">
+        <div class="mm-num">${String(i + 1).padStart(2, '0')}</div>
+        <div class="mm-body">
+          <div class="mm-title">${m.title || '(untitled module)'}</div>
+          <div class="mm-meta">${m.lessons ? m.lessons + ' lessons · ' : ''}${m.duration || ''}</div>
+        </div>
+        <span class="mm-pill ${published ? 'published' : 'draft'}">${published ? 'Published' : 'Draft'}</span>
+        <button class="secondary" onclick="editingModuleIndex=${i}; renderModuleRows();">Edit</button>
+      </div>`;
+  }).join('');
 }
 
 function addModuleRow() {
   moduleRows.push({ title: '', desc: '', duration: '', lessons: '', published: true });
+  editingModuleIndex = moduleRows.length - 1;
   renderModuleRows();
 }
 
 function removeModuleRow(i) {
   moduleRows.splice(i, 1);
+  editingModuleIndex = null;
   renderModuleRows();
 }
 
