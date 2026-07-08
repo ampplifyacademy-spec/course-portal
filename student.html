@@ -1,0 +1,54 @@
+<!DOCTYPE html>
+<html lang="bn">
+<head>
+<meta charset="UTF-8">
+<title>স্টুডেন্ট প্যানেল</title>
+<link rel="stylesheet" href="css/style.css">
+</head>
+<body>
+<div class="card wide">
+  <div class="top-bar">
+    <h1>তোমার কোর্সসমূহ</h1>
+    <button class="secondary" style="width:auto;" onclick="doLogout()">লগআউট</button>
+  </div>
+  <ul class="course-list" id="courseList"></ul>
+</div>
+
+<script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-app-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-auth-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore-compat.js"></script>
+<script src="js/firebase-config.js"></script>
+<script>
+auth.onAuthStateChanged(user => {
+  if (!user) { location.href = 'login.html'; return; }
+  db.collection('users').doc(user.uid).get().then(doc => {
+    if (!doc.exists || doc.data().status !== 'approved') {
+      location.href = 'login.html';
+      return;
+    }
+    loadCourses();
+  });
+});
+
+function loadCourses() {
+  db.collection('courses').get().then(snap => {
+    const list = document.getElementById('courseList');
+    if (snap.empty) {
+      list.innerHTML = '<li>এখনো কোনো কোর্স যোগ করা হয়নি।</li>';
+      return;
+    }
+    snap.forEach(doc => {
+      const c = doc.data();
+      const li = document.createElement('li');
+      li.innerHTML = `<span>${c.name}</span><a href="${c.driveLink}" target="_blank"><button style="width:auto;">দেখো</button></a>`;
+      list.appendChild(li);
+    });
+  });
+}
+
+function doLogout() {
+  auth.signOut().then(() => location.href = 'login.html');
+}
+</script>
+</body>
+</html>

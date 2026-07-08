@@ -1,0 +1,53 @@
+<!DOCTYPE html>
+<html lang="bn">
+<head>
+<meta charset="UTF-8">
+<title>সাইনআপ</title>
+<link rel="stylesheet" href="css/style.css">
+</head>
+<body>
+<div class="card">
+  <h1>নতুন অ্যাকাউন্ট</h1>
+  <input id="name" placeholder="তোমার নাম">
+  <input id="email" type="email" placeholder="ইমেইল">
+  <input id="password" type="password" placeholder="পাসওয়ার্ড (কমপক্ষে ৬ ক্যারেক্টার)">
+  <input id="txn" placeholder="ব্যাংক ট্রান্জেকশন আইডি / রেফারেন্স">
+  <button onclick="doSignup()">সাইনআপ করো</button>
+  <p class="msg" id="msg"></p>
+  <p class="link">আগে থেকে অ্যাকাউন্ট আছে? <a href="login.html">লগইন করো</a></p>
+</div>
+
+<script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-app-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-auth-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore-compat.js"></script>
+<script src="js/firebase-config.js"></script>
+<script>
+function doSignup() {
+  const name = document.getElementById('name').value.trim();
+  const email = document.getElementById('email').value.trim();
+  const password = document.getElementById('password').value;
+  const txn = document.getElementById('txn').value.trim();
+  const msg = document.getElementById('msg');
+
+  if (!name || !email || !password || !txn) {
+    msg.textContent = "সব ফিল্ড পূরণ করো";
+    return;
+  }
+
+  auth.createUserWithEmailAndPassword(email, password)
+    .then(cred => {
+      return db.collection('users').doc(cred.user.uid).set({
+        name, email, txn,
+        status: 'pending',
+        createdAt: firebase.firestore.FieldValue.serverTimestamp()
+      });
+    })
+    .then(() => {
+      msg.style.color = '#4fdc7c';
+      msg.textContent = "সাইনআপ সফল! এডমিন approve করলে email এ জানবা।";
+    })
+    .catch(err => { msg.textContent = err.message; });
+}
+</script>
+</body>
+</html>
