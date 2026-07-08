@@ -160,12 +160,12 @@ loadSiteContent().then(content => {
   document.getElementById('heroEnrollBtn').textContent = 'Enroll Now — ' + c.priceNew + ' ' + c.currency;
   document.getElementById('bandEnrollBtn').textContent = 'Enroll Now — ' + c.priceNew + ' ' + c.currency;
 
-  document.getElementById('moduleGrid').innerHTML = c.modules.map((m, i) => `
+  document.getElementById('moduleGrid').innerHTML = c.modules.filter(m => m.published !== false).map((m, i) => `
     <div class="module-card">
       <div class="module-num">${String(i + 1).padStart(2, '0')}</div>
       <h4>${m.title}</h4>
       <p>${m.desc}</p>
-      <span>${m.duration}</span>
+      <span>${m.lessons ? m.lessons + ' lessons · ' : ''}${m.duration}</span>
     </div>`).join('');
 });
 

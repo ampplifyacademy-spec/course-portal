@@ -23,6 +23,7 @@
     <div class="nav-item active" data-tab="overview" onclick="switchTab('overview')"><span>📊</span><span>Overview</span></div>
     <div class="nav-item" data-tab="students" onclick="switchTab('students')"><span>👥</span><span>Students</span></div>
     <div class="nav-item" data-tab="courses" onclick="switchTab('courses')"><span>🎓</span><span>Courses</span></div>
+    <div class="nav-item" data-tab="payments" onclick="switchTab('payments')"><span>💳</span><span>Payments</span></div>
     <div class="nav-item" data-tab="site" onclick="switchTab('site')"><span>🎨</span><span>Site Content</span></div>
     <div class="sidebar-footer">
       <div class="avatar" id="adminAvatar">A</div>
@@ -46,9 +47,19 @@
     <div class="tab-section active" id="tab-overview">
       <div class="stat-grid">
         <div class="stat-card"><div class="label">Total Students</div><div class="value" id="statTotal">—</div></div>
+        <div class="stat-card"><div class="label">Total Revenue</div><div class="value" id="statRevenue">—</div></div>
         <div class="stat-card"><div class="label">Pending Approval</div><div class="value" id="statPending">—</div></div>
-        <div class="stat-card"><div class="label">Approved</div><div class="value" id="statApproved">—</div></div>
         <div class="stat-card"><div class="label">Courses Published</div><div class="value" id="statCourses">—</div></div>
+      </div>
+      <div style="display:grid; grid-template-columns:1.4fr 1fr; gap:1.25rem; margin-top:1.25rem;">
+        <div class="panel">
+          <h2 style="margin-bottom:1.25rem;">Revenue — Last 6 Months</h2>
+          <div id="revenueChart" style="display:flex; align-items:flex-end; gap:1rem; height:180px;"></div>
+        </div>
+        <div class="panel">
+          <h2 style="margin-bottom:1.25rem;">Recent Signups</h2>
+          <div id="recentSignups" style="display:flex; flex-direction:column; gap:1rem;"></div>
+        </div>
       </div>
     </div>
 
@@ -56,7 +67,7 @@
     <div class="tab-section" id="tab-students">
       <div class="panel">
         <table>
-          <thead><tr><th>Name</th><th>Email</th><th>Txn ID</th><th>Status</th><th>Action</th><th>Course Access</th></tr></thead>
+          <thead><tr><th>Name</th><th>Email</th><th>Enrolled</th><th>Amount</th><th>Status</th><th>Action</th><th>Course Access</th></tr></thead>
           <tbody id="userRows"></tbody>
         </table>
       </div>
@@ -74,6 +85,21 @@
       <div class="panel">
         <h2 style="margin-bottom:1rem;">Current Courses</h2>
         <ul class="course-list" id="courseList"></ul>
+      </div>
+    </div>
+
+    <!-- PAYMENTS -->
+    <div class="tab-section" id="tab-payments">
+      <div class="stat-grid">
+        <div class="stat-card"><div class="label">Total Revenue</div><div class="value" id="payTotalRevenue">—</div></div>
+        <div class="stat-card"><div class="label">This Month</div><div class="value" id="payMonthRevenue">—</div></div>
+        <div class="stat-card"><div class="label">Refunded</div><div class="value" id="payRefundCount">—</div></div>
+      </div>
+      <div class="panel" style="margin-top:1.25rem;">
+        <table>
+          <thead><tr><th>Student</th><th>Txn ID</th><th>Date</th><th>Amount</th><th>Status</th><th>Action</th></tr></thead>
+          <tbody id="paymentRows"></tbody>
+        </table>
       </div>
     </div>
 
@@ -143,6 +169,7 @@ const TAB_META = {
   overview: ['Dashboard Overview', "Here's what's happening with Ampplify Academy today."],
   students: ['Students', 'Manage enrolled students and their course access.'],
   courses: ['Courses', 'Manage the courses available to approved students.'],
+  payments: ['Payments', 'Track revenue and order history.'],
   site: ['Site Content', 'Edit colors, text, pricing, and modules shown on the public site.']
 };
 
@@ -192,15 +219,25 @@ function renderModuleRows() {
   const container = document.getElementById('moduleEditor');
   container.innerHTML = moduleRows.map((m, i) => `
     <div class="module-row">
-      <div class="row-top"><span>Module ${i + 1}</span><button class="danger" onclick="removeModuleRow(${i})">Remove</button></div>
-      <input placeholder="Title" value="${m.title.replace(/"/g, '&quot;')}" oninput="moduleRows[${i}].title = this.value">
-      <input placeholder="Description" value="${m.desc.replace(/"/g, '&quot;')}" oninput="moduleRows[${i}].desc = this.value">
-      <input placeholder="Duration (e.g. 45 min)" value="${m.duration.replace(/"/g, '&quot;')}" oninput="moduleRows[${i}].duration = this.value">
+      <div class="row-top">
+        <span>Module ${i + 1}</span>
+        <label style="display:flex; align-items:center; gap:.4rem; font-size:.82rem; color:var(--text-soft); margin:0;">
+          <input type="checkbox" style="width:auto; margin:0;" ${m.published !== false ? 'checked' : ''} onchange="moduleRows[${i}].published = this.checked">
+          Published
+        </label>
+        <button class="danger" onclick="removeModuleRow(${i})">Remove</button>
+      </div>
+      <input placeholder="Title" value="${(m.title || '').replace(/"/g, '&quot;')}" oninput="moduleRows[${i}].title = this.value">
+      <input placeholder="Description" value="${(m.desc || '').replace(/"/g, '&quot;')}" oninput="moduleRows[${i}].desc = this.value">
+      <div style="display:grid; grid-template-columns:1fr 1fr; gap:.6rem;">
+        <input placeholder="Lessons (e.g. 4)" value="${m.lessons || ''}" oninput="moduleRows[${i}].lessons = this.value">
+        <input placeholder="Duration (e.g. 45 min)" value="${(m.duration || '').replace(/"/g, '&quot;')}" oninput="moduleRows[${i}].duration = this.value">
+      </div>
     </div>`).join('');
 }
 
 function addModuleRow() {
-  moduleRows.push({ title: '', desc: '', duration: '' });
+  moduleRows.push({ title: '', desc: '', duration: '', lessons: '', published: true });
   renderModuleRows();
 }
 
@@ -246,11 +283,107 @@ function saveSiteContent() {
 function updateStats() {
   const total = allUsers.length;
   const pending = allUsers.filter(u => u.status === 'pending').length;
-  const approved = allUsers.filter(u => u.status === 'approved').length;
+  const paidUsers = allUsers.filter(u => u.amountPaid && u.paymentStatus !== 'refunded');
+  const totalRevenue = paidUsers.reduce((sum, u) => sum + Number(u.amountPaid || 0), 0);
+  const currency = paidUsers.length ? paidUsers[0].currency : '';
+
   document.getElementById('statTotal').textContent = total;
   document.getElementById('statPending').textContent = pending;
-  document.getElementById('statApproved').textContent = approved;
+  document.getElementById('statRevenue').textContent = totalRevenue ? totalRevenue.toLocaleString() + ' ' + currency : '0';
   document.getElementById('statCourses').textContent = allCourses.length;
+
+  renderRecentSignups();
+  renderRevenueChart(paidUsers);
+  renderPayments();
+}
+
+function renderRecentSignups() {
+  const el = document.getElementById('recentSignups');
+  const recent = allUsers.slice(0, 5);
+  if (!recent.length) { el.innerHTML = '<span style="color:var(--text-faint); font-size:.85rem;">No signups yet.</span>'; return; }
+  el.innerHTML = recent.map(u => {
+    const when = u.createdAt && u.createdAt.toDate ? timeAgo(u.createdAt.toDate()) : '—';
+    return `<div style="display:flex; justify-content:space-between; align-items:center;">
+      <div>
+        <div style="font-weight:600; font-size:.9rem;">${u.name || u.email}</div>
+        <div style="color:var(--text-muted); font-size:.78rem;">${when}</div>
+      </div>
+      <span class="status-${u.status}">${u.status}</span>
+    </div>`;
+  }).join('');
+}
+
+function timeAgo(date) {
+  const secs = Math.floor((Date.now() - date.getTime()) / 1000);
+  if (secs < 60) return 'just now';
+  const mins = Math.floor(secs / 60);
+  if (mins < 60) return mins + ' min ago';
+  const hrs = Math.floor(mins / 60);
+  if (hrs < 24) return hrs + ' hour' + (hrs > 1 ? 's' : '') + ' ago';
+  const days = Math.floor(hrs / 24);
+  return days + ' day' + (days > 1 ? 's' : '') + ' ago';
+}
+
+function renderRevenueChart(paidUsers) {
+  const el = document.getElementById('revenueChart');
+  const now = new Date();
+  const months = [];
+  for (let i = 5; i >= 0; i--) {
+    const d = new Date(now.getFullYear(), now.getMonth() - i, 1);
+    months.push({ key: d.getFullYear() + '-' + d.getMonth(), label: d.toLocaleString('en', { month: 'short' }), total: 0 });
+  }
+  paidUsers.forEach(u => {
+    const d = u.approvedAt && u.approvedAt.toDate ? u.approvedAt.toDate() : null;
+    if (!d) return;
+    const key = d.getFullYear() + '-' + d.getMonth();
+    const m = months.find(m => m.key === key);
+    if (m) m.total += Number(u.amountPaid || 0);
+  });
+  const max = Math.max(...months.map(m => m.total), 1);
+  el.innerHTML = months.map(m => `
+    <div style="flex:1; display:flex; flex-direction:column; align-items:center; gap:.5rem;">
+      <div style="width:100%; background:linear-gradient(180deg,var(--accent),var(--accent-orange)); border-radius:6px 6px 0 0; height:${Math.max((m.total / max) * 140, 3)}px;" title="${m.total}"></div>
+      <span style="color:var(--text-muted); font-size:.75rem;">${m.label}</span>
+    </div>`).join('');
+}
+
+function renderPayments() {
+  const paid = allUsers.filter(u => u.amountPaid);
+  const revenue = paid.filter(u => u.paymentStatus !== 'refunded').reduce((s, u) => s + Number(u.amountPaid || 0), 0);
+  const currency = paid.length ? paid[0].currency : '';
+  const now = new Date();
+  const monthRevenue = paid.filter(u => {
+    if (u.paymentStatus === 'refunded') return false;
+    const d = u.approvedAt && u.approvedAt.toDate ? u.approvedAt.toDate() : null;
+    return d && d.getFullYear() === now.getFullYear() && d.getMonth() === now.getMonth();
+  }).reduce((s, u) => s + Number(u.amountPaid || 0), 0);
+  const refundCount = paid.filter(u => u.paymentStatus === 'refunded').length;
+
+  document.getElementById('payTotalRevenue').textContent = revenue ? revenue.toLocaleString() + ' ' + currency : '0';
+  document.getElementById('payMonthRevenue').textContent = monthRevenue ? monthRevenue.toLocaleString() + ' ' + currency : '0';
+  document.getElementById('payRefundCount').textContent = refundCount;
+
+  const rows = document.getElementById('paymentRows');
+  if (!paid.length) {
+    rows.innerHTML = '<tr><td colspan="6" style="color:var(--text-faint);">No payments recorded yet.</td></tr>';
+    return;
+  }
+  rows.innerHTML = paid.map(u => {
+    const date = u.approvedAt && u.approvedAt.toDate ? u.approvedAt.toDate().toLocaleDateString() : '—';
+    const refunded = u.paymentStatus === 'refunded';
+    return `<tr>
+      <td>${u.name || u.email}</td>
+      <td>${u.txn || ''}</td>
+      <td>${date}</td>
+      <td>${u.amountPaid} ${u.currency || ''}</td>
+      <td><span class="status-${refunded ? 'rejected' : 'approved'}">${refunded ? 'Refunded' : 'Paid'}</span></td>
+      <td><button class="${refunded ? '' : 'danger'}" onclick="togglePaymentStatus('${u.id}', ${refunded})">${refunded ? 'Mark Paid' : 'Mark Refunded'}</button></td>
+    </tr>`;
+  }).join('');
+}
+
+function togglePaymentStatus(uid, currentlyRefunded) {
+  db.collection('users').doc(uid).update({ paymentStatus: currentlyRefunded ? 'paid' : 'refunded' }).then(loadUsers);
 }
 
 function loadUsers() {
@@ -271,10 +404,14 @@ function loadUsers() {
         }).join('') + '</ul>';
       }
 
+      const enrolled = u.createdAt && u.createdAt.toDate ? u.createdAt.toDate().toLocaleDateString() : '—';
+      const amount = u.amountPaid ? u.amountPaid + ' ' + (u.currency || '') : '—';
+
       tr.innerHTML = `
         <td>${u.name || ''}</td>
         <td>${u.email}</td>
-        <td>${u.txn || ''}</td>
+        <td>${enrolled}</td>
+        <td>${amount}</td>
         <td><span class="status-${u.status}">${u.status}</span></td>
         <td>
           <button onclick="setStatus('${u.id}','approved')">Approve</button>
@@ -288,7 +425,24 @@ function loadUsers() {
 }
 
 function setStatus(uid, status) {
-  db.collection('users').doc(uid).update({ status }).then(loadUsers);
+  if (status !== 'approved') {
+    db.collection('users').doc(uid).update({ status }).then(loadUsers);
+    return;
+  }
+  loadSiteContent().then(content => {
+    const suggested = content.course.priceNew;
+    const input = prompt('Amount paid (' + content.course.currency + ')', suggested);
+    if (input === null) return;
+    const amount = Number(input);
+    if (!amount || amount <= 0) { alert('Enter a valid amount'); return; }
+    db.collection('users').doc(uid).update({
+      status: 'approved',
+      amountPaid: amount,
+      currency: content.course.currency,
+      paymentStatus: 'paid',
+      approvedAt: firebase.firestore.FieldValue.serverTimestamp()
+    }).then(loadUsers);
+  });
 }
 
 function toggleCourseAccess(uid, courseId, currentlyBlocked) {
