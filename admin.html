@@ -50,6 +50,7 @@
         <h1 id="pageTitle">Dashboard Overview</h1>
         <p id="pageSubtitle">Here's what's happening with Ampplify Academy today.</p>
       </div>
+      <input id="adminSearch" placeholder="Search..." style="width:240px; margin:0;" oninput="filterStudents(this.value)">
     </div>
 
     <!-- OVERVIEW -->
@@ -417,39 +418,51 @@ function togglePaymentStatus(uid, currentlyRefunded) {
 function loadUsers() {
   return db.collection('users').orderBy('createdAt', 'desc').get().then(snap => {
     allUsers = snap.docs.map(doc => ({ id: doc.id, ...doc.data() }));
-    const rows = document.getElementById('userRows');
-    rows.innerHTML = '';
-    allUsers.forEach(u => {
-      const blocked = u.blockedCourses || [];
-      const tr = document.createElement('tr');
-
-      let accessHtml = '<span style="color:var(--text-faint);">—</span>';
-      if (u.status === 'approved' && allCourses.length) {
-        accessHtml = '<ul class="course-access-list">' + allCourses.map(c => {
-          const isBlocked = blocked.includes(c.id);
-          return `<li><span>${c.name}</span>
-            <button class="${isBlocked ? 'secondary' : 'danger'}" onclick="toggleCourseAccess('${u.id}','${c.id}',${isBlocked})">${isBlocked ? 'Restore' : 'Remove'}</button></li>`;
-        }).join('') + '</ul>';
-      }
-
-      const enrolled = u.createdAt && u.createdAt.toDate ? u.createdAt.toDate().toLocaleDateString() : '—';
-      const amount = u.amountPaid ? u.amountPaid + ' ' + (u.currency || '') : '—';
-
-      tr.innerHTML = `
-        <td>${u.name || ''}</td>
-        <td>${u.email}</td>
-        <td>${enrolled}</td>
-        <td>${amount}</td>
-        <td><span class="status-${u.status}">${u.status}</span></td>
-        <td>
-          <button onclick="setStatus('${u.id}','approved')">Approve</button>
-          <button class="danger" onclick="setStatus('${u.id}','rejected')">Reject</button>
-        </td>
-        <td>${accessHtml}</td>`;
-      rows.appendChild(tr);
-    });
+    renderUserRows(allUsers);
     updateStats();
   });
+}
+
+function renderUserRows(list) {
+  const rows = document.getElementById('userRows');
+  rows.innerHTML = '';
+  list.forEach(u => {
+    const blocked = u.blockedCourses || [];
+    const tr = document.createElement('tr');
+
+    let accessHtml = '<span style="color:var(--text-faint);">—</span>';
+    if (u.status === 'approved' && allCourses.length) {
+      accessHtml = '<ul class="course-access-list">' + allCourses.map(c => {
+        const isBlocked = blocked.includes(c.id);
+        return `<li><span>${c.name}</span>
+          <button class="${isBlocked ? 'secondary' : 'danger'}" onclick="toggleCourseAccess('${u.id}','${c.id}',${isBlocked})">${isBlocked ? 'Restore' : 'Remove'}</button></li>`;
+      }).join('') + '</ul>';
+    }
+
+    const enrolled = u.createdAt && u.createdAt.toDate ? u.createdAt.toDate().toLocaleDateString() : '—';
+    const amount = u.amountPaid ? u.amountPaid + ' ' + (u.currency || '') : '—';
+
+    tr.innerHTML = `
+      <td>${u.name || ''}</td>
+      <td>${u.email}</td>
+      <td>${enrolled}</td>
+      <td>${amount}</td>
+      <td><span class="status-${u.status}">${u.status}</span></td>
+      <td>
+        <button onclick="setStatus('${u.id}','approved')">Approve</button>
+        <button class="danger" onclick="setStatus('${u.id}','rejected')">Reject</button>
+      </td>
+      <td>${accessHtml}</td>`;
+    rows.appendChild(tr);
+  });
+}
+
+function filterStudents(query) {
+  const q = query.trim().toLowerCase();
+  if (!q) { renderUserRows(allUsers); return; }
+  renderUserRows(allUsers.filter(u =>
+    (u.name || '').toLowerCase().includes(q) || (u.email || '').toLowerCase().includes(q)
+  ));
 }
 
 function setStatus(uid, status) {
