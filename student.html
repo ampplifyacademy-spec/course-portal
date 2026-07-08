@@ -70,7 +70,7 @@ function loadCurriculum() {
           ${(m.lessonLinks && m.lessonLinks.length)
             ? m.lessonLinks.map(l => `
                 <div class="lesson-row">
-                  <span>${l.title}</span>
+                  <span>${l.title}${l.durationMin ? ' · ' + formatDuration(l.durationMin) : ''}</span>
                   <a href="${l.driveLink}" target="_blank"><button>Watch</button></a>
                 </div>`).join('')
             : '<p style="color:var(--text-faint); font-size:.85rem; padding-top:.6rem;">No lessons added yet.</p>'}
