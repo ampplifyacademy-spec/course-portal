@@ -7,6 +7,13 @@
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@500;600;700;800&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
 <link rel="stylesheet" href="css/style.css">
+<style>
+  .module-row { border: 1px solid var(--border); border-radius: var(--radius-sm); padding: 1rem; margin-bottom: 1rem; }
+  .module-row .row-top { display: flex; justify-content: space-between; align-items: center; margin-bottom: .5rem; }
+  .module-row .row-top span { font-weight: 700; color: var(--text-soft); }
+  .module-row button { width: auto; margin: 0; padding: .3rem .7rem; font-size: .78rem; }
+  input[type="color"] { padding: .3rem; height: 44px; cursor: pointer; }
+</style>
 </head>
 <body class="admin-shell">
 <div class="admin-shell-grid">
@@ -16,6 +23,7 @@
     <div class="nav-item active" data-tab="overview" onclick="switchTab('overview')"><span>📊</span><span>Overview</span></div>
     <div class="nav-item" data-tab="students" onclick="switchTab('students')"><span>👥</span><span>Students</span></div>
     <div class="nav-item" data-tab="courses" onclick="switchTab('courses')"><span>🎓</span><span>Courses</span></div>
+    <div class="nav-item" data-tab="site" onclick="switchTab('site')"><span>🎨</span><span>Site Content</span></div>
     <div class="sidebar-footer">
       <div class="avatar" id="adminAvatar">A</div>
       <div>
@@ -68,6 +76,56 @@
         <ul class="course-list" id="courseList"></ul>
       </div>
     </div>
+
+    <!-- SITE CONTENT -->
+    <div class="tab-section" id="tab-site">
+      <div class="panel" style="margin-bottom:1.5rem;">
+        <h2 style="margin-bottom:1rem;">Theme Colors</h2>
+        <div style="display:grid; grid-template-columns:repeat(auto-fit,minmax(150px,1fr)); gap:1rem;">
+          <div><label>Accent (cyan)</label><input type="color" id="themeAccent"></div>
+          <div><label>Accent (orange)</label><input type="color" id="themeAccentOrange"></div>
+          <div><label>Background</label><input type="color" id="themeBg"></div>
+        </div>
+      </div>
+
+      <div class="panel" style="margin-bottom:1.5rem;">
+        <h2 style="margin-bottom:1rem;">Landing Page Text</h2>
+        <label>Hero title (prefix)</label>
+        <input id="landingTitlePrefix">
+        <label>Hero highlight (colored word)</label>
+        <input id="landingHighlight">
+        <label>Subtitle</label>
+        <input id="landingSubtitle">
+      </div>
+
+      <div class="panel" style="margin-bottom:1.5rem;">
+        <h2 style="margin-bottom:1rem;">Course Page — Hero &amp; Pricing</h2>
+        <label>Hero title (prefix)</label>
+        <input id="courseTitlePrefix">
+        <label>Hero highlight (colored word)</label>
+        <input id="courseHighlight">
+        <label>Subtitle</label>
+        <input id="courseSubtitle">
+        <div style="display:grid; grid-template-columns:1fr 1fr 1fr; gap:1rem;">
+          <div><label>Old price</label><input id="priceOld"></div>
+          <div><label>New price</label><input id="priceNew"></div>
+          <div><label>Currency</label><input id="currency"></div>
+        </div>
+        <label>Mentor name</label>
+        <input id="mentorName">
+        <label>Mentor bio</label>
+        <input id="mentorBio">
+      </div>
+
+      <div class="panel" style="margin-bottom:1.5rem;">
+        <h2 style="margin-bottom:1rem;">Course Modules</h2>
+        <div id="moduleEditor"></div>
+        <button class="secondary" onclick="addModuleRow()">+ Add Module</button>
+      </div>
+
+      <button onclick="saveSiteContent()">Save All Site Content</button>
+      <p class="msg" id="siteMsg"></p>
+    </div>
   </div>
 </div>
 
@@ -75,14 +133,17 @@
 <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-auth-compat.js"></script>
 <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore-compat.js"></script>
 <script src="js/firebase-config.js"></script>
+<script src="js/site-content.js"></script>
 <script>
 let allCourses = [];
 let allUsers = [];
+let moduleRows = [];
 
 const TAB_META = {
   overview: ['Dashboard Overview', "Here's what's happening with Ampplify Academy today."],
   students: ['Students', 'Manage enrolled students and their course access.'],
-  courses: ['Courses', 'Manage the courses available to approved students.']
+  courses: ['Courses', 'Manage the courses available to approved students.'],
+  site: ['Site Content', 'Edit colors, text, pricing, and modules shown on the public site.']
 };
 
 function switchTab(tab) {
@@ -100,7 +161,87 @@ auth.onAuthStateChanged(user => {
   }
   document.getElementById('adminAvatar').textContent = user.email.charAt(0).toUpperCase();
   loadCourses().then(loadUsers);
+  loadSiteContentIntoForm();
 });
+
+function loadSiteContentIntoForm() {
+  loadSiteContent().then(content => {
+    document.getElementById('themeAccent').value = content.theme.accent;
+    document.getElementById('themeAccentOrange').value = content.theme.accentOrange;
+    document.getElementById('themeBg').value = content.theme.bg;
+
+    document.getElementById('landingTitlePrefix').value = content.landing.heroTitlePrefix;
+    document.getElementById('landingHighlight').value = content.landing.heroHighlight;
+    document.getElementById('landingSubtitle').value = content.landing.heroSubtitle;
+
+    document.getElementById('courseTitlePrefix').value = content.course.heroTitlePrefix;
+    document.getElementById('courseHighlight').value = content.course.heroHighlight;
+    document.getElementById('courseSubtitle').value = content.course.heroSubtitle;
+    document.getElementById('priceOld').value = content.course.priceOld;
+    document.getElementById('priceNew').value = content.course.priceNew;
+    document.getElementById('currency').value = content.course.currency;
+    document.getElementById('mentorName').value = content.course.mentorName;
+    document.getElementById('mentorBio').value = content.course.mentorBio;
+
+    moduleRows = content.course.modules.map(m => Object.assign({}, m));
+    renderModuleRows();
+  });
+}
+
+function renderModuleRows() {
+  const container = document.getElementById('moduleEditor');
+  container.innerHTML = moduleRows.map((m, i) => `
+    <div class="module-row">
+      <div class="row-top"><span>Module ${i + 1}</span><button class="danger" onclick="removeModuleRow(${i})">Remove</button></div>
+      <input placeholder="Title" value="${m.title.replace(/"/g, '&quot;')}" oninput="moduleRows[${i}].title = this.value">
+      <input placeholder="Description" value="${m.desc.replace(/"/g, '&quot;')}" oninput="moduleRows[${i}].desc = this.value">
+      <input placeholder="Duration (e.g. 45 min)" value="${m.duration.replace(/"/g, '&quot;')}" oninput="moduleRows[${i}].duration = this.value">
+    </div>`).join('');
+}
+
+function addModuleRow() {
+  moduleRows.push({ title: '', desc: '', duration: '' });
+  renderModuleRows();
+}
+
+function removeModuleRow(i) {
+  moduleRows.splice(i, 1);
+  renderModuleRows();
+}
+
+function saveSiteContent() {
+  const msg = document.getElementById('siteMsg');
+  const data = {
+    theme: {
+      accent: document.getElementById('themeAccent').value,
+      accentOrange: document.getElementById('themeAccentOrange').value,
+      bg: document.getElementById('themeBg').value
+    },
+    landing: {
+      heroTitlePrefix: document.getElementById('landingTitlePrefix').value,
+      heroHighlight: document.getElementById('landingHighlight').value,
+      heroSubtitle: document.getElementById('landingSubtitle').value
+    },
+    course: {
+      heroTitlePrefix: document.getElementById('courseTitlePrefix').value,
+      heroHighlight: document.getElementById('courseHighlight').value,
+      heroSubtitle: document.getElementById('courseSubtitle').value,
+      priceOld: document.getElementById('priceOld').value,
+      priceNew: document.getElementById('priceNew').value,
+      currency: document.getElementById('currency').value,
+      mentorName: document.getElementById('mentorName').value,
+      mentorBio: document.getElementById('mentorBio').value,
+      modules: moduleRows.filter(m => m.title.trim())
+    }
+  };
+  db.collection('siteContent').doc('main').set(data).then(() => {
+    msg.style.color = 'var(--success)';
+    msg.textContent = 'Site content saved. Changes are live immediately.';
+  }).catch(err => {
+    msg.style.color = 'var(--danger)';
+    msg.textContent = err.message;
+  });
+}
 
 function updateStats() {
   const total = allUsers.length;

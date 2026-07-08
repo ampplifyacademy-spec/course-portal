@@ -25,7 +25,10 @@
 <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-auth-compat.js"></script>
 <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore-compat.js"></script>
 <script src="js/firebase-config.js"></script>
+<script src="js/site-content.js"></script>
 <script>
+loadSiteContent();
+
 function sendReset() {
   const email = document.getElementById('email').value.trim();
   const msg = document.getElementById('msg');

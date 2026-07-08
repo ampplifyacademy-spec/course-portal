@@ -18,6 +18,11 @@ service cloud.firestore {
       allow write: if request.auth != null && isAdmin();
     }
 
+    match /siteContent/{docId} {
+      allow read: if true;
+      allow write: if request.auth != null && isAdmin();
+    }
+
     function isAdmin() {
       return request.auth.token.email in ['ampplifyacademy@gmail.com'];
     }

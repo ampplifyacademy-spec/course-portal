@@ -74,10 +74,10 @@
 
 <section class="chero">
   <span class="chero-badge">🚀 Trusted by 500+ Amazon sellers</span>
-  <h1>Build a Real Amazon Business — <span>Without the Guesswork</span></h1>
-  <p>A step-by-step Amazon Selling Course that takes you from zero to your first profitable product — sourcing, listings, ads, and scaling, all in one place.</p>
+  <h1 id="heroTitle">Build a Real Amazon Business — <span id="heroHighlight">Without the Guesswork</span></h1>
+  <p id="heroSubtitle">A step-by-step Amazon Selling Course that takes you from zero to your first profitable product — sourcing, listings, ads, and scaling, all in one place.</p>
   <div class="chero-ctas">
-    <button onclick="location.href='signup.html'">Enroll Now — 320 SAR</button>
+    <button onclick="location.href='signup.html'" id="heroEnrollBtn">Enroll Now — 320 SAR</button>
     <button class="secondary" onclick="document.getElementById('curriculum').scrollIntoView({behavior:'smooth'})">View Curriculum</button>
   </div>
   <img src="assets/instructor.png" alt="Instructor">
@@ -86,8 +86,8 @@
 <div class="instructor-strip">
   <div class="inner">
     <div class="eyebrow">MEET YOUR MENTOR</div>
-    <h3>Hey, I'm Yasin Arafat — Founder of Ampplify Academy</h3>
-    <p>I've spent the last 6 years selling on Amazon full-time. This course is everything I wish someone had handed me on day one — no fluff, just what actually works.</p>
+    <h3>Hey, I'm <span id="mentorName">Yasin Arafat</span> — Founder of Ampplify Academy</h3>
+    <p id="mentorBio">I've spent the last 6 years selling on Amazon full-time. This course is everything I wish someone had handed me on day one — no fluff, just what actually works.</p>
   </div>
 </div>
 
@@ -107,7 +107,7 @@
   <h2>One Price. Lifetime Access.</h2>
   <div class="pricing-card">
     <div class="eyebrow">FULL COURSE ACCESS</div>
-    <div class="price-row"><span class="price-old">1200 SAR</span><span class="price-new">320 SAR</span></div>
+    <div class="price-row"><span class="price-old" id="priceOld">1200 SAR</span><span class="price-new" id="priceNew">320 SAR</span></div>
     <div class="note">one-time payment, no subscriptions</div>
     <div class="price-features" id="priceFeatures"></div>
     <button onclick="location.href='signup.html'">Enroll Now</button>
@@ -122,18 +122,15 @@
 
 <div class="cta-band">
   <h3>Ready to start selling on Amazon?</h3>
-  <button onclick="location.href='signup.html'">Enroll Now — 320 SAR</button>
+  <button onclick="location.href='signup.html'" id="bandEnrollBtn">Enroll Now — 320 SAR</button>
 </div>
 
+<script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-app-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-auth-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore-compat.js"></script>
+<script src="js/firebase-config.js"></script>
+<script src="js/site-content.js"></script>
 <script>
-const modules = [
-  { num: '01', title: 'Amazon Seller Account Setup', desc: 'Register your seller account correctly the first time and avoid the common mistakes that get new sellers suspended.', duration: '45 min' },
-  { num: '02', title: 'Product Research & Sourcing', desc: 'Find profitable products with real demand, validate them with data, and source reliable suppliers.', duration: '1.5 hr' },
-  { num: '03', title: 'Listing Optimization & SEO', desc: 'Write titles, bullets, and images that rank and convert — using the same keyword process used for real listings.', duration: '1 hr' },
-  { num: '04', title: 'PPC Advertising Mastery', desc: 'Launch and optimize Sponsored Products campaigns without wasting your ad budget on guesswork.', duration: '2 hr' },
-  { num: '05', title: 'Inventory & FBA Logistics', desc: 'Plan shipments, avoid stockouts, and manage FBA fees so restocking never catches you off guard.', duration: '1 hr' },
-  { num: '06', title: 'Scaling to 6-Figures', desc: 'Systems and outsourcing strategies to grow past your first product without working more hours.', duration: '1.5 hr' }
-];
 const testimonials = [
   { name: 'Tanvir Ahmed', result: 'Strong growth by month 4', quote: "I had zero experience and launched my first product in three weeks. The PPC module alone paid for the course many times over." },
   { name: 'Priya Sharma', result: 'First sale within 30 days', quote: "Yasin Arafat explains things like a friend, not a professor. No fluff, just the exact steps I needed to follow." },
@@ -151,13 +148,26 @@ const priceFeatures = [
   'Listing & PPC swipe files', 'Lifetime updates to all content', '14-day money-back guarantee'
 ];
 
-document.getElementById('moduleGrid').innerHTML = modules.map(m => `
-  <div class="module-card">
-    <div class="module-num">${m.num}</div>
-    <h4>${m.title}</h4>
-    <p>${m.desc}</p>
-    <span>${m.duration}</span>
-  </div>`).join('');
+loadSiteContent().then(content => {
+  const c = content.course;
+  document.getElementById('heroTitle').firstChild.textContent = c.heroTitlePrefix + ' ';
+  document.getElementById('heroHighlight').textContent = c.heroHighlight;
+  document.getElementById('heroSubtitle').textContent = c.heroSubtitle;
+  document.getElementById('mentorName').textContent = c.mentorName;
+  document.getElementById('mentorBio').textContent = c.mentorBio;
+  document.getElementById('priceOld').textContent = c.priceOld + ' ' + c.currency;
+  document.getElementById('priceNew').textContent = c.priceNew + ' ' + c.currency;
+  document.getElementById('heroEnrollBtn').textContent = 'Enroll Now — ' + c.priceNew + ' ' + c.currency;
+  document.getElementById('bandEnrollBtn').textContent = 'Enroll Now — ' + c.priceNew + ' ' + c.currency;
+
+  document.getElementById('moduleGrid').innerHTML = c.modules.map((m, i) => `
+    <div class="module-card">
+      <div class="module-num">${String(i + 1).padStart(2, '0')}</div>
+      <h4>${m.title}</h4>
+      <p>${m.desc}</p>
+      <span>${m.duration}</span>
+    </div>`).join('');
+});
 
 document.getElementById('testimonialRow').innerHTML = testimonials.map(t => `
   <div class="testimonial-card">
