@@ -1,0 +1,180 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Amazon Selling Course · Ampplify Academy</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@500;600;700;800&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="css/style.css">
+<style>
+  body.course-page { display: block; padding: 0; }
+  .cnav { display: flex; align-items: center; justify-content: space-between; padding: 1.75rem 4rem; flex-wrap: wrap; gap: 1rem; }
+  .cnav-links { display: flex; gap: 2.25rem; font: 600 .95rem var(--font-body); color: var(--text-soft); }
+  .cnav button, .cta-band button { width: auto; margin-top: 0; }
+  .csection { padding: 5rem 4rem; }
+  .chero { position: relative; text-align: center; padding: 3.75rem 2rem 6rem; overflow: hidden; }
+  .chero::before { content: ''; position: absolute; top: -100px; left: 50%; transform: translateX(-50%); width: 900px; height: 600px; background: radial-gradient(circle, rgba(0,181,254,.3) 0%, rgba(0,181,254,0) 70%); z-index: 0; }
+  .chero > * { position: relative; z-index: 2; }
+  .chero-badge { display: inline-flex; align-items: center; gap: .5rem; background: var(--info-bg); border: 1px solid rgba(0,181,254,.3); color: var(--info); font: 600 .8rem var(--font-body); padding: .5rem 1rem; border-radius: 999px; margin-bottom: 1.5rem; }
+  .chero h1 { font-size: clamp(2.2rem, 5vw, 3.7rem); font-weight: 800; line-height: 1.1; max-width: 900px; margin: 0 auto 1.25rem; }
+  .chero h1 span { color: var(--accent-orange); }
+  .chero p { font-size: 1.1rem; color: var(--text-soft); max-width: 620px; margin: 0 auto 2.2rem; line-height: 1.6; }
+  .chero-ctas { display: flex; gap: 1rem; justify-content: center; flex-wrap: wrap; margin-bottom: 3.25rem; }
+  .chero-ctas button, .chero-ctas a.btn { width: auto; margin-top: 0; padding: 1rem 2rem; }
+  .chero img { width: 240px; height: 240px; object-fit: cover; border-radius: 50%; border: 4px solid rgba(0,181,254,.4); box-shadow: 0 30px 60px rgba(0,0,0,.5); }
+  .instructor-strip { padding: 3rem 4rem; display: flex; justify-content: center; }
+  .instructor-strip .inner { max-width: 720px; }
+  .instructor-strip .eyebrow { color: var(--accent-orange); font: 700 .85rem var(--font-display); margin-bottom: .5rem; }
+  .instructor-strip h3 { font-size: 1.6rem; margin-bottom: .6rem; }
+  .instructor-strip p { color: var(--text-soft); line-height: 1.7; }
+  .csection h2 { font-size: 2.1rem; text-align: center; margin-bottom: .6rem; }
+  .csection > p.lead { text-align: center; color: var(--text-soft); margin-bottom: 2.75rem; }
+  .module-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(260px, 1fr)); gap: 1.4rem; max-width: 1200px; margin: 0 auto; }
+  .module-card { background: var(--surface); border: 1px solid var(--border); border-radius: var(--radius); padding: 1.75rem; }
+  .module-num { width: 44px; height: 44px; border-radius: var(--radius-sm); background: var(--warning-bg); color: var(--accent-orange); display: flex; align-items: center; justify-content: center; font: 800 1.1rem var(--font-display); margin-bottom: 1rem; }
+  .module-card h4 { font-size: 1.05rem; margin-bottom: .5rem; }
+  .module-card p { color: var(--text-soft); font-size: .88rem; line-height: 1.6; margin-bottom: .75rem; }
+  .module-card span { color: var(--info); font: 600 .8rem var(--font-body); }
+  .testimonial-row { display: flex; gap: 1.4rem; max-width: 1200px; margin: 0 auto; overflow-x: auto; }
+  .testimonial-card { flex: 1; min-width: 300px; background: var(--surface); border: 1px solid var(--border); border-radius: var(--radius); padding: 1.75rem; }
+  .testimonial-card .stars { color: var(--accent-orange); margin-bottom: .75rem; }
+  .testimonial-card p { font-size: .92rem; line-height: 1.7; color: #d4d9e6; margin-bottom: 1.1rem; }
+  .testimonial-card .tname { font: 700 .95rem var(--font-display); }
+  .testimonial-card .tresult { color: var(--info); font-size: .82rem; }
+  .pricing-wrap { text-align: center; }
+  .pricing-card { max-width: 460px; margin: 0 auto; background: linear-gradient(180deg, var(--surface), #0d1120); border: 1.5px solid rgba(255,153,0,.4); border-radius: var(--radius-lg); padding: 2.5rem; box-shadow: 0 30px 60px rgba(0,0,0,.4); }
+  .pricing-card .eyebrow { color: var(--accent-orange); font: 700 .85rem var(--font-display); margin-bottom: .5rem; }
+  .price-row { display: flex; align-items: baseline; justify-content: center; gap: .75rem; margin-bottom: .3rem; }
+  .price-old { text-decoration: line-through; color: var(--text-faint); font-size: 1.4rem; font-weight: 700; }
+  .price-new { font-size: 3.2rem; font-weight: 800; }
+  .pricing-card .note { color: var(--text-muted); font-size: .85rem; margin-bottom: 1.75rem; }
+  .price-features { text-align: left; display: flex; flex-direction: column; gap: .75rem; margin-bottom: 1.75rem; }
+  .price-features div { display: flex; gap: .6rem; align-items: flex-start; font-size: .92rem; color: #d4d9e6; }
+  .price-features span { color: var(--accent); }
+  .faq-wrap { max-width: 760px; margin: 0 auto; display: flex; flex-direction: column; gap: .9rem; }
+  details { background: var(--surface); border: 1px solid var(--border); border-radius: var(--radius-sm); padding: 1.25rem 1.5rem; }
+  details > summary { cursor: pointer; list-style: none; font: 700 1rem var(--font-display); display: flex; justify-content: space-between; }
+  details > summary::-webkit-details-marker { display: none; }
+  details summary span { color: var(--info); }
+  details p { color: var(--text-soft); font-size: .92rem; line-height: 1.7; margin-top: .9rem; }
+  .cta-band { background: linear-gradient(135deg, rgba(0,181,254,.13), rgba(253,125,1,.13)); padding: 3.5rem 4rem; text-align: center; }
+  .cta-band h3 { font-size: 1.9rem; margin-bottom: .75rem; }
+  .cta-band button { width: auto; margin: 0 auto; padding: 1rem 2.25rem; }
+  @media (max-width: 760px) { .cnav, .csection { padding-left: 1.5rem; padding-right: 1.5rem; } .cnav-links { display: none; } }
+</style>
+</head>
+<body class="course-page">
+
+<nav class="cnav">
+  <span class="brand"><span class="a">A</span>mpplify Academy</span>
+  <div class="cnav-links"><span>Curriculum</span><span>Reviews</span><span>Pricing</span><span>FAQ</span></div>
+  <button onclick="location.href='signup.html'">Enroll Now</button>
+</nav>
+
+<section class="chero">
+  <span class="chero-badge">🚀 Trusted by 500+ Amazon sellers</span>
+  <h1>Build a Real Amazon Business — <span>Without the Guesswork</span></h1>
+  <p>A step-by-step Amazon Selling Course that takes you from zero to your first profitable product — sourcing, listings, ads, and scaling, all in one place.</p>
+  <div class="chero-ctas">
+    <button onclick="location.href='signup.html'">Enroll Now — 320 SAR</button>
+    <button class="secondary" onclick="document.getElementById('curriculum').scrollIntoView({behavior:'smooth'})">View Curriculum</button>
+  </div>
+  <img src="assets/instructor.png" alt="Instructor">
+</section>
+
+<div class="instructor-strip">
+  <div class="inner">
+    <div class="eyebrow">MEET YOUR INSTRUCTOR</div>
+    <h3>Hey, I'm Rafi 👋 — Founder of Ampplify Academy</h3>
+    <p>I've spent the last 6 years selling on Amazon full-time. This course is everything I wish someone had handed me on day one — no fluff, just what actually works.</p>
+  </div>
+</div>
+
+<section class="csection" id="curriculum">
+  <h2>What You'll Learn</h2>
+  <p class="lead">6 modules. Lifetime access. Real templates and tools included.</p>
+  <div class="module-grid" id="moduleGrid"></div>
+</section>
+
+<section class="csection" style="background:#0d1120;">
+  <h2>Real Results From Real Students</h2>
+  <p class="lead">&nbsp;</p>
+  <div class="testimonial-row" id="testimonialRow"></div>
+</section>
+
+<section class="csection pricing-wrap" id="pricing">
+  <h2>One Price. Lifetime Access.</h2>
+  <div class="pricing-card">
+    <div class="eyebrow">FULL COURSE ACCESS</div>
+    <div class="price-row"><span class="price-old">1200 SAR</span><span class="price-new">320 SAR</span></div>
+    <div class="note">one-time payment, no subscriptions</div>
+    <div class="price-features" id="priceFeatures"></div>
+    <button onclick="location.href='signup.html'">Enroll Now</button>
+  </div>
+</section>
+
+<section class="csection" id="faq">
+  <h2>Questions? Answered.</h2>
+  <p class="lead">&nbsp;</p>
+  <div class="faq-wrap" id="faqWrap"></div>
+</section>
+
+<div class="cta-band">
+  <h3>Ready to start selling on Amazon?</h3>
+  <button onclick="location.href='signup.html'">Enroll Now — 320 SAR</button>
+</div>
+
+<script>
+const modules = [
+  { num: '01', title: 'Amazon Seller Account Setup', desc: 'Register your seller account correctly the first time and avoid the common mistakes that get new sellers suspended.', duration: '45 min' },
+  { num: '02', title: 'Product Research & Sourcing', desc: 'Find profitable products with real demand, validate them with data, and source reliable suppliers.', duration: '1.5 hr' },
+  { num: '03', title: 'Listing Optimization & SEO', desc: 'Write titles, bullets, and images that rank and convert — using the same keyword process used for real listings.', duration: '1 hr' },
+  { num: '04', title: 'PPC Advertising Mastery', desc: 'Launch and optimize Sponsored Products campaigns without wasting your ad budget on guesswork.', duration: '2 hr' },
+  { num: '05', title: 'Inventory & FBA Logistics', desc: 'Plan shipments, avoid stockouts, and manage FBA fees so restocking never catches you off guard.', duration: '1 hr' },
+  { num: '06', title: 'Scaling to 6-Figures', desc: 'Systems and outsourcing strategies to grow past your first product without working more hours.', duration: '1.5 hr' }
+];
+const testimonials = [
+  { name: 'Tanvir Ahmed', result: 'Strong growth by month 4', quote: "I had zero experience and launched my first product in three weeks. The PPC module alone paid for the course many times over." },
+  { name: 'Priya Sharma', result: 'First sale within 30 days', quote: "Rafi explains things like a friend, not a professor. No fluff, just the exact steps I needed to follow." },
+  { name: 'Michael Chen', result: 'Scaled to 3 products', quote: "The sourcing framework saved me from two bad supplier deals before I even spent a dollar. Worth every penny." }
+];
+const faqs = [
+  { q: 'Do I need any experience to start?', a: 'None at all. The course starts from zero and assumes you have never sold on Amazon before.' },
+  { q: 'How long do I have access?', a: 'Lifetime. Pay once and keep access to all current and future module updates.' },
+  { q: 'How much money do I need to start selling?', a: 'We cover budget-friendly sourcing strategies — most students start with a modest initial inventory budget.' },
+  { q: 'Is there support if I get stuck?', a: 'Yes — every student gets access to a private community where Rafi answers questions directly.' },
+  { q: "What if the course isn't for me?", a: "There's a 14-day money-back guarantee, no questions asked." }
+];
+const priceFeatures = [
+  '6 in-depth video modules', 'Product research spreadsheet templates', 'Private student community access',
+  'Listing & PPC swipe files', 'Lifetime updates to all content', '14-day money-back guarantee'
+];
+
+document.getElementById('moduleGrid').innerHTML = modules.map(m => `
+  <div class="module-card">
+    <div class="module-num">${m.num}</div>
+    <h4>${m.title}</h4>
+    <p>${m.desc}</p>
+    <span>${m.duration}</span>
+  </div>`).join('');
+
+document.getElementById('testimonialRow').innerHTML = testimonials.map(t => `
+  <div class="testimonial-card">
+    <div class="stars">★★★★★</div>
+    <p>"${t.quote}"</p>
+    <div class="tname">${t.name}</div>
+    <div class="tresult">${t.result}</div>
+  </div>`).join('');
+
+document.getElementById('faqWrap').innerHTML = faqs.map(q => `
+  <details>
+    <summary>${q.q}<span>+</span></summary>
+    <p>${q.a}</p>
+  </details>`).join('');
+
+document.getElementById('priceFeatures').innerHTML = priceFeatures.map(f => `
+  <div><span>✓</span>${f}</div>`).join('');
+</script>
+</body>
+</html>
