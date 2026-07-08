@@ -26,18 +26,20 @@ auth.onAuthStateChanged(user => {
       location.href = 'login.html';
       return;
     }
-    loadCourses();
+    loadCourses(doc.data().blockedCourses || []);
   });
 });
 
-function loadCourses() {
+function loadCourses(blockedCourses) {
   db.collection('courses').get().then(snap => {
     const list = document.getElementById('courseList');
-    if (snap.empty) {
+    const visible = snap.docs.filter(doc => !blockedCourses.includes(doc.id));
+    if (visible.length === 0) {
       list.innerHTML = '<li>এখনো কোনো কোর্স যোগ করা হয়নি।</li>';
       return;
     }
-    snap.forEach(doc => {
+    list.innerHTML = '';
+    visible.forEach(doc => {
       const c = doc.data();
       const li = document.createElement('li');
       li.innerHTML = `<span>${c.name}</span><a href="${c.driveLink}" target="_blank"><button style="width:auto;">দেখো</button></a>`;

@@ -1,16 +1,40 @@
 <!DOCTYPE html>
-<html lang="bn">
+<html lang="en">
 <head>
 <meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
 <title>Course Portal</title>
 <link rel="stylesheet" href="css/style.css">
 </head>
-<body>
-<div class="card">
-  <h1>আমাদের কোর্স</h1>
-  <p style="margin-bottom:1rem; color:#aaa;">কোর্স দেখতে লগইন করো। নতুন হলে সাইনআপ করো, ব্যাংকে টাকা পাঠাও, আমরা approve করলে access পাবা।</p>
-  <button onclick="location.href='login.html'">লগইন</button>
-  <button class="secondary" onclick="location.href='signup.html'">সাইনআপ</button>
+<body class="landing">
+<div class="hero">
+  <span class="badge">ONLINE COURSES</span>
+  <h1>Learn skills that <span>actually pay off</span></h1>
+  <p class="subtitle">Get access to our full course library on Google Drive. Sign up, complete your payment, and we'll approve your account so you can start learning.</p>
+  <div class="cta-row">
+    <button onclick="location.href='login.html'" style="background:#4f7cff;">Log In</button>
+    <button class="secondary" onclick="location.href='signup.html'">Sign Up</button>
+  </div>
+
+  <div class="features">
+    <div class="feature">
+      <div class="icon">🎓</div>
+      <h3>Full Course Access</h3>
+      <p>Once approved, view every course we offer directly from Google Drive.</p>
+    </div>
+    <div class="feature">
+      <div class="icon">✅</div>
+      <h3>Manual Approval</h3>
+      <p>Pay via bank transfer, submit your transaction ID, and we'll verify and approve you.</p>
+    </div>
+    <div class="feature">
+      <div class="icon">🔒</div>
+      <h3>Secure Accounts</h3>
+      <p>Your login is protected — passwords are never stored in plain text.</p>
+    </div>
+  </div>
+
+  <p class="footer-note">© 2026 Course Portal. All rights reserved.</p>
 </div>
 </body>
 </html>

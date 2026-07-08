@@ -14,7 +14,7 @@
 
   <h2 style="margin-top:1rem;">ইউজার রিকোয়েস্ট</h2>
   <table>
-    <thead><tr><th>নাম</th><th>ইমেইল</th><th>Txn ID</th><th>স্ট্যাটাস</th><th>একশন</th></tr></thead>
+    <thead><tr><th>নাম</th><th>ইমেইল</th><th>Txn ID</th><th>স্ট্যাটাস</th><th>একশন</th><th>কোর্স এক্সেস</th></tr></thead>
     <tbody id="userRows"></tbody>
   </table>
 
@@ -33,13 +33,14 @@
 <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore-compat.js"></script>
 <script src="js/firebase-config.js"></script>
 <script>
+let allCourses = [];
+
 auth.onAuthStateChanged(user => {
   if (!user || !ADMIN_EMAILS.includes(user.email)) {
     location.href = 'login.html';
     return;
   }
-  loadUsers();
-  loadCourses();
+  loadCourses().then(loadUsers);
 });
 
 function loadUsers() {
@@ -48,7 +49,18 @@ function loadUsers() {
     rows.innerHTML = '';
     snap.forEach(doc => {
       const u = doc.data();
+      const blocked = u.blockedCourses || [];
       const tr = document.createElement('tr');
+
+      let accessHtml = '<span style="color:#666;">—</span>';
+      if (u.status === 'approved' && allCourses.length) {
+        accessHtml = '<ul class="course-access-list">' + allCourses.map(c => {
+          const isBlocked = blocked.includes(c.id);
+          return `<li><span>${c.name}</span>
+            <button class="${isBlocked ? '' : 'danger'}" onclick="toggleCourseAccess('${doc.id}','${c.id}',${isBlocked})">${isBlocked ? 'Restore' : 'Remove'}</button></li>`;
+        }).join('') + '</ul>';
+      }
+
       tr.innerHTML = `
         <td>${u.name || ''}</td>
         <td>${u.email}</td>
@@ -57,7 +69,8 @@ function loadUsers() {
         <td>
           <button style="width:auto;" onclick="setStatus('${doc.id}','approved')">Approve</button>
           <button class="danger" style="width:auto;" onclick="setStatus('${doc.id}','rejected')">Reject</button>
-        </td>`;
+        </td>
+        <td>${accessHtml}</td>`;
       rows.appendChild(tr);
     });
   });
@@ -65,6 +78,13 @@ function loadUsers() {
 
 function setStatus(uid, status) {
   db.collection('users').doc(uid).update({ status }).then(loadUsers);
+}
+
+function toggleCourseAccess(uid, courseId, currentlyBlocked) {
+  const op = currentlyBlocked
+    ? firebase.firestore.FieldValue.arrayRemove(courseId)
+    : firebase.firestore.FieldValue.arrayUnion(courseId);
+  db.collection('users').doc(uid).update({ blockedCourses: op }).then(loadUsers);
 }
 
 function addCourse() {
@@ -77,16 +97,18 @@ function addCourse() {
     document.getElementById('driveLink').value = '';
     msg.style.color = '#4fdc7c';
     msg.textContent = "কোর্স যোগ হয়েছে";
-    loadCourses();
+    loadCourses().then(loadUsers);
   });
 }
 
 function loadCourses() {
-  db.collection('courses').get().then(snap => {
+  return db.collection('courses').get().then(snap => {
+    allCourses = [];
     const list = document.getElementById('courseList');
     list.innerHTML = '';
     snap.forEach(doc => {
       const c = doc.data();
+      allCourses.push({ id: doc.id, name: c.name });
       const li = document.createElement('li');
       li.innerHTML = `<span>${c.name}</span><button class="danger" style="width:auto;" onclick="deleteCourse('${doc.id}')">মুছো</button>`;
       list.appendChild(li);
@@ -95,7 +117,7 @@ function loadCourses() {
 }
 
 function deleteCourse(id) {
-  db.collection('courses').doc(id).delete().then(loadCourses);
+  db.collection('courses').doc(id).delete().then(() => loadCourses().then(loadUsers));
 }
 
 function doLogout() {
