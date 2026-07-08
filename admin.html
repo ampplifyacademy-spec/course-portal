@@ -227,6 +227,12 @@ function loadSiteContentIntoForm() {
     document.getElementById('mentorBio').value = content.course.mentorBio;
 
     moduleRows = content.course.modules.map(m => Object.assign({}, m));
+    return db.collection('courseContent').doc('main').get();
+  }).then(doc => {
+    const privateModules = (doc.exists && doc.data().modules) || [];
+    moduleRows.forEach((m, i) => {
+      m.lessonLinks = (privateModules[i] && privateModules[i].lessonLinks) || [];
+    });
     renderModuleRows();
   });
 }
@@ -250,6 +256,20 @@ function renderModuleRows() {
             <input type="checkbox" style="width:auto; margin:0;" ${m.published !== false ? 'checked' : ''} onchange="moduleRows[${i}].published = this.checked">
             Published
           </label>
+
+          <div style="border-top:1px solid var(--border); margin-top:1rem; padding-top:1rem;">
+            <div class="row-top" style="margin-bottom:.6rem;">
+              <span style="font-size:.85rem;">Lessons (private, students only)</span>
+              <button onclick="addLessonLink(${i})">+ Add Lesson</button>
+            </div>
+            ${(m.lessonLinks || []).map((l, li) => `
+              <div style="display:grid; grid-template-columns:1fr 1.4fr auto; gap:.5rem; margin-bottom:.5rem; align-items:center;">
+                <input placeholder="Lesson title" value="${(l.title || '').replace(/"/g, '&quot;')}" oninput="moduleRows[${i}].lessonLinks[${li}].title = this.value" style="margin:0;">
+                <input placeholder="Google Drive link" value="${(l.driveLink || '').replace(/"/g, '&quot;')}" oninput="moduleRows[${i}].lessonLinks[${li}].driveLink = this.value" style="margin:0;">
+                <button class="danger" onclick="removeLessonLink(${i},${li})">✕</button>
+              </div>`).join('') || '<p style="color:var(--text-faint); font-size:.82rem;">No lessons added yet.</p>'}
+          </div>
+
           <button class="danger" onclick="removeModuleRow(${i})">Remove Module</button>
         </div>`;
     }
@@ -268,7 +288,7 @@ function renderModuleRows() {
 }
 
 function addModuleRow() {
-  moduleRows.push({ title: '', desc: '', duration: '', lessons: '', published: true });
+  moduleRows.push({ title: '', desc: '', duration: '', lessons: '', published: true, lessonLinks: [] });
   editingModuleIndex = moduleRows.length - 1;
   renderModuleRows();
 }
@@ -276,6 +296,17 @@ function addModuleRow() {
 function removeModuleRow(i) {
   moduleRows.splice(i, 1);
   editingModuleIndex = null;
+  renderModuleRows();
+}
+
+function addLessonLink(i) {
+  if (!moduleRows[i].lessonLinks) moduleRows[i].lessonLinks = [];
+  moduleRows[i].lessonLinks.push({ title: '', driveLink: '' });
+  renderModuleRows();
+}
+
+function removeLessonLink(i, li) {
+  moduleRows[i].lessonLinks.splice(li, 1);
   renderModuleRows();
 }
 
@@ -301,7 +332,7 @@ function saveSiteContent() {
       currency: document.getElementById('currency').value,
       mentorName: document.getElementById('mentorName').value,
       mentorBio: document.getElementById('mentorBio').value,
-      modules: moduleRows.filter(m => m.title.trim())
+      modules: publicModulesOnly()
     }
   };
   db.collection('siteContent').doc('main').set(data).then(() => {
@@ -313,10 +344,23 @@ function saveSiteContent() {
   });
 }
 
+function publicModulesOnly() {
+  return moduleRows.filter(m => m.title.trim()).map(m => ({
+    title: m.title, desc: m.desc, duration: m.duration, lessons: m.lessons, published: m.published !== false
+  }));
+}
+
 function saveModules() {
   const msg = document.getElementById('modulesMsg');
-  const modules = moduleRows.filter(m => m.title.trim());
-  db.collection('siteContent').doc('main').set({ course: { modules } }, { merge: true }).then(() => {
+  const publicModules = publicModulesOnly();
+  const privateModules = moduleRows.filter(m => m.title.trim()).map(m => ({
+    title: m.title,
+    lessonLinks: (m.lessonLinks || []).filter(l => l.title.trim() && l.driveLink.trim())
+  }));
+  Promise.all([
+    db.collection('siteContent').doc('main').set({ course: { modules: publicModules } }, { merge: true }),
+    db.collection('courseContent').doc('main').set({ modules: privateModules })
+  ]).then(() => {
     msg.style.color = 'var(--success)';
     msg.textContent = 'Modules saved. Changes are live immediately.';
   }).catch(err => {

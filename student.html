@@ -7,6 +7,14 @@
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@500;600;700;800&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
 <link rel="stylesheet" href="css/style.css">
+<style>
+  .curriculum-item { background: var(--surface); border: 1px solid var(--border); border-radius: var(--radius-sm); margin-bottom: .6rem; overflow: hidden; }
+  .curriculum-item summary { cursor: pointer; list-style: none; padding: 1rem 1.1rem; font-weight: 700; display: flex; justify-content: space-between; align-items: center; }
+  .curriculum-item summary::-webkit-details-marker { display: none; }
+  .curriculum-item .lesson-list { padding: 0 1.1rem 1rem; }
+  .curriculum-item .lesson-row { display: flex; justify-content: space-between; align-items: center; padding: .6rem 0; border-top: 1px solid var(--border); font-size: .9rem; }
+  .curriculum-item .lesson-row a button { width: auto; margin: 0; padding: .4rem .9rem; font-size: .82rem; }
+</style>
 </head>
 <body>
 <div class="card wide">
@@ -16,6 +24,9 @@
     <button class="secondary" onclick="doLogout()">Log Out</button>
   </div>
   <ul class="course-list" id="courseList"></ul>
+
+  <h2 style="margin-top:1.75rem;">Course Curriculum</h2>
+  <div id="curriculumWrap" style="margin-top:.75rem;"></div>
 </div>
 
 <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-app-compat.js"></script>
@@ -39,9 +50,34 @@ auth.onAuthStateChanged(user => {
       return;
     }
     loadCourses(doc.data().blockedCourses || []);
+    loadCurriculum();
     watchSession(user.uid, mySession);
   });
 });
+
+function loadCurriculum() {
+  db.collection('courseContent').doc('main').get().then(doc => {
+    const wrap = document.getElementById('curriculumWrap');
+    const modules = doc.exists ? (doc.data().modules || []) : [];
+    if (!modules.length) {
+      wrap.innerHTML = '<p style="color:var(--text-faint); font-size:.9rem;">No lessons added yet.</p>';
+      return;
+    }
+    wrap.innerHTML = modules.map(m => `
+      <details class="curriculum-item">
+        <summary>${m.title}</summary>
+        <div class="lesson-list">
+          ${(m.lessonLinks && m.lessonLinks.length)
+            ? m.lessonLinks.map(l => `
+                <div class="lesson-row">
+                  <span>${l.title}</span>
+                  <a href="${l.driveLink}" target="_blank"><button>Watch</button></a>
+                </div>`).join('')
+            : '<p style="color:var(--text-faint); font-size:.85rem; padding-top:.6rem;">No lessons added yet.</p>'}
+        </div>
+      </details>`).join('');
+  });
+}
 
 function watchSession(uid, mySession) {
   db.collection('users').doc(uid).onSnapshot(doc => {
