@@ -26,9 +26,28 @@ auth.onAuthStateChanged(user => {
       location.href = 'login.html';
       return;
     }
+    const mySession = localStorage.getItem('session_' + user.uid);
+    if (doc.data().currentSessionId && doc.data().currentSessionId !== mySession) {
+      kickOut(user.uid);
+      return;
+    }
     loadCourses(doc.data().blockedCourses || []);
+    watchSession(user.uid, mySession);
   });
 });
+
+function watchSession(uid, mySession) {
+  db.collection('users').doc(uid).onSnapshot(doc => {
+    if (doc.exists && doc.data().currentSessionId && doc.data().currentSessionId !== mySession) {
+      kickOut(uid);
+    }
+  });
+}
+
+function kickOut(uid) {
+  alert('তোমার অ্যাকাউন্ট অন্য একটি ডিভাইসে লগইন করা হয়েছে। নিরাপত্তার জন্য এই ডিভাইস থেকে লগআউট করা হলো।');
+  auth.signOut().then(() => location.href = 'login.html');
+}
 
 function loadCourses(blockedCourses) {
   db.collection('courses').get().then(snap => {

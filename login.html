@@ -35,7 +35,11 @@ function doLogin() {
       return db.collection('users').doc(cred.user.uid).get().then(doc => {
         const status = doc.exists ? doc.data().status : 'pending';
         if (status === 'approved') {
-          location.href = 'student.html';
+          const sessionId = crypto.randomUUID();
+          return db.collection('users').doc(cred.user.uid).update({ currentSessionId: sessionId }).then(() => {
+            localStorage.setItem('session_' + cred.user.uid, sessionId);
+            location.href = 'student.html';
+          });
         } else if (status === 'rejected') {
           msg.textContent = "তোমার অ্যাকাউন্ট reject হয়েছে। এডমিনের সাথে যোগাযোগ করো।";
           auth.signOut();
