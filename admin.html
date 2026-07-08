@@ -31,8 +31,7 @@
     <span class="brand"><span class="a">A</span>mpplify Admin</span>
     <div class="nav-item active" data-tab="overview" onclick="switchTab('overview')"><span>📊</span><span>Overview</span></div>
     <div class="nav-item" data-tab="students" onclick="switchTab('students')"><span>👥</span><span>Students</span></div>
-    <div class="nav-item" data-tab="courses" onclick="switchTab('courses')"><span>🎓</span><span>Courses</span></div>
-    <div class="nav-item" data-tab="modules" onclick="switchTab('modules')"><span>🧩</span><span>Modules</span></div>
+    <div class="nav-item" data-tab="modules" onclick="switchTab('modules')"><span>🎓</span><span>Modules</span></div>
     <div class="nav-item" data-tab="payments" onclick="switchTab('payments')"><span>💳</span><span>Payments</span></div>
     <div class="nav-item" data-tab="site" onclick="switchTab('site')"><span>🎨</span><span>Site Content</span></div>
     <div class="sidebar-footer">
@@ -81,21 +80,6 @@
           <thead><tr><th>Name</th><th>Email</th><th>Enrolled</th><th>Amount</th><th>Status</th><th>Action</th><th>Course Access</th></tr></thead>
           <tbody id="userRows"></tbody>
         </table>
-      </div>
-    </div>
-
-    <!-- COURSES -->
-    <div class="tab-section" id="tab-courses">
-      <div class="panel" style="margin-bottom:1.5rem;">
-        <h2 style="margin-bottom:1rem;">Add Course</h2>
-        <input id="courseName" placeholder="Course name">
-        <input id="driveLink" placeholder="Google Drive link (unlisted)">
-        <button onclick="addCourse()">Add Course</button>
-        <p class="msg" id="courseMsg"></p>
-      </div>
-      <div class="panel">
-        <h2 style="margin-bottom:1rem;">Current Courses</h2>
-        <ul class="course-list" id="courseList"></ul>
       </div>
     </div>
 
@@ -183,7 +167,6 @@ let moduleRows = [];
 const TAB_META = {
   overview: ['Dashboard Overview', "Here's what's happening with Ampplify Academy today."],
   students: ['Students', 'Manage enrolled students and their course access.'],
-  courses: ['Courses', 'Manage the courses available to approved students.'],
   modules: ['Courses & Modules', 'Manage your Amazon Selling Course content.'],
   payments: ['Payments', 'Track revenue and order history.'],
   site: ['Site Content', 'Edit colors, text, and pricing shown on the public site.']
@@ -203,9 +186,17 @@ auth.onAuthStateChanged(user => {
     return;
   }
   document.getElementById('adminAvatar').textContent = user.email.charAt(0).toUpperCase();
-  loadCourses().then(loadUsers);
+  loadModulesForAccess().then(loadUsers);
   loadSiteContentIntoForm();
 });
+
+function loadModulesForAccess() {
+  return loadSiteContent().then(content => {
+    allCourses = content.course.modules
+      .filter(m => m.published !== false)
+      .map((m, i) => ({ id: 'mod-' + i, name: m.title }));
+  });
+}
 
 function loadSiteContentIntoForm() {
   loadSiteContent().then(content => {
@@ -232,6 +223,7 @@ function loadSiteContentIntoForm() {
     const privateModules = (doc.exists && doc.data().modules) || [];
     moduleRows.forEach((m, i) => {
       m.lessonLinks = (privateModules[i] && privateModules[i].lessonLinks) || [];
+      m.driveLink = (privateModules[i] && privateModules[i].driveLink) || '';
     });
     renderModuleRows();
   });
@@ -252,6 +244,7 @@ function renderModuleRows() {
             <input placeholder="Lessons (e.g. 4)" value="${m.lessons || ''}" oninput="moduleRows[${i}].lessons = this.value">
             <input placeholder="Duration (e.g. 45 min)" value="${(m.duration || '').replace(/"/g, '&quot;')}" oninput="moduleRows[${i}].duration = this.value">
           </div>
+          <input placeholder="Google Drive link (private, students only — for a single-video class)" value="${(m.driveLink || '').replace(/"/g, '&quot;')}" oninput="moduleRows[${i}].driveLink = this.value">
           <label style="display:flex; align-items:center; gap:.4rem; font-size:.85rem; color:var(--text-soft);">
             <input type="checkbox" style="width:auto; margin:0;" ${m.published !== false ? 'checked' : ''} onchange="moduleRows[${i}].published = this.checked">
             Published
@@ -259,7 +252,7 @@ function renderModuleRows() {
 
           <div style="border-top:1px solid var(--border); margin-top:1rem; padding-top:1rem;">
             <div class="row-top" style="margin-bottom:.6rem;">
-              <span style="font-size:.85rem;">Lessons (private, students only)</span>
+              <span style="font-size:.85rem;">Or break into multiple lessons (optional)</span>
               <button onclick="addLessonLink(${i})">+ Add Lesson</button>
             </div>
             ${(m.lessonLinks || []).map((l, li) => `
@@ -289,7 +282,7 @@ function renderModuleRows() {
 }
 
 function addModuleRow() {
-  moduleRows.push({ title: '', desc: '', duration: '', lessons: '', published: true, lessonLinks: [] });
+  moduleRows.push({ title: '', desc: '', duration: '', lessons: '', published: true, driveLink: '', lessonLinks: [] });
   editingModuleIndex = moduleRows.length - 1;
   renderModuleRows();
 }
@@ -356,6 +349,7 @@ function saveModules() {
   const publicModules = publicModulesOnly();
   const privateModules = moduleRows.filter(m => m.title.trim()).map(m => ({
     title: m.title,
+    driveLink: m.driveLink || '',
     lessonLinks: (m.lessonLinks || []).filter(l => l.title.trim() && l.driveLink.trim()).map(l => ({
       title: l.title, driveLink: l.driveLink, duration: l.duration || ''
     }))
@@ -364,6 +358,7 @@ function saveModules() {
     db.collection('siteContent').doc('main').set({ course: { modules: publicModules } }, { merge: true }),
     db.collection('courseContent').doc('main').set({ modules: privateModules })
   ]).then(() => {
+    loadModulesForAccess().then(loadUsers);
     msg.style.color = 'var(--success)';
     msg.textContent = 'Modules saved. Changes are live immediately.';
   }).catch(err => {
@@ -554,40 +549,6 @@ function toggleCourseAccess(uid, courseId, currentlyBlocked) {
     ? firebase.firestore.FieldValue.arrayRemove(courseId)
     : firebase.firestore.FieldValue.arrayUnion(courseId);
   db.collection('users').doc(uid).update({ blockedCourses: op }).then(loadUsers);
-}
-
-function addCourse() {
-  const name = document.getElementById('courseName').value.trim();
-  const driveLink = document.getElementById('driveLink').value.trim();
-  const msg = document.getElementById('courseMsg');
-  if (!name || !driveLink) { msg.textContent = "Please enter both name and link"; return; }
-  db.collection('courses').add({ name, driveLink }).then(() => {
-    document.getElementById('courseName').value = '';
-    document.getElementById('driveLink').value = '';
-    msg.style.color = 'var(--success)';
-    msg.textContent = "Course added";
-    loadCourses().then(loadUsers);
-  });
-}
-
-function loadCourses() {
-  return db.collection('courses').get().then(snap => {
-    allCourses = [];
-    const list = document.getElementById('courseList');
-    list.innerHTML = '';
-    snap.forEach(doc => {
-      const c = doc.data();
-      allCourses.push({ id: doc.id, name: c.name });
-      const li = document.createElement('li');
-      li.innerHTML = `<span>${c.name}</span><button class="danger" onclick="deleteCourse('${doc.id}')">Delete</button>`;
-      list.appendChild(li);
-    });
-    updateStats();
-  });
-}
-
-function deleteCourse(id) {
-  db.collection('courses').doc(id).delete().then(() => loadCourses().then(loadUsers));
 }
 
 function doLogout() {

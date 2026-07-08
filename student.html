@@ -93,18 +93,20 @@ function kickOut(uid) {
 }
 
 function loadCourses(blockedCourses) {
-  db.collection('courses').get().then(snap => {
+  db.collection('courseContent').doc('main').get().then(doc => {
     const list = document.getElementById('courseList');
-    const visible = snap.docs.filter(doc => !blockedCourses.includes(doc.id));
+    const modules = doc.exists ? (doc.data().modules || []) : [];
+    const visible = modules
+      .map((m, i) => Object.assign({ id: 'mod-' + i }, m))
+      .filter(m => m.driveLink && !blockedCourses.includes(m.id));
     if (visible.length === 0) {
       list.innerHTML = '<li>No courses available yet.</li>';
       return;
     }
     list.innerHTML = '';
-    visible.forEach(doc => {
-      const c = doc.data();
+    visible.forEach(m => {
       const li = document.createElement('li');
-      li.innerHTML = `<span>${c.name}</span><a href="${c.driveLink}" target="_blank"><button>View</button></a>`;
+      li.innerHTML = `<span>${m.title}</span><a href="${m.driveLink}" target="_blank"><button>View</button></a>`;
       list.appendChild(li);
     });
   });
