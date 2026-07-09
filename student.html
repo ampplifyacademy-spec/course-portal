@@ -120,36 +120,22 @@ auth.onAuthStateChanged(user => {
 let expandedGroups = {};
 
 function loadAllBatches(blockedCourses) {
-  Promise.all([
-    db.collection('courseContent').doc('main').get(),
-    db.collection('batches').orderBy('createdAt', 'asc').get()
-  ]).then(([contentDoc, batchesSnap]) => {
+  db.collection('courseContent').doc('main').get().then(contentDoc => {
     const modules = contentDoc.exists ? (contentDoc.data().modules || []) : [];
-    const batchNames = {};
-    batchesSnap.forEach(b => batchNames[b.id] = b.data().name);
 
-    const groups = {};
-    const order = [];
-    modules.forEach((m, i) => {
-      const key = m.batchId || '_general';
-      if (!groups[key]) {
-        groups[key] = { name: m.batchId ? (batchNames[m.batchId] || 'Batch') : 'General', classes: [] };
-        order.push(key);
-      }
+    const folders = modules.map((m, i) => {
+      const classes = [];
       if (m.lessonLinks && m.lessonLinks.length) {
         m.lessonLinks.forEach((l, j) => {
-          groups[key].classes.push({ id: 'mod-' + i + '-lesson-' + j, title: l.title, meta: l.duration || '', driveLink: l.driveLink });
+          classes.push({ id: 'mod-' + i + '-lesson-' + j, title: l.title, meta: l.duration || '', driveLink: l.driveLink });
         });
       } else if (m.driveLink) {
-        groups[key].classes.push({ id: 'mod-' + i, title: m.title, meta: m.duration || '', driveLink: m.driveLink });
+        classes.push({ id: 'mod-' + i, title: m.title, meta: m.duration || '', driveLink: m.driveLink });
       }
+      return { key: 'mod-' + i, name: m.title || ('Module ' + (i + 1)), classes: classes.filter(c => !blockedCourses.includes(c.id)) };
     });
 
-    order.forEach(key => {
-      groups[key].classes = groups[key].classes.filter(c => !blockedCourses.includes(c.id));
-    });
-
-    renderBatches(order.map(key => Object.assign({ key }, groups[key])));
+    renderBatches(folders);
   });
 }
 
