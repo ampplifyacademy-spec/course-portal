@@ -42,9 +42,9 @@
 
   <div class="sidebar">
     <span class="brand"><span class="a">A</span>mpplify Academy</span>
-    <div class="nav-item active"><span>🏠</span><span>Dashboard</span></div>
-    <div class="nav-item" onclick="document.getElementById('resourcesSection').scrollIntoView({behavior:'smooth'})"><span>📄</span><span>Resources</span></div>
-    <div class="nav-item" onclick="document.getElementById('settingsSection').scrollIntoView({behavior:'smooth'})"><span>⚙️</span><span>Settings</span></div>
+    <div class="nav-item active" data-tab="dashboard" onclick="switchStudentTab('dashboard')"><span>🏠</span><span>Dashboard</span></div>
+    <div class="nav-item" data-tab="resources" onclick="switchStudentTab('resources')"><span>📄</span><span>Resources</span></div>
+    <div class="nav-item" data-tab="settings" onclick="switchStudentTab('settings')"><span>⚙️</span><span>Settings</span></div>
     <div class="sidebar-footer">
       <div class="avatar" id="studentAvatar">S</div>
       <div>
@@ -59,24 +59,26 @@
     <div class="admin-header">
       <div>
         <h1 id="welcomeTitle">Welcome back</h1>
-        <p>Here's your Amazon Selling Course progress.</p>
+        <p id="pageSubtitle">Here's your Amazon Selling Course progress.</p>
       </div>
-      <div class="progress-badge">
+      <div class="progress-badge" id="progressBadge">
         <div class="label">Overall progress</div>
         <div class="value" id="overallProgress">0%</div>
       </div>
     </div>
 
-    <div id="batchWrap"></div>
+    <div class="tab-section active" id="tab-dashboard">
+      <div id="batchWrap"></div>
+    </div>
 
-    <div id="resourcesSection" style="margin-top:1.5rem;">
+    <div class="tab-section" id="tab-resources">
       <div class="panel">
         <h2 style="margin-bottom:1rem;">Resources</h2>
         <div id="resourceWrap"></div>
       </div>
     </div>
 
-    <div id="settingsSection" style="margin-top:1.5rem;">
+    <div class="tab-section" id="tab-settings">
       <div class="panel">
         <h2 style="margin-bottom:1rem;">Change Password</h2>
         <label>Current password</label>
@@ -100,6 +102,20 @@ loadSiteContent();
 let currentUid = null;
 let currentEmail = null;
 let completedClasses = [];
+
+const STUDENT_TAB_META = {
+  dashboard: ['Here\'s your Amazon Selling Course progress.', true],
+  resources: ['Google Sheets, Docs, and other reference files.', false],
+  settings: ['Update your password.', false]
+};
+
+function switchStudentTab(tab) {
+  document.querySelectorAll('.nav-item').forEach(el => el.classList.toggle('active', el.dataset.tab === tab));
+  document.querySelectorAll('.tab-section').forEach(el => el.classList.remove('active'));
+  document.getElementById('tab-' + tab).classList.add('active');
+  document.getElementById('pageSubtitle').textContent = STUDENT_TAB_META[tab][0];
+  document.getElementById('progressBadge').style.display = STUDENT_TAB_META[tab][1] ? '' : 'none';
+}
 
 auth.onAuthStateChanged(user => {
   if (!user) { location.href = 'login.html'; return; }
