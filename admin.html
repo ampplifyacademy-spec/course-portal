@@ -220,8 +220,10 @@ auth.onAuthStateChanged(user => {
     return;
   }
   document.getElementById('adminAvatar').textContent = user.email.charAt(0).toUpperCase();
-  loadBatches().then(() => loadModulesForAccess().then(loadUsers));
-  loadSiteContentIntoForm();
+  loadBatches().then(() => {
+    loadModulesForAccess().then(loadUsers);
+    loadSiteContentIntoForm();
+  });
   loadResources();
 });
 
@@ -327,6 +329,7 @@ function loadSiteContentIntoForm() {
     moduleRows.forEach((m, i) => {
       m.lessonLinks = (privateModules[i] && privateModules[i].lessonLinks) || [];
       m.driveLink = (privateModules[i] && privateModules[i].driveLink) || '';
+      m.batchId = (privateModules[i] && privateModules[i].batchId) || '';
     });
     renderModuleRows();
   });
@@ -348,7 +351,12 @@ function renderModuleRows() {
             <input placeholder="Duration (e.g. 45 min)" value="${(m.duration || '').replace(/"/g, '&quot;')}" oninput="moduleRows[${i}].duration = this.value">
           </div>
           <input placeholder="Google Drive link (private, students only — for a single-video class)" value="${(m.driveLink || '').replace(/"/g, '&quot;')}" oninput="moduleRows[${i}].driveLink = this.value">
-          <label style="display:flex; align-items:center; gap:.4rem; font-size:.85rem; color:var(--text-soft);">
+          <label style="font-size:.82rem; color:var(--text-soft); margin-top:.6rem; display:block;">Batch (which students see this module)</label>
+          <select onchange="moduleRows[${i}].batchId = this.value" style="margin-top:.3rem;">
+            <option value="">All batches</option>
+            ${allBatches.map(b => `<option value="${b.id}" ${m.batchId === b.id ? 'selected' : ''}>${b.name}</option>`).join('')}
+          </select>
+          <label style="display:flex; align-items:center; gap:.4rem; font-size:.85rem; color:var(--text-soft); margin-top:.8rem;">
             <input type="checkbox" style="width:auto; margin:0;" ${m.published !== false ? 'checked' : ''} onchange="moduleRows[${i}].published = this.checked">
             Published
           </label>
@@ -371,11 +379,12 @@ function renderModuleRows() {
         </div>`;
     }
     const published = m.published !== false;
+    const batchName = m.batchId ? (allBatches.find(b => b.id === m.batchId) || {}).name : null;
     return `
       <div class="module-manage-card">
         <div class="mm-num">${String(i + 1).padStart(2, '0')}</div>
         <div class="mm-body">
-          <div class="mm-title">${m.title || '(untitled module)'}</div>
+          <div class="mm-title">${m.title || '(untitled module)'}${batchName ? ' <span style="color:var(--info); font-weight:600; font-size:.78rem;">· ' + batchName + '</span>' : ''}</div>
           <div class="mm-meta">${m.lessons ? m.lessons + ' lessons · ' : ''}${m.duration || ''}</div>
         </div>
         <span class="mm-pill ${published ? 'published' : 'draft'}">${published ? 'Published' : 'Draft'}</span>
@@ -385,7 +394,7 @@ function renderModuleRows() {
 }
 
 function addModuleRow() {
-  moduleRows.push({ title: '', desc: '', duration: '', lessons: '', published: true, driveLink: '', lessonLinks: [] });
+  moduleRows.push({ title: '', desc: '', duration: '', lessons: '', published: true, driveLink: '', batchId: '', lessonLinks: [] });
   editingModuleIndex = moduleRows.length - 1;
   renderModuleRows();
 }
@@ -453,6 +462,7 @@ function saveModules() {
   const privateModules = moduleRows.filter(m => m.title.trim()).map(m => ({
     title: m.title,
     driveLink: m.driveLink || '',
+    batchId: m.batchId || '',
     lessonLinks: (m.lessonLinks || []).filter(l => l.title.trim() && l.driveLink.trim()).map(l => ({
       title: l.title, driveLink: l.driveLink, duration: l.duration || ''
     }))

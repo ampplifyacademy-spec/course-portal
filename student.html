@@ -116,7 +116,7 @@ auth.onAuthStateChanged(user => {
 
     batchNamePromise.then(batchName => {
       document.getElementById('studentBatchLabel').textContent = 'Student — ' + batchName;
-      loadClasses(batchName, data.blockedCourses || []);
+      loadClasses(batchName, data.blockedCourses || [], data.batchId || null);
     });
 
     loadResources();
@@ -124,9 +124,10 @@ auth.onAuthStateChanged(user => {
   });
 });
 
-function buildClassList(modules) {
+function buildClassList(modules, myBatchId) {
   const classes = [];
   modules.forEach((m, i) => {
+    if (m.batchId && m.batchId !== myBatchId) return;
     if (m.lessonLinks && m.lessonLinks.length) {
       m.lessonLinks.forEach((l, j) => {
         classes.push({ id: 'mod-' + i + '-lesson-' + j, title: l.title, meta: l.duration || '', driveLink: l.driveLink });
@@ -138,10 +139,10 @@ function buildClassList(modules) {
   return classes;
 }
 
-function loadClasses(batchName, blockedCourses) {
+function loadClasses(batchName, blockedCourses, myBatchId) {
   db.collection('courseContent').doc('main').get().then(doc => {
     const modules = doc.exists ? (doc.data().modules || []) : [];
-    const classes = buildClassList(modules).filter(c => !blockedCourses.includes(c.id));
+    const classes = buildClassList(modules, myBatchId).filter(c => !blockedCourses.includes(c.id));
     renderBatch(batchName, classes);
   });
 }
