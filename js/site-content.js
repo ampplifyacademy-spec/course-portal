@@ -1,11 +1,10 @@
 const SITE_CONTENT_DEFAULTS = {
   theme: { accent: '#00b5fe', accentOrange: '#fd7d01', bg: '#0b0e1a' },
   bankDetails: {
-    bankName: '',
-    accountName: '',
-    accountNumber: '',
-    branch: '',
-    instructions: 'Transfer the course fee to the account above, then click the button below to upload your payment receipt to our Google Drive.',
+    accounts: [
+      { bankName: '', accountName: '', accountNumber: '', iban: '' }
+    ],
+    instructions: 'Transfer the course fee to one of the accounts above, then click the button below to upload your payment receipt to our Google Drive.',
     driveUploadLink: ''
   },
   landing: {
@@ -66,6 +65,9 @@ function loadSiteContent() {
         landing: Object.assign({}, SITE_CONTENT_DEFAULTS.landing, data.landing || {}),
         course: Object.assign({}, SITE_CONTENT_DEFAULTS.course, data.course || {})
       };
+      if (!data.bankDetails || !data.bankDetails.accounts || !data.bankDetails.accounts.length) {
+        merged.bankDetails.accounts = SITE_CONTENT_DEFAULTS.bankDetails.accounts;
+      }
       if (!data.course || !data.course.curriculumTopics || !data.course.curriculumTopics.length) {
         merged.course.curriculumTopics = SITE_CONTENT_DEFAULTS.course.curriculumTopics;
       }

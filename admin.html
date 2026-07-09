@@ -126,15 +126,11 @@
       </div>
 
       <div class="panel" style="margin-bottom:1.5rem;">
-        <h2 style="margin-bottom:1rem;">Bank Details (shown on Sign Up page)</h2>
-        <label>Bank name</label>
-        <input id="bankName" placeholder="e.g. Al Rajhi Bank">
-        <label>Account name</label>
-        <input id="bankAccountName" placeholder="e.g. Ampplify Academy">
-        <label>Account number</label>
-        <input id="bankAccountNumber" placeholder="e.g. 123456789012">
-        <label>Branch (optional)</label>
-        <input id="bankBranch" placeholder="e.g. Riyadh Main Branch">
+        <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:1.25rem;">
+          <h2>Bank Details (shown on Sign Up page)</h2>
+          <button onclick="addBankAccountRow()" style="width:auto; margin:0;">+ Add Bank Account</button>
+        </div>
+        <div id="bankAccountEditor"></div>
         <label>Instructions</label>
         <input id="bankInstructions" placeholder="Note shown below bank details">
         <label>Google Drive upload link (File Request URL)</label>
@@ -361,10 +357,8 @@ function loadSiteContentIntoForm() {
     document.getElementById('themeAccentOrange').value = content.theme.accentOrange;
     document.getElementById('themeBg').value = content.theme.bg;
 
-    document.getElementById('bankName').value = content.bankDetails.bankName;
-    document.getElementById('bankAccountName').value = content.bankDetails.accountName;
-    document.getElementById('bankAccountNumber').value = content.bankDetails.accountNumber;
-    document.getElementById('bankBranch').value = content.bankDetails.branch;
+    bankAccountRows = content.bankDetails.accounts.map(a => Object.assign({}, a));
+    renderBankAccountRows();
     document.getElementById('bankInstructions').value = content.bankDetails.instructions;
     document.getElementById('bankDriveLink').value = content.bankDetails.driveUploadLink;
 
@@ -580,13 +574,34 @@ function removeLessonLink(i, li) {
   renderModuleRows();
 }
 
+let bankAccountRows = [];
+
+function renderBankAccountRows() {
+  const container = document.getElementById('bankAccountEditor');
+  container.innerHTML = bankAccountRows.map((a, i) => `
+    <div class="module-edit-card">
+      <div class="row-top"><span>Account ${i + 1}</span><button class="danger" onclick="removeBankAccountRow(${i})">Remove</button></div>
+      <input placeholder="Bank name (e.g. Al Rajhi Bank)" value="${(a.bankName || '').replace(/"/g, '&quot;')}" oninput="bankAccountRows[${i}].bankName = this.value">
+      <input placeholder="Account name (e.g. Ampplify Academy)" value="${(a.accountName || '').replace(/"/g, '&quot;')}" oninput="bankAccountRows[${i}].accountName = this.value">
+      <input placeholder="Account number" value="${(a.accountNumber || '').replace(/"/g, '&quot;')}" oninput="bankAccountRows[${i}].accountNumber = this.value">
+      <input placeholder="IBAN number" value="${(a.iban || '').replace(/"/g, '&quot;')}" oninput="bankAccountRows[${i}].iban = this.value">
+    </div>`).join('');
+}
+
+function addBankAccountRow() {
+  bankAccountRows.push({ bankName: '', accountName: '', accountNumber: '', iban: '' });
+  renderBankAccountRows();
+}
+
+function removeBankAccountRow(i) {
+  bankAccountRows.splice(i, 1);
+  renderBankAccountRows();
+}
+
 function saveBankDetails() {
   const msg = document.getElementById('bankMsg');
   const bankDetails = {
-    bankName: document.getElementById('bankName').value,
-    accountName: document.getElementById('bankAccountName').value,
-    accountNumber: document.getElementById('bankAccountNumber').value,
-    branch: document.getElementById('bankBranch').value,
+    accounts: bankAccountRows.filter(a => a.bankName.trim() || a.accountNumber.trim()),
     instructions: document.getElementById('bankInstructions').value,
     driveUploadLink: document.getElementById('bankDriveLink').value
   };
