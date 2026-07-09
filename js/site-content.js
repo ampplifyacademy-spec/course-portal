@@ -5,7 +5,8 @@ const SITE_CONTENT_DEFAULTS = {
     accountName: '',
     accountNumber: '',
     branch: '',
-    instructions: 'Transfer the course fee to the account above, then upload your payment receipt/invoice below.'
+    instructions: 'Transfer the course fee to the account above, then click the button below to upload your payment receipt to our Google Drive.',
+    driveUploadLink: ''
   },
   landing: {
     heroTitlePrefix: 'Learn skills that',

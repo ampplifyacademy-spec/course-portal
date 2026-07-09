@@ -79,7 +79,7 @@
     <div class="tab-section" id="tab-students">
       <div class="panel">
         <table>
-          <thead><tr><th>Name</th><th>Email</th><th>Invoice</th><th>Batch</th><th>Enrolled</th><th>Amount</th><th>Status</th><th>Action</th><th>Course Access</th></tr></thead>
+          <thead><tr><th>Name</th><th>Email</th><th>Receipt Ref</th><th>Batch</th><th>Enrolled</th><th>Amount</th><th>Status</th><th>Action</th><th>Course Access</th></tr></thead>
           <tbody id="userRows"></tbody>
         </table>
       </div>
@@ -108,7 +108,7 @@
       </div>
       <div class="panel" style="margin-top:1.25rem;">
         <table>
-          <thead><tr><th>Student</th><th>Invoice</th><th>Date</th><th>Amount</th><th>Status</th><th>Action</th></tr></thead>
+          <thead><tr><th>Student</th><th>Receipt Ref</th><th>Date</th><th>Amount</th><th>Status</th><th>Action</th></tr></thead>
           <tbody id="paymentRows"></tbody>
         </table>
       </div>
@@ -137,6 +137,8 @@
         <input id="bankBranch" placeholder="e.g. Riyadh Main Branch">
         <label>Instructions</label>
         <input id="bankInstructions" placeholder="Note shown below bank details">
+        <label>Google Drive upload link (File Request URL)</label>
+        <input id="bankDriveLink" placeholder="https://drive.google.com/...">
         <button onclick="saveBankDetails()">Save Bank Details</button>
         <p class="msg" id="bankMsg"></p>
       </div>
@@ -364,6 +366,7 @@ function loadSiteContentIntoForm() {
     document.getElementById('bankAccountNumber').value = content.bankDetails.accountNumber;
     document.getElementById('bankBranch').value = content.bankDetails.branch;
     document.getElementById('bankInstructions').value = content.bankDetails.instructions;
+    document.getElementById('bankDriveLink').value = content.bankDetails.driveUploadLink;
 
     document.getElementById('landingTitlePrefix').value = content.landing.heroTitlePrefix;
     document.getElementById('landingHighlight').value = content.landing.heroHighlight;
@@ -584,7 +587,8 @@ function saveBankDetails() {
     accountName: document.getElementById('bankAccountName').value,
     accountNumber: document.getElementById('bankAccountNumber').value,
     branch: document.getElementById('bankBranch').value,
-    instructions: document.getElementById('bankInstructions').value
+    instructions: document.getElementById('bankInstructions').value,
+    driveUploadLink: document.getElementById('bankDriveLink').value
   };
   db.collection('siteContent').doc('main').set({ bankDetails }, { merge: true }).then(() => {
     msg.style.color = 'var(--success)';
@@ -744,7 +748,7 @@ function renderPayments() {
     const refunded = u.paymentStatus === 'refunded';
     return `<tr>
       <td>${u.name || u.email}</td>
-      <td>${u.invoiceUrl ? `<a href="${u.invoiceUrl}" target="_blank">View</a>` : '—'}</td>
+      <td>${u.invoiceNote || '—'}</td>
       <td>${date}</td>
       <td>${u.amountPaid} ${u.currency || ''}</td>
       <td><span class="status-${refunded ? 'rejected' : 'approved'}">${refunded ? 'Refunded' : 'Paid'}</span></td>
@@ -790,7 +794,7 @@ function renderUserRows(list) {
     tr.innerHTML = `
       <td>${u.name || ''}</td>
       <td>${u.email}</td>
-      <td>${u.invoiceUrl ? `<a href="${u.invoiceUrl}" target="_blank"><button style="width:auto; margin:0; padding:.4rem .8rem; font-size:.8rem;">View</button></a>` : '—'}</td>
+      <td>${u.invoiceNote || '—'}</td>
       <td><select onchange="setUserBatch('${u.id}', this.value)" style="margin:0; padding:.4rem .6rem; font-size:.85rem;">${batchOptions}</select></td>
       <td>${enrolled}</td>
       <td>${amount}</td>
