@@ -79,7 +79,7 @@
     <div class="tab-section" id="tab-students">
       <div class="panel">
         <table>
-          <thead><tr><th>Name</th><th>Email</th><th>Batch</th><th>Enrolled</th><th>Amount</th><th>Status</th><th>Action</th><th>Course Access</th></tr></thead>
+          <thead><tr><th>Name</th><th>Email</th><th>Invoice</th><th>Batch</th><th>Enrolled</th><th>Amount</th><th>Status</th><th>Action</th><th>Course Access</th></tr></thead>
           <tbody id="userRows"></tbody>
         </table>
       </div>
@@ -108,7 +108,7 @@
       </div>
       <div class="panel" style="margin-top:1.25rem;">
         <table>
-          <thead><tr><th>Student</th><th>Txn ID</th><th>Date</th><th>Amount</th><th>Status</th><th>Action</th></tr></thead>
+          <thead><tr><th>Student</th><th>Invoice</th><th>Date</th><th>Amount</th><th>Status</th><th>Action</th></tr></thead>
           <tbody id="paymentRows"></tbody>
         </table>
       </div>
@@ -123,6 +123,22 @@
           <div><label>Accent (orange)</label><input type="color" id="themeAccentOrange"></div>
           <div><label>Background</label><input type="color" id="themeBg"></div>
         </div>
+      </div>
+
+      <div class="panel" style="margin-bottom:1.5rem;">
+        <h2 style="margin-bottom:1rem;">Bank Details (shown on Sign Up page)</h2>
+        <label>Bank name</label>
+        <input id="bankName" placeholder="e.g. Al Rajhi Bank">
+        <label>Account name</label>
+        <input id="bankAccountName" placeholder="e.g. Ampplify Academy">
+        <label>Account number</label>
+        <input id="bankAccountNumber" placeholder="e.g. 123456789012">
+        <label>Branch (optional)</label>
+        <input id="bankBranch" placeholder="e.g. Riyadh Main Branch">
+        <label>Instructions</label>
+        <input id="bankInstructions" placeholder="Note shown below bank details">
+        <button onclick="saveBankDetails()">Save Bank Details</button>
+        <p class="msg" id="bankMsg"></p>
       </div>
 
       <div class="panel" style="margin-bottom:1.5rem;">
@@ -343,6 +359,12 @@ function loadSiteContentIntoForm() {
     document.getElementById('themeAccentOrange').value = content.theme.accentOrange;
     document.getElementById('themeBg').value = content.theme.bg;
 
+    document.getElementById('bankName').value = content.bankDetails.bankName;
+    document.getElementById('bankAccountName').value = content.bankDetails.accountName;
+    document.getElementById('bankAccountNumber').value = content.bankDetails.accountNumber;
+    document.getElementById('bankBranch').value = content.bankDetails.branch;
+    document.getElementById('bankInstructions').value = content.bankDetails.instructions;
+
     document.getElementById('landingTitlePrefix').value = content.landing.heroTitlePrefix;
     document.getElementById('landingHighlight').value = content.landing.heroHighlight;
     document.getElementById('landingSubtitle').value = content.landing.heroSubtitle;
@@ -555,6 +577,24 @@ function removeLessonLink(i, li) {
   renderModuleRows();
 }
 
+function saveBankDetails() {
+  const msg = document.getElementById('bankMsg');
+  const bankDetails = {
+    bankName: document.getElementById('bankName').value,
+    accountName: document.getElementById('bankAccountName').value,
+    accountNumber: document.getElementById('bankAccountNumber').value,
+    branch: document.getElementById('bankBranch').value,
+    instructions: document.getElementById('bankInstructions').value
+  };
+  db.collection('siteContent').doc('main').set({ bankDetails }, { merge: true }).then(() => {
+    msg.style.color = 'var(--success)';
+    msg.textContent = 'Bank details saved. Changes are live immediately.';
+  }).catch(err => {
+    msg.style.color = 'var(--danger)';
+    msg.textContent = err.message;
+  });
+}
+
 function saveSiteContent() {
   const msg = document.getElementById('siteMsg');
   const data = {
@@ -704,7 +744,7 @@ function renderPayments() {
     const refunded = u.paymentStatus === 'refunded';
     return `<tr>
       <td>${u.name || u.email}</td>
-      <td>${u.txn || ''}</td>
+      <td>${u.invoiceUrl ? `<a href="${u.invoiceUrl}" target="_blank">View</a>` : '—'}</td>
       <td>${date}</td>
       <td>${u.amountPaid} ${u.currency || ''}</td>
       <td><span class="status-${refunded ? 'rejected' : 'approved'}">${refunded ? 'Refunded' : 'Paid'}</span></td>
@@ -750,6 +790,7 @@ function renderUserRows(list) {
     tr.innerHTML = `
       <td>${u.name || ''}</td>
       <td>${u.email}</td>
+      <td>${u.invoiceUrl ? `<a href="${u.invoiceUrl}" target="_blank"><button style="width:auto; margin:0; padding:.4rem .8rem; font-size:.8rem;">View</button></a>` : '—'}</td>
       <td><select onchange="setUserBatch('${u.id}', this.value)" style="margin:0; padding:.4rem .6rem; font-size:.85rem;">${batchOptions}</select></td>
       <td>${enrolled}</td>
       <td>${amount}</td>

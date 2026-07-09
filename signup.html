@@ -7,12 +7,23 @@
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@500;600;700;800&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
 <link rel="stylesheet" href="css/style.css">
+<style>
+  .bank-box { background: var(--bg); border: 1px solid var(--border); border-radius: var(--radius-sm); padding: 1rem 1.1rem; margin-bottom: 1.1rem; font-size: .88rem; }
+  .bank-box .row { display: flex; justify-content: space-between; padding: .3rem 0; border-bottom: 1px solid var(--border); }
+  .bank-box .row:last-child { border-bottom: none; }
+  .bank-box .row span:first-child { color: var(--text-muted); }
+  .bank-box .row span:last-child { font-weight: 700; }
+  .bank-box .note { color: var(--text-muted); font-size: .8rem; margin-top: .6rem; line-height: 1.4; }
+  label.upload-btn { display: block; width: 100%; text-align: center; padding: .8rem; border-radius: var(--radius-sm); border: 1px dashed var(--border-strong); background: var(--surface); color: var(--text-soft); font-size: .9rem; cursor: pointer; margin: .4rem 0; }
+</style>
 </head>
 <body>
 <div class="card">
   <span class="brand"><span class="a">A</span>mpplify Academy</span>
   <h1>Create Account</h1>
-  <p class="subtitle">Pay via bank transfer, then sign up with your transaction reference. We'll approve your account once payment is verified.</p>
+  <p class="subtitle">Pay via bank transfer using the details below, then upload your payment receipt. We'll approve your account once payment is verified.</p>
+
+  <div class="bank-box" id="bankBox"></div>
 
   <label for="name">Full name</label>
   <input id="name" placeholder="Your full name">
@@ -20,8 +31,10 @@
   <input id="email" type="email" placeholder="you@example.com">
   <label for="password">Password</label>
   <input id="password" type="password" placeholder="Min 6 characters">
-  <label for="txn">Bank transaction ID</label>
-  <input id="txn" placeholder="Transaction reference">
+  <label>Payment receipt / invoice</label>
+  <input type="file" id="invoiceFile" accept="image/*,application/pdf" style="display:none;" onchange="onInvoiceChosen(this.files[0])">
+  <label class="upload-btn" for="invoiceFile" id="invoiceLabel">Choose file to upload</label>
+
   <button onclick="doSignup()">Sign Up</button>
   <p class="msg" id="msg"></p>
   <p class="link">Already have an account? <a href="login.html">Log in</a></p>
@@ -30,36 +43,60 @@
 <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-app-compat.js"></script>
 <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-auth-compat.js"></script>
 <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-storage-compat.js"></script>
 <script src="js/firebase-config.js"></script>
 <script src="js/site-content.js"></script>
 <script>
-loadSiteContent();
+const storage = firebase.storage();
+let invoiceFile = null;
+
+loadSiteContent().then(content => {
+  const b = content.bankDetails;
+  const box = document.getElementById('bankBox');
+  const rows = [
+    ['Bank Name', b.bankName], ['Account Name', b.accountName],
+    ['Account Number', b.accountNumber], ['Branch', b.branch]
+  ].filter(r => r[1]);
+  box.innerHTML = (rows.length ? rows.map(r => `<div class="row"><span>${r[0]}</span><span>${r[1]}</span></div>`).join('') : '<div class="row"><span>Bank details not set up yet — contact us.</span></div>')
+    + (b.instructions ? `<div class="note">${b.instructions}</div>` : '');
+});
+
+function onInvoiceChosen(file) {
+  invoiceFile = file;
+  document.getElementById('invoiceLabel').textContent = file ? file.name : 'Choose file to upload';
+}
 
 function doSignup() {
   const name = document.getElementById('name').value.trim();
   const email = document.getElementById('email').value.trim();
   const password = document.getElementById('password').value;
-  const txn = document.getElementById('txn').value.trim();
   const msg = document.getElementById('msg');
 
-  if (!name || !email || !password || !txn) {
-    msg.textContent = "Please fill in all fields";
+  if (!name || !email || !password || !invoiceFile) {
+    msg.textContent = "Please fill in all fields and upload your payment receipt";
     return;
   }
 
+  msg.style.color = 'var(--text-muted)';
+  msg.textContent = "Creating account...";
+
   auth.createUserWithEmailAndPassword(email, password)
     .then(cred => {
-      return db.collection('users').doc(cred.user.uid).set({
-        name, email, txn,
-        status: 'pending',
-        createdAt: firebase.firestore.FieldValue.serverTimestamp()
+      msg.textContent = "Uploading receipt...";
+      const ref = storage.ref('invoices/' + cred.user.uid);
+      return ref.put(invoiceFile).then(() => ref.getDownloadURL()).then(invoiceUrl => {
+        return db.collection('users').doc(cred.user.uid).set({
+          name, email, invoiceUrl,
+          status: 'pending',
+          createdAt: firebase.firestore.FieldValue.serverTimestamp()
+        });
       });
     })
     .then(() => {
       msg.style.color = 'var(--success)';
       msg.textContent = "Signup successful! We'll notify you by email once your account is approved.";
     })
-    .catch(err => { msg.textContent = err.message; });
+    .catch(err => { msg.style.color = 'var(--danger)'; msg.textContent = err.message; });
 }
 </script>
 </body>

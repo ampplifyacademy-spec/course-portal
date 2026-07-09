@@ -1,5 +1,12 @@
 const SITE_CONTENT_DEFAULTS = {
   theme: { accent: '#00b5fe', accentOrange: '#fd7d01', bg: '#0b0e1a' },
+  bankDetails: {
+    bankName: '',
+    accountName: '',
+    accountNumber: '',
+    branch: '',
+    instructions: 'Transfer the course fee to the account above, then upload your payment receipt/invoice below.'
+  },
   landing: {
     heroTitlePrefix: 'Learn skills that',
     heroHighlight: 'actually pay off',
@@ -54,6 +61,7 @@ function loadSiteContent() {
       const data = doc.exists ? doc.data() : {};
       const merged = {
         theme: Object.assign({}, SITE_CONTENT_DEFAULTS.theme, data.theme || {}),
+        bankDetails: Object.assign({}, SITE_CONTENT_DEFAULTS.bankDetails, data.bankDetails || {}),
         landing: Object.assign({}, SITE_CONTENT_DEFAULTS.landing, data.landing || {}),
         course: Object.assign({}, SITE_CONTENT_DEFAULTS.course, data.course || {})
       };
