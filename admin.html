@@ -468,8 +468,8 @@ function saveModules() {
     }))
   }));
   Promise.all([
-    db.collection('siteContent').doc('main').set({ course: { modules: publicModules } }, { merge: true }),
-    db.collection('courseContent').doc('main').set({ modules: privateModules })
+    db.collection('siteContent').doc('main').update({ 'course.modules': publicModules }),
+    db.collection('courseContent').doc('main').set({ modules: privateModules }, { merge: true })
   ]).then(() => {
     loadModulesForAccess().then(loadUsers);
     msg.style.color = 'var(--success)';
