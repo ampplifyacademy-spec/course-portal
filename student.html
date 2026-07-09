@@ -35,11 +35,6 @@
   .class-row .status.done { color: var(--success); }
   .resource-row { display: flex; justify-content: space-between; align-items: center; padding: .9rem 1.1rem; background: var(--surface); border: 1px solid var(--border); border-radius: var(--radius-sm); margin-bottom: .6rem; }
   .resource-row a button { width: auto; margin: 0; padding: .4rem .9rem; font-size: .82rem; }
-  .avatar img { width: 100%; height: 100%; object-fit: cover; border-radius: 50%; }
-  .avatar-upload { display: flex; align-items: center; gap: 1rem; margin-bottom: 1.25rem; }
-  .avatar-upload .avatar-lg { width: 64px; height: 64px; border-radius: 50%; background: var(--accent-orange); color: #1a1200; display: flex; align-items: center; justify-content: center; font: 800 1.4rem var(--font-display); overflow: hidden; flex-shrink: 0; }
-  .avatar-upload .avatar-lg img { width: 100%; height: 100%; object-fit: cover; }
-  .avatar-upload label.upload-btn { width: auto; display: inline-block; padding: .6rem 1.1rem; border-radius: var(--radius-sm); background: var(--accent-orange); color: #1a1200; font: 700 .85rem var(--font-display); cursor: pointer; }
 </style>
 </head>
 <body class="admin-shell">
@@ -82,18 +77,6 @@
     </div>
 
     <div id="settingsSection" style="margin-top:1.5rem;">
-      <div class="panel" style="margin-bottom:1.25rem;">
-        <h2 style="margin-bottom:1rem;">Profile Photo</h2>
-        <div class="avatar-upload">
-          <div class="avatar-lg" id="settingsAvatarPreview">S</div>
-          <div>
-            <input type="file" id="avatarFile" accept="image/*" style="display:none;" onchange="uploadAvatar(this.files[0])">
-            <label class="upload-btn" for="avatarFile">Change Photo</label>
-            <p class="msg" id="avatarMsg" style="margin-top:.5rem;"></p>
-          </div>
-        </div>
-      </div>
-
       <div class="panel">
         <h2 style="margin-bottom:1rem;">Change Password</h2>
         <label>Current password</label>
@@ -110,12 +93,10 @@
 <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-app-compat.js"></script>
 <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-auth-compat.js"></script>
 <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore-compat.js"></script>
-<script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-storage-compat.js"></script>
 <script src="js/firebase-config.js"></script>
 <script src="js/site-content.js"></script>
 <script>
 loadSiteContent();
-const storage = firebase.storage();
 let currentUid = null;
 let currentEmail = null;
 let completedClasses = [];
@@ -136,14 +117,7 @@ auth.onAuthStateChanged(user => {
     document.getElementById('studentName').textContent = displayName;
     document.getElementById('welcomeTitle').textContent = 'Welcome back, ' + displayName.split(' ')[0];
 
-    const initial = displayName.charAt(0).toUpperCase();
-    if (user.photoURL) {
-      document.getElementById('studentAvatar').innerHTML = `<img src="${user.photoURL}">`;
-      document.getElementById('settingsAvatarPreview').innerHTML = `<img src="${user.photoURL}">`;
-    } else {
-      document.getElementById('studentAvatar').textContent = initial;
-      document.getElementById('settingsAvatarPreview').textContent = initial;
-    }
+    document.getElementById('studentAvatar').textContent = displayName.charAt(0).toUpperCase();
 
     const mySession = localStorage.getItem('session_' + user.uid);
     if (data.currentSessionId && data.currentSessionId !== mySession) {
@@ -258,26 +232,6 @@ function toggleClassComplete(id) {
     db.collection('users').doc(currentUid).get().then(doc => {
       loadAllBatches(doc.data().blockedCourses || []);
     });
-  });
-}
-
-function uploadAvatar(file) {
-  if (!file) return;
-  const msg = document.getElementById('avatarMsg');
-  msg.style.color = 'var(--text-muted)';
-  msg.textContent = 'Uploading...';
-  const ref = storage.ref('avatars/' + currentUid);
-  ref.put(file).then(() => ref.getDownloadURL()).then(url => {
-    return auth.currentUser.updateProfile({ photoURL: url });
-  }).then(() => {
-    const url = auth.currentUser.photoURL;
-    document.getElementById('studentAvatar').innerHTML = `<img src="${url}">`;
-    document.getElementById('settingsAvatarPreview').innerHTML = `<img src="${url}">`;
-    msg.style.color = 'var(--success)';
-    msg.textContent = 'Photo updated.';
-  }).catch(err => {
-    msg.style.color = 'var(--danger)';
-    msg.textContent = err.message;
   });
 }
 
