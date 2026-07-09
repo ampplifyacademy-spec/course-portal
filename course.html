@@ -138,18 +138,6 @@
 <script src="js/firebase-config.js"></script>
 <script src="js/site-content.js"></script>
 <script>
-const testimonials = [
-  { name: 'Tanvir Ahmed', result: 'Strong growth by month 4', quote: "I had zero experience and launched my first product in three weeks. The PPC module alone paid for the course many times over." },
-  { name: 'Priya Sharma', result: 'First sale within 30 days', quote: "Yasin Arafat explains things like a friend, not a professor. No fluff, just the exact steps I needed to follow." },
-  { name: 'Ahmed Raza', result: 'Scaled to 3 products', quote: "The sourcing framework saved me from two bad supplier deals before I even spent a dollar. Worth every penny." }
-];
-const faqs = [
-  { q: 'Do I need any experience to start?', a: 'None at all. The course starts from zero and assumes you have never sold on Amazon before.' },
-  { q: 'How long do I have access?', a: 'Lifetime. Pay once and keep access to all current and future module updates.' },
-  { q: 'How much money do I need to start selling?', a: 'We cover budget-friendly sourcing strategies — most students start with a modest initial inventory budget.' },
-  { q: 'Is there support if I get stuck?', a: 'Yes — every student gets access to a private community where Yasin Arafat answers questions directly.' },
-  { q: "What if the course isn't for me?", a: "There's a 14-day money-back guarantee, no questions asked." }
-];
 const priceFeatures = [
   '6 in-depth video modules', 'Product research spreadsheet templates', 'Private student community access',
   'Listing & PPC swipe files', 'Lifetime updates to all content', '14-day money-back guarantee'
@@ -179,21 +167,21 @@ loadSiteContent().then(content => {
       </summary>
       <div class="module-body"><p>${m.desc}</p></div>
     </details>`).join('');
+
+  document.getElementById('testimonialRow').innerHTML = c.testimonials.map(t => `
+    <div class="testimonial-card">
+      <div class="stars">★★★★★</div>
+      <p>"${t.quote}"</p>
+      <div class="tname">${t.name}</div>
+      <div class="tresult">${t.result}</div>
+    </div>`).join('');
+
+  document.getElementById('faqWrap').innerHTML = c.faqs.map(q => `
+    <details>
+      <summary>${q.q}<span>+</span></summary>
+      <p>${q.a}</p>
+    </details>`).join('');
 });
-
-document.getElementById('testimonialRow').innerHTML = testimonials.map(t => `
-  <div class="testimonial-card">
-    <div class="stars">★★★★★</div>
-    <p>"${t.quote}"</p>
-    <div class="tname">${t.name}</div>
-    <div class="tresult">${t.result}</div>
-  </div>`).join('');
-
-document.getElementById('faqWrap').innerHTML = faqs.map(q => `
-  <details>
-    <summary>${q.q}<span>+</span></summary>
-    <p>${q.a}</p>
-  </details>`).join('');
 
 document.getElementById('priceFeatures').innerHTML = priceFeatures.map(f => `
   <div><span>✓</span>${f}</div>`).join('');

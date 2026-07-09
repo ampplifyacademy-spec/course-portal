@@ -169,6 +169,26 @@
         <button onclick="saveCurriculumTopics()" style="margin-top:.5rem;">Save Curriculum List</button>
         <p class="msg" id="curriculumMsg"></p>
       </div>
+
+      <div class="panel" style="margin-top:1.5rem;">
+        <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:1.25rem;">
+          <h2>Testimonials (public landing page)</h2>
+          <button onclick="addTestimonialRow()" style="width:auto; margin:0;">+ Add Testimonial</button>
+        </div>
+        <div id="testimonialEditor"></div>
+        <button onclick="saveTestimonials()" style="margin-top:.5rem;">Save Testimonials</button>
+        <p class="msg" id="testimonialMsg"></p>
+      </div>
+
+      <div class="panel" style="margin-top:1.5rem;">
+        <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:1.25rem;">
+          <h2>FAQ (public landing page)</h2>
+          <button onclick="addFaqRow()" style="width:auto; margin:0;">+ Add Question</button>
+        </div>
+        <div id="faqEditor"></div>
+        <button onclick="saveFaqs()" style="margin-top:.5rem;">Save FAQ</button>
+        <p class="msg" id="faqMsg"></p>
+      </div>
     </div>
 
     <!-- MODULES -->
@@ -339,6 +359,12 @@ function loadSiteContentIntoForm() {
     curriculumRows = content.course.curriculumTopics.map(t => Object.assign({}, t));
     renderCurriculumRows();
 
+    testimonialRows = content.course.testimonials.map(t => Object.assign({}, t));
+    renderTestimonialRows();
+
+    faqRows = content.course.faqs.map(f => Object.assign({}, f));
+    renderFaqRows();
+
     return db.collection('courseContent').doc('main').get();
   }).then(doc => {
     moduleRows = ((doc.exists && doc.data().modules) || []).map(m => Object.assign({
@@ -377,6 +403,75 @@ function saveCurriculumTopics() {
   db.collection('siteContent').doc('main').update({ 'course.curriculumTopics': topics }).then(() => {
     msg.style.color = 'var(--success)';
     msg.textContent = 'Curriculum list saved. Changes are live immediately.';
+  }).catch(err => {
+    msg.style.color = 'var(--danger)';
+    msg.textContent = err.message;
+  });
+}
+
+let testimonialRows = [];
+
+function renderTestimonialRows() {
+  const container = document.getElementById('testimonialEditor');
+  container.innerHTML = testimonialRows.map((t, i) => `
+    <div class="module-edit-card">
+      <div class="row-top"><span>Testimonial ${i + 1}</span><button class="danger" onclick="removeTestimonialRow(${i})">Remove</button></div>
+      <input placeholder="Student name" value="${(t.name || '').replace(/"/g, '&quot;')}" oninput="testimonialRows[${i}].name = this.value">
+      <input placeholder="Result (e.g. First sale within 30 days)" value="${(t.result || '').replace(/"/g, '&quot;')}" oninput="testimonialRows[${i}].result = this.value">
+      <input placeholder="Quote" value="${(t.quote || '').replace(/"/g, '&quot;')}" oninput="testimonialRows[${i}].quote = this.value">
+    </div>`).join('');
+}
+
+function addTestimonialRow() {
+  testimonialRows.push({ name: '', result: '', quote: '' });
+  renderTestimonialRows();
+}
+
+function removeTestimonialRow(i) {
+  testimonialRows.splice(i, 1);
+  renderTestimonialRows();
+}
+
+function saveTestimonials() {
+  const msg = document.getElementById('testimonialMsg');
+  const testimonials = testimonialRows.filter(t => t.name.trim());
+  db.collection('siteContent').doc('main').update({ 'course.testimonials': testimonials }).then(() => {
+    msg.style.color = 'var(--success)';
+    msg.textContent = 'Testimonials saved. Changes are live immediately.';
+  }).catch(err => {
+    msg.style.color = 'var(--danger)';
+    msg.textContent = err.message;
+  });
+}
+
+let faqRows = [];
+
+function renderFaqRows() {
+  const container = document.getElementById('faqEditor');
+  container.innerHTML = faqRows.map((f, i) => `
+    <div class="module-edit-card">
+      <div class="row-top"><span>Question ${i + 1}</span><button class="danger" onclick="removeFaqRow(${i})">Remove</button></div>
+      <input placeholder="Question" value="${(f.q || '').replace(/"/g, '&quot;')}" oninput="faqRows[${i}].q = this.value">
+      <input placeholder="Answer" value="${(f.a || '').replace(/"/g, '&quot;')}" oninput="faqRows[${i}].a = this.value">
+    </div>`).join('');
+}
+
+function addFaqRow() {
+  faqRows.push({ q: '', a: '' });
+  renderFaqRows();
+}
+
+function removeFaqRow(i) {
+  faqRows.splice(i, 1);
+  renderFaqRows();
+}
+
+function saveFaqs() {
+  const msg = document.getElementById('faqMsg');
+  const faqs = faqRows.filter(f => f.q.trim());
+  db.collection('siteContent').doc('main').update({ 'course.faqs': faqs }).then(() => {
+    msg.style.color = 'var(--success)';
+    msg.textContent = 'FAQ saved. Changes are live immediately.';
   }).catch(err => {
     msg.style.color = 'var(--danger)';
     msg.textContent = err.message;

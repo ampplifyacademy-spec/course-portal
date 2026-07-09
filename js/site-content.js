@@ -21,6 +21,18 @@ const SITE_CONTENT_DEFAULTS = {
       { title: 'PPC Advertising Mastery', desc: 'Launch and optimize Sponsored Products campaigns without wasting your ad budget on guesswork.', duration: '2 hr' },
       { title: 'Inventory & FBA Logistics', desc: 'Plan shipments, avoid stockouts, and manage FBA fees so restocking never catches you off guard.', duration: '1 hr' },
       { title: 'Scaling to 6-Figures', desc: 'Systems and outsourcing strategies to grow past your first product without working more hours.', duration: '1.5 hr' }
+    ],
+    testimonials: [
+      { name: 'Tanvir Ahmed', result: 'Strong growth by month 4', quote: "I had zero experience and launched my first product in three weeks. The PPC module alone paid for the course many times over." },
+      { name: 'Priya Sharma', result: 'First sale within 30 days', quote: "Yasin Arafat explains things like a friend, not a professor. No fluff, just the exact steps I needed to follow." },
+      { name: 'Ahmed Raza', result: 'Scaled to 3 products', quote: "The sourcing framework saved me from two bad supplier deals before I even spent a dollar. Worth every penny." }
+    ],
+    faqs: [
+      { q: 'Do I need any experience to start?', a: 'None at all. The course starts from zero and assumes you have never sold on Amazon before.' },
+      { q: 'How long do I have access?', a: 'Lifetime. Pay once and keep access to all current and future module updates.' },
+      { q: 'How much money do I need to start selling?', a: 'We cover budget-friendly sourcing strategies — most students start with a modest initial inventory budget.' },
+      { q: 'Is there support if I get stuck?', a: 'Yes — every student gets access to a private community where Yasin Arafat answers questions directly.' },
+      { q: "What if the course isn't for me?", a: "There's a 14-day money-back guarantee, no questions asked." }
     ]
   }
 };
@@ -47,6 +59,12 @@ function loadSiteContent() {
       };
       if (!data.course || !data.course.curriculumTopics || !data.course.curriculumTopics.length) {
         merged.course.curriculumTopics = SITE_CONTENT_DEFAULTS.course.curriculumTopics;
+      }
+      if (!data.course || !data.course.testimonials || !data.course.testimonials.length) {
+        merged.course.testimonials = SITE_CONTENT_DEFAULTS.course.testimonials;
+      }
+      if (!data.course || !data.course.faqs || !data.course.faqs.length) {
+        merged.course.faqs = SITE_CONTENT_DEFAULTS.course.faqs;
       }
       applySiteTheme(merged.theme);
       return merged;
