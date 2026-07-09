@@ -86,7 +86,6 @@
 loadSiteContent();
 let currentUid = null;
 let completedClasses = [];
-let batchExpanded = true;
 
 auth.onAuthStateChanged(user => {
   if (!user) { location.href = 'login.html'; return; }
@@ -110,57 +109,78 @@ auth.onAuthStateChanged(user => {
       return;
     }
 
-    const batchNamePromise = data.batchId
-      ? db.collection('batches').doc(data.batchId).get().then(b => b.exists ? b.data().name : 'My Batch')
-      : Promise.resolve('My Course');
+    document.getElementById('studentBatchLabel').textContent = 'Student';
 
-    batchNamePromise.then(batchName => {
-      document.getElementById('studentBatchLabel').textContent = 'Student — ' + batchName;
-      loadClasses(batchName, data.blockedCourses || [], data.batchId || null);
-    });
-
+    loadAllBatches(data.blockedCourses || []);
     loadResources();
     watchSession(user.uid, mySession);
   });
 });
 
-function buildClassList(modules, myBatchId) {
-  const classes = [];
-  modules.forEach((m, i) => {
-    if (m.batchId && m.batchId !== myBatchId) return;
-    if (m.lessonLinks && m.lessonLinks.length) {
-      m.lessonLinks.forEach((l, j) => {
-        classes.push({ id: 'mod-' + i + '-lesson-' + j, title: l.title, meta: l.duration || '', driveLink: l.driveLink });
-      });
-    } else if (m.driveLink) {
-      classes.push({ id: 'mod-' + i, title: m.title, meta: m.duration || '', driveLink: m.driveLink });
-    }
+let expandedGroups = {};
+
+function loadAllBatches(blockedCourses) {
+  Promise.all([
+    db.collection('courseContent').doc('main').get(),
+    db.collection('batches').orderBy('createdAt', 'asc').get()
+  ]).then(([contentDoc, batchesSnap]) => {
+    const modules = contentDoc.exists ? (contentDoc.data().modules || []) : [];
+    const batchNames = {};
+    batchesSnap.forEach(b => batchNames[b.id] = b.data().name);
+
+    const groups = {};
+    const order = [];
+    modules.forEach((m, i) => {
+      const key = m.batchId || '_general';
+      if (!groups[key]) {
+        groups[key] = { name: m.batchId ? (batchNames[m.batchId] || 'Batch') : 'General', classes: [] };
+        order.push(key);
+      }
+      if (m.lessonLinks && m.lessonLinks.length) {
+        m.lessonLinks.forEach((l, j) => {
+          groups[key].classes.push({ id: 'mod-' + i + '-lesson-' + j, title: l.title, meta: l.duration || '', driveLink: l.driveLink });
+        });
+      } else if (m.driveLink) {
+        groups[key].classes.push({ id: 'mod-' + i, title: m.title, meta: m.duration || '', driveLink: m.driveLink });
+      }
+    });
+
+    order.forEach(key => {
+      groups[key].classes = groups[key].classes.filter(c => !blockedCourses.includes(c.id));
+    });
+
+    renderBatches(order.map(key => Object.assign({ key }, groups[key])));
   });
-  return classes;
 }
 
-function loadClasses(batchName, blockedCourses, myBatchId) {
-  db.collection('courseContent').doc('main').get().then(doc => {
-    const modules = doc.exists ? (doc.data().modules || []) : [];
-    const classes = buildClassList(modules, myBatchId).filter(c => !blockedCourses.includes(c.id));
-    renderBatch(batchName, classes);
-  });
-}
-
-function renderBatch(batchName, classes) {
-  const total = classes.length;
-  const completedCount = classes.filter(c => completedClasses.includes(c.id)).length;
-  const pct = total ? Math.round((completedCount / total) * 100) : 0;
-  document.getElementById('overallProgress').textContent = pct + '%';
+function renderBatches(batchGroups) {
+  const allClasses = batchGroups.flatMap(g => g.classes);
+  const totalAll = allClasses.length;
+  const completedAll = allClasses.filter(c => completedClasses.includes(c.id)).length;
+  document.getElementById('overallProgress').textContent = totalAll ? Math.round((completedAll / totalAll) * 100) + '%' : '0%';
 
   const wrap = document.getElementById('batchWrap');
-  wrap.innerHTML = `
+  if (!batchGroups.length) {
+    wrap.innerHTML = '<p style="color:var(--text-faint); font-size:.9rem;">No classes available yet.</p>';
+    return;
+  }
+
+  wrap.innerHTML = batchGroups.map(g => {
+    const total = g.classes.length;
+    const completedCount = g.classes.filter(c => completedClasses.includes(c.id)).length;
+    const pct = total ? Math.round((completedCount / total) * 100) : 0;
+    if (!(g.key in expandedGroups)) expandedGroups[g.key] = true;
+    const expanded = expandedGroups[g.key];
+    const rowsId = 'rows-' + g.key;
+    const arrowId = 'arrow-' + g.key;
+
+    return `
     <div class="batch-card">
-      <div class="batch-head" onclick="batchExpanded = !batchExpanded; document.getElementById('classRows').style.display = batchExpanded ? 'block' : 'none'; document.getElementById('batchArrow').style.transform = batchExpanded ? 'rotate(180deg)' : 'rotate(0deg)';">
+      <div class="batch-head" onclick="toggleGroup('${g.key}')">
         <div class="batch-head-left">
-          <div class="batch-num">${batchName.replace(/[^A-Z0-9]/gi, '').slice(0, 2).toUpperCase() || 'B1'}</div>
+          <div class="batch-num">${g.name.replace(/[^A-Z0-9]/gi, '').slice(0, 2).toUpperCase() || 'GN'}</div>
           <div>
-            <h3>${batchName}</h3>
+            <h3>${g.name}</h3>
             <p>${total} class${total === 1 ? '' : 'es'} · ${completedCount} completed</p>
           </div>
         </div>
@@ -169,11 +189,11 @@ function renderBatch(batchName, classes) {
             <div class="bar"><div class="fill" style="width:${pct}%;"></div></div>
             <span>${pct}%</span>
           </div>
-          <span class="batch-arrow" id="batchArrow" style="transform:rotate(180deg);">▾</span>
+          <span class="batch-arrow" id="${arrowId}" style="transform:rotate(${expanded ? 180 : 0}deg);">▾</span>
         </div>
       </div>
-      <div id="classRows">
-        ${total === 0 ? '<p style="padding:1.25rem 1.6rem; color:var(--text-faint); font-size:.9rem;">No classes available yet.</p>' : classes.map(c => {
+      <div id="${rowsId}" style="display:${expanded ? 'block' : 'none'};">
+        ${total === 0 ? '<p style="padding:1.25rem 1.6rem; color:var(--text-faint); font-size:.9rem;">No classes available yet.</p>' : g.classes.map(c => {
           const done = completedClasses.includes(c.id);
           return `
             <div class="class-row" onclick="toggleClassComplete('${c.id}')">
@@ -188,6 +208,13 @@ function renderBatch(batchName, classes) {
         }).join('')}
       </div>
     </div>`;
+  }).join('');
+}
+
+function toggleGroup(key) {
+  expandedGroups[key] = !expandedGroups[key];
+  document.getElementById('rows-' + key).style.display = expandedGroups[key] ? 'block' : 'none';
+  document.getElementById('arrow-' + key).style.transform = expandedGroups[key] ? 'rotate(180deg)' : 'rotate(0deg)';
 }
 
 function toggleClassComplete(id) {
@@ -201,11 +228,7 @@ function toggleClassComplete(id) {
       completedClasses.push(id);
     }
     db.collection('users').doc(currentUid).get().then(doc => {
-      const data = doc.data();
-      const batchNamePromise = data.batchId
-        ? db.collection('batches').doc(data.batchId).get().then(b => b.exists ? b.data().name : 'My Batch')
-        : Promise.resolve('My Course');
-      batchNamePromise.then(batchName => loadClasses(batchName, data.blockedCourses || []));
+      loadAllBatches(doc.data().blockedCourses || []);
     });
   });
 }
