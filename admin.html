@@ -33,6 +33,7 @@
     <div class="nav-item" data-tab="students" onclick="switchTab('students')"><span>👥</span><span>Students</span></div>
     <div class="nav-item" data-tab="batches" onclick="switchTab('batches')"><span>🗂️</span><span>Batches</span></div>
     <div class="nav-item" data-tab="modules" onclick="switchTab('modules')"><span>🎓</span><span>Modules</span></div>
+    <div class="nav-item" data-tab="resources" onclick="switchTab('resources')"><span>📄</span><span>Resources</span></div>
     <div class="nav-item" data-tab="payments" onclick="switchTab('payments')"><span>💳</span><span>Payments</span></div>
     <div class="nav-item" data-tab="site" onclick="switchTab('site')"><span>🎨</span><span>Site Content</span></div>
     <div class="sidebar-footer">
@@ -166,6 +167,21 @@
       <button onclick="saveModules()" style="margin-top:.5rem;">Save Modules</button>
       <p class="msg" id="modulesMsg"></p>
     </div>
+
+    <!-- RESOURCES -->
+    <div class="tab-section" id="tab-resources">
+      <div class="panel" style="margin-bottom:1.5rem;">
+        <h2 style="margin-bottom:1rem;">Add Resource</h2>
+        <input id="resourceTitle" placeholder="Resource title (e.g. Product Research Sheet)">
+        <input id="resourceLink" placeholder="Google Sheets / Docs / Drive link">
+        <button onclick="addResource()">Add Resource</button>
+        <p class="msg" id="resourceMsg"></p>
+      </div>
+      <div class="panel">
+        <h2 style="margin-bottom:1rem;">Current Resources</h2>
+        <ul class="course-list" id="resourceList"></ul>
+      </div>
+    </div>
   </div>
 </div>
 
@@ -185,6 +201,7 @@ const TAB_META = {
   students: ['Students', 'Manage enrolled students and their course access.'],
   batches: ['Batches', 'Organize students into cohorts.'],
   modules: ['Courses & Modules', 'Manage your Amazon Selling Course content.'],
+  resources: ['Resources', 'Share Google Sheets, Docs, and other reference files with students.'],
   payments: ['Payments', 'Track revenue and order history.'],
   site: ['Site Content', 'Edit colors, text, and pricing shown on the public site.']
 };
@@ -205,7 +222,44 @@ auth.onAuthStateChanged(user => {
   document.getElementById('adminAvatar').textContent = user.email.charAt(0).toUpperCase();
   loadBatches().then(() => loadModulesForAccess().then(loadUsers));
   loadSiteContentIntoForm();
+  loadResources();
 });
+
+function loadResources() {
+  return db.collection('courseContent').doc('main').get().then(doc => {
+    const resources = (doc.exists && doc.data().resources) || [];
+    const list = document.getElementById('resourceList');
+    list.innerHTML = resources.length
+      ? resources.map((r, i) => `<li><span>${r.title}</span><button class="danger" onclick="deleteResource(${i})">Delete</button></li>`).join('')
+      : '<li>No resources yet.</li>';
+  });
+}
+
+function addResource() {
+  const title = document.getElementById('resourceTitle').value.trim();
+  const link = document.getElementById('resourceLink').value.trim();
+  const msg = document.getElementById('resourceMsg');
+  if (!title || !link) { msg.textContent = 'Please enter both title and link'; return; }
+  db.collection('courseContent').doc('main').get().then(doc => {
+    const resources = (doc.exists && doc.data().resources) || [];
+    resources.push({ title, link });
+    return db.collection('courseContent').doc('main').set({ resources }, { merge: true });
+  }).then(() => {
+    document.getElementById('resourceTitle').value = '';
+    document.getElementById('resourceLink').value = '';
+    msg.style.color = 'var(--success)';
+    msg.textContent = 'Resource added';
+    loadResources();
+  });
+}
+
+function deleteResource(i) {
+  db.collection('courseContent').doc('main').get().then(doc => {
+    const resources = (doc.exists && doc.data().resources) || [];
+    resources.splice(i, 1);
+    return db.collection('courseContent').doc('main').set({ resources }, { merge: true });
+  }).then(loadResources);
+}
 
 function loadModulesForAccess() {
   return loadSiteContent().then(content => {

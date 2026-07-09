@@ -8,13 +8,33 @@
 <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@500;600;700;800&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
 <link rel="stylesheet" href="css/style.css">
 <style>
-  .curriculum-item { background: var(--surface); border: 1px solid var(--border); border-radius: var(--radius-sm); margin-bottom: .6rem; overflow: hidden; }
-  .curriculum-item summary { cursor: pointer; list-style: none; padding: 1rem 1.1rem; font-weight: 700; display: flex; justify-content: space-between; align-items: center; }
-  .curriculum-item summary::-webkit-details-marker { display: none; }
-  .curriculum-item .lesson-list { padding: 0 1.1rem 1rem; }
-  .curriculum-item .lesson-row { display: flex; justify-content: space-between; align-items: center; padding: .6rem 0; border-top: 1px solid var(--border); font-size: .9rem; }
-  .curriculum-item .lesson-row a button { width: auto; margin: 0; padding: .4rem .9rem; font-size: .82rem; }
-  .batch-chip { display: inline-flex; align-items: center; gap: .5rem; background: var(--info-bg); color: var(--info); font: 600 .82rem var(--font-body); padding: .4rem .9rem; border-radius: 999px; }
+  .progress-badge { background: var(--surface); border: 1px solid var(--border); border-radius: var(--radius-sm); padding: .9rem 1.25rem; text-align: right; }
+  .progress-badge .label { color: var(--text-muted); font-size: .78rem; margin-bottom: .25rem; }
+  .progress-badge .value { font: 800 1.4rem var(--font-display); color: var(--accent); }
+  .batch-card { background: var(--surface); border: 1px solid var(--border); border-radius: var(--radius); overflow: hidden; margin-bottom: 1.25rem; }
+  .batch-head { display: flex; justify-content: space-between; align-items: center; padding: 1.4rem 1.6rem; border-bottom: 1px solid var(--border); cursor: pointer; }
+  .batch-head-left { display: flex; align-items: center; gap: 1rem; }
+  .batch-num { width: 46px; height: 46px; border-radius: var(--radius-sm); background: var(--info-bg); color: var(--accent); display: flex; align-items: center; justify-content: center; font: 800 1rem var(--font-display); flex-shrink: 0; }
+  .batch-head h3 { font-size: 1.1rem; margin-bottom: .2rem; }
+  .batch-head p { color: var(--text-muted); font-size: .82rem; }
+  .batch-progress { display: flex; align-items: center; gap: .7rem; width: 160px; }
+  .batch-progress .bar { flex: 1; height: 6px; background: rgba(255,255,255,.1); border-radius: 999px; overflow: hidden; }
+  .batch-progress .bar .fill { height: 100%; background: linear-gradient(90deg, var(--accent), var(--accent-orange)); }
+  .batch-progress span { color: var(--text-muted); font-size: .78rem; white-space: nowrap; }
+  .batch-head-right { display: flex; align-items: center; gap: 1.25rem; }
+  .batch-arrow { color: var(--info); font-size: 1.1rem; transition: transform .2s; }
+  .class-row { display: flex; align-items: center; gap: 1rem; padding: 1rem 1.6rem; border-bottom: 1px solid rgba(255,255,255,.05); cursor: pointer; }
+  .class-row:last-child { border-bottom: none; }
+  .class-icon { width: 28px; height: 28px; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: .85rem; flex-shrink: 0; }
+  .class-icon.done { background: var(--success-bg); color: var(--success); }
+  .class-icon.todo { background: rgba(255,255,255,.08); color: var(--text-muted); }
+  .class-row .info { flex: 1; }
+  .class-row .info .title { font-weight: 600; font-size: .92rem; }
+  .class-row .info .meta { color: var(--text-muted); font-size: .78rem; margin-top: .15rem; }
+  .class-row .status { font-size: .82rem; font-weight: 600; color: var(--text-muted); }
+  .class-row .status.done { color: var(--success); }
+  .resource-row { display: flex; justify-content: space-between; align-items: center; padding: .9rem 1.1rem; background: var(--surface); border: 1px solid var(--border); border-radius: var(--radius-sm); margin-bottom: .6rem; }
+  .resource-row a button { width: auto; margin: 0; padding: .4rem .9rem; font-size: .82rem; }
 </style>
 </head>
 <body class="admin-shell">
@@ -23,6 +43,7 @@
   <div class="sidebar">
     <span class="brand"><span class="a">A</span>mpplify Academy</span>
     <div class="nav-item active"><span>🏠</span><span>Dashboard</span></div>
+    <div class="nav-item" onclick="document.getElementById('resourcesSection').scrollIntoView({behavior:'smooth'})"><span>📄</span><span>Resources</span></div>
     <div class="sidebar-footer">
       <div class="avatar" id="studentAvatar">S</div>
       <div>
@@ -37,19 +58,21 @@
     <div class="admin-header">
       <div>
         <h1 id="welcomeTitle">Welcome back 👋</h1>
-        <p>Here's your Amazon Selling Course, all in one place.</p>
+        <p>Here's your Amazon Selling Course progress.</p>
       </div>
-      <span class="batch-chip" id="batchChip">No batch assigned</span>
+      <div class="progress-badge">
+        <div class="label">Overall progress</div>
+        <div class="value" id="overallProgress">0%</div>
+      </div>
     </div>
 
-    <div class="panel" style="margin-bottom:1.5rem;">
-      <h2 style="margin-bottom:1rem;">My Courses</h2>
-      <ul class="course-list" id="courseList"></ul>
-    </div>
+    <div id="batchWrap"></div>
 
-    <div class="panel">
-      <h2 style="margin-bottom:1rem;">Course Curriculum</h2>
-      <div id="curriculumWrap"></div>
+    <div id="resourcesSection" style="margin-top:1.5rem;">
+      <div class="panel">
+        <h2 style="margin-bottom:1rem;">Resources</h2>
+        <div id="resourceWrap"></div>
+      </div>
     </div>
   </div>
 </div>
@@ -61,6 +84,9 @@
 <script src="js/site-content.js"></script>
 <script>
 loadSiteContent();
+let currentUid = null;
+let completedClasses = [];
+let batchExpanded = true;
 
 auth.onAuthStateChanged(user => {
   if (!user) { location.href = 'login.html'; return; }
@@ -70,54 +96,126 @@ auth.onAuthStateChanged(user => {
       return;
     }
     const data = doc.data();
-    const mySession = localStorage.getItem('session_' + user.uid);
-    if (data.currentSessionId && data.currentSessionId !== mySession) {
-      kickOut(user.uid);
-      return;
-    }
+    currentUid = user.uid;
+    completedClasses = data.completedClasses || [];
 
     const displayName = data.name || user.email;
     document.getElementById('studentName').textContent = displayName;
     document.getElementById('studentAvatar').textContent = displayName.charAt(0).toUpperCase();
     document.getElementById('welcomeTitle').textContent = 'Welcome back, ' + displayName.split(' ')[0] + ' 👋';
 
-    if (data.batchId) {
-      db.collection('batches').doc(data.batchId).get().then(bDoc => {
-        const name = bDoc.exists ? bDoc.data().name : 'Batch';
-        document.getElementById('batchChip').textContent = name;
-        document.getElementById('studentBatchLabel').textContent = 'Student — ' + name;
-      });
-    } else {
-      document.getElementById('studentBatchLabel').textContent = 'Student';
+    const mySession = localStorage.getItem('session_' + user.uid);
+    if (data.currentSessionId && data.currentSessionId !== mySession) {
+      kickOut(user.uid);
+      return;
     }
 
-    loadCourses(data.blockedCourses || []);
-    loadCurriculum();
+    const batchNamePromise = data.batchId
+      ? db.collection('batches').doc(data.batchId).get().then(b => b.exists ? b.data().name : 'My Batch')
+      : Promise.resolve('My Course');
+
+    batchNamePromise.then(batchName => {
+      document.getElementById('studentBatchLabel').textContent = 'Student — ' + batchName;
+      loadClasses(batchName, data.blockedCourses || []);
+    });
+
+    loadResources();
     watchSession(user.uid, mySession);
   });
 });
 
-function loadCurriculum() {
-  db.collection('courseContent').doc('main').get().then(doc => {
-    const wrap = document.getElementById('curriculumWrap');
-    const modules = doc.exists ? (doc.data().modules || []) : [];
-    if (!modules.length) {
-      wrap.innerHTML = '<p style="color:var(--text-faint); font-size:.9rem;">No lessons added yet.</p>';
-      return;
+function buildClassList(modules) {
+  const classes = [];
+  modules.forEach((m, i) => {
+    if (m.lessonLinks && m.lessonLinks.length) {
+      m.lessonLinks.forEach((l, j) => {
+        classes.push({ id: 'mod-' + i + '-lesson-' + j, title: l.title, meta: l.duration || '', driveLink: l.driveLink });
+      });
+    } else if (m.driveLink) {
+      classes.push({ id: 'mod-' + i, title: m.title, meta: m.duration || '', driveLink: m.driveLink });
     }
-    wrap.innerHTML = modules.map(m => `
-      <details class="curriculum-item">
-        <summary>${m.title}</summary>
-        <div class="lesson-list">
-          ${(m.lessonLinks && m.lessonLinks.length)
-            ? m.lessonLinks.map(l => `
-                <div class="lesson-row">
-                  <span>${l.title}${l.duration ? ' · ' + l.duration : ''}</span>
-                  <a href="${l.driveLink}" target="_blank"><button>Watch</button></a>
-                </div>`).join('')
-            : '<p style="color:var(--text-faint); font-size:.85rem; padding-top:.6rem;">No lessons added yet.</p>'}
+  });
+  return classes;
+}
+
+function loadClasses(batchName, blockedCourses) {
+  db.collection('courseContent').doc('main').get().then(doc => {
+    const modules = doc.exists ? (doc.data().modules || []) : [];
+    const classes = buildClassList(modules).filter(c => !blockedCourses.includes(c.id));
+    renderBatch(batchName, classes);
+  });
+}
+
+function renderBatch(batchName, classes) {
+  const total = classes.length;
+  const completedCount = classes.filter(c => completedClasses.includes(c.id)).length;
+  const pct = total ? Math.round((completedCount / total) * 100) : 0;
+  document.getElementById('overallProgress').textContent = pct + '%';
+
+  const wrap = document.getElementById('batchWrap');
+  wrap.innerHTML = `
+    <div class="batch-card">
+      <div class="batch-head" onclick="batchExpanded = !batchExpanded; document.getElementById('classRows').style.display = batchExpanded ? 'block' : 'none'; document.getElementById('batchArrow').style.transform = batchExpanded ? 'rotate(180deg)' : 'rotate(0deg)';">
+        <div class="batch-head-left">
+          <div class="batch-num">${batchName.replace(/[^A-Z0-9]/gi, '').slice(0, 2).toUpperCase() || 'B1'}</div>
+          <div>
+            <h3>${batchName}</h3>
+            <p>${total} class${total === 1 ? '' : 'es'} · ${completedCount} completed</p>
+          </div>
         </div>
-      </details>`).join('');
+        <div class="batch-head-right">
+          <div class="batch-progress">
+            <div class="bar"><div class="fill" style="width:${pct}%;"></div></div>
+            <span>${pct}%</span>
+          </div>
+          <span class="batch-arrow" id="batchArrow" style="transform:rotate(180deg);">▾</span>
+        </div>
+      </div>
+      <div id="classRows">
+        ${total === 0 ? '<p style="padding:1.25rem 1.6rem; color:var(--text-faint); font-size:.9rem;">No classes available yet.</p>' : classes.map(c => {
+          const done = completedClasses.includes(c.id);
+          return `
+            <div class="class-row" onclick="toggleClassComplete('${c.id}')">
+              <div class="class-icon ${done ? 'done' : 'todo'}">${done ? '✓' : '○'}</div>
+              <div class="info">
+                <div class="title">${c.title}</div>
+                <div class="meta">${c.meta}</div>
+              </div>
+              <a href="${c.driveLink}" target="_blank" onclick="event.stopPropagation()"><button style="width:auto; margin:0; padding:.4rem .9rem; font-size:.8rem;">Watch</button></a>
+              <span class="status ${done ? 'done' : ''}">${done ? 'Completed' : 'Upcoming'}</span>
+            </div>`;
+        }).join('')}
+      </div>
+    </div>`;
+}
+
+function toggleClassComplete(id) {
+  const op = completedClasses.includes(id)
+    ? firebase.firestore.FieldValue.arrayRemove(id)
+    : firebase.firestore.FieldValue.arrayUnion(id);
+  db.collection('users').doc(currentUid).update({ completedClasses: op }).then(() => {
+    if (completedClasses.includes(id)) {
+      completedClasses = completedClasses.filter(c => c !== id);
+    } else {
+      completedClasses.push(id);
+    }
+    db.collection('users').doc(currentUid).get().then(doc => {
+      const data = doc.data();
+      const batchNamePromise = data.batchId
+        ? db.collection('batches').doc(data.batchId).get().then(b => b.exists ? b.data().name : 'My Batch')
+        : Promise.resolve('My Course');
+      batchNamePromise.then(batchName => loadClasses(batchName, data.blockedCourses || []));
+    });
+  });
+}
+
+function loadResources() {
+  db.collection('courseContent').doc('main').get().then(doc => {
+    const resources = (doc.exists && doc.data().resources) || [];
+    const wrap = document.getElementById('resourceWrap');
+    wrap.innerHTML = resources.length
+      ? resources.map(r => `<div class="resource-row"><span>${r.title}</span><a href="${r.link}" target="_blank"><button>Open</button></a></div>`).join('')
+      : '<p style="color:var(--text-faint); font-size:.9rem;">No resources shared yet.</p>';
   });
 }
 
@@ -132,26 +230,6 @@ function watchSession(uid, mySession) {
 function kickOut(uid) {
   alert('Your account was logged in on another device. For security, you have been logged out here.');
   auth.signOut().then(() => location.href = 'login.html');
-}
-
-function loadCourses(blockedCourses) {
-  db.collection('courseContent').doc('main').get().then(doc => {
-    const list = document.getElementById('courseList');
-    const modules = doc.exists ? (doc.data().modules || []) : [];
-    const visible = modules
-      .map((m, i) => Object.assign({ id: 'mod-' + i }, m))
-      .filter(m => m.driveLink && !blockedCourses.includes(m.id));
-    if (visible.length === 0) {
-      list.innerHTML = '<li>No courses available yet.</li>';
-      return;
-    }
-    list.innerHTML = '';
-    visible.forEach(m => {
-      const li = document.createElement('li');
-      li.innerHTML = `<span>${m.title}</span><a href="${m.driveLink}" target="_blank"><button>View</button></a>`;
-      list.appendChild(li);
-    });
-  });
 }
 
 function doLogout() {
