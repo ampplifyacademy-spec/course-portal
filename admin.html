@@ -31,6 +31,7 @@
     <span class="brand"><span class="a">A</span>mpplify Admin</span>
     <div class="nav-item active" data-tab="overview" onclick="switchTab('overview')"><span>📊</span><span>Overview</span></div>
     <div class="nav-item" data-tab="students" onclick="switchTab('students')"><span>👥</span><span>Students</span></div>
+    <div class="nav-item" data-tab="batches" onclick="switchTab('batches')"><span>🗂️</span><span>Batches</span></div>
     <div class="nav-item" data-tab="modules" onclick="switchTab('modules')"><span>🎓</span><span>Modules</span></div>
     <div class="nav-item" data-tab="payments" onclick="switchTab('payments')"><span>💳</span><span>Payments</span></div>
     <div class="nav-item" data-tab="site" onclick="switchTab('site')"><span>🎨</span><span>Site Content</span></div>
@@ -77,9 +78,23 @@
     <div class="tab-section" id="tab-students">
       <div class="panel">
         <table>
-          <thead><tr><th>Name</th><th>Email</th><th>Enrolled</th><th>Amount</th><th>Status</th><th>Action</th><th>Course Access</th></tr></thead>
+          <thead><tr><th>Name</th><th>Email</th><th>Batch</th><th>Enrolled</th><th>Amount</th><th>Status</th><th>Action</th><th>Course Access</th></tr></thead>
           <tbody id="userRows"></tbody>
         </table>
+      </div>
+    </div>
+
+    <!-- BATCHES -->
+    <div class="tab-section" id="tab-batches">
+      <div class="panel" style="margin-bottom:1.5rem;">
+        <h2 style="margin-bottom:1rem;">Add Batch</h2>
+        <input id="batchName" placeholder="Batch name (e.g. Batch 01)">
+        <button onclick="addBatch()">Add Batch</button>
+        <p class="msg" id="batchMsg"></p>
+      </div>
+      <div class="panel">
+        <h2 style="margin-bottom:1rem;">Current Batches</h2>
+        <ul class="course-list" id="batchList"></ul>
       </div>
     </div>
 
@@ -162,11 +177,13 @@
 <script>
 let allCourses = [];
 let allUsers = [];
+let allBatches = [];
 let moduleRows = [];
 
 const TAB_META = {
   overview: ['Dashboard Overview', "Here's what's happening with Ampplify Academy today."],
   students: ['Students', 'Manage enrolled students and their course access.'],
+  batches: ['Batches', 'Organize students into cohorts.'],
   modules: ['Courses & Modules', 'Manage your Amazon Selling Course content.'],
   payments: ['Payments', 'Track revenue and order history.'],
   site: ['Site Content', 'Edit colors, text, and pricing shown on the public site.']
@@ -186,7 +203,7 @@ auth.onAuthStateChanged(user => {
     return;
   }
   document.getElementById('adminAvatar').textContent = user.email.charAt(0).toUpperCase();
-  loadModulesForAccess().then(loadUsers);
+  loadBatches().then(() => loadModulesForAccess().then(loadUsers));
   loadSiteContentIntoForm();
 });
 
@@ -196,6 +213,38 @@ function loadModulesForAccess() {
       .filter(m => m.published !== false)
       .map((m, i) => ({ id: 'mod-' + i, name: m.title }));
   });
+}
+
+function loadBatches() {
+  return db.collection('batches').orderBy('createdAt', 'asc').get().then(snap => {
+    allBatches = snap.docs.map(doc => ({ id: doc.id, name: doc.data().name }));
+    const list = document.getElementById('batchList');
+    if (list) {
+      list.innerHTML = allBatches.length
+        ? allBatches.map(b => `<li><span>${b.name}</span><button class="danger" onclick="deleteBatch('${b.id}')">Delete</button></li>`).join('')
+        : '<li>No batches yet.</li>';
+    }
+  });
+}
+
+function addBatch() {
+  const name = document.getElementById('batchName').value.trim();
+  const msg = document.getElementById('batchMsg');
+  if (!name) { msg.textContent = 'Please enter a batch name'; return; }
+  db.collection('batches').add({ name, createdAt: firebase.firestore.FieldValue.serverTimestamp() }).then(() => {
+    document.getElementById('batchName').value = '';
+    msg.style.color = 'var(--success)';
+    msg.textContent = 'Batch added';
+    loadBatches().then(loadUsers);
+  });
+}
+
+function deleteBatch(id) {
+  db.collection('batches').doc(id).delete().then(() => loadBatches().then(loadUsers));
+}
+
+function setUserBatch(uid, batchId) {
+  db.collection('users').doc(uid).update({ batchId: batchId || null }).then(loadUsers);
 }
 
 function loadSiteContentIntoForm() {
@@ -499,10 +548,14 @@ function renderUserRows(list) {
 
     const enrolled = u.createdAt && u.createdAt.toDate ? u.createdAt.toDate().toLocaleDateString() : '—';
     const amount = u.amountPaid ? u.amountPaid + ' ' + (u.currency || '') : '—';
+    const batchOptions = '<option value="">—</option>' + allBatches.map(b =>
+      `<option value="${b.id}" ${u.batchId === b.id ? 'selected' : ''}>${b.name}</option>`
+    ).join('');
 
     tr.innerHTML = `
       <td>${u.name || ''}</td>
       <td>${u.email}</td>
+      <td><select onchange="setUserBatch('${u.id}', this.value)" style="margin:0; padding:.4rem .6rem; font-size:.85rem;">${batchOptions}</select></td>
       <td>${enrolled}</td>
       <td>${amount}</td>
       <td><span class="status-${u.status}">${u.status}</span></td>

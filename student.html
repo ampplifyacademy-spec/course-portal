@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<title>My Courses · Ampplify Academy</title>
+<title>Dashboard · Ampplify Academy</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@500;600;700;800&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
 <link rel="stylesheet" href="css/style.css">
@@ -14,19 +14,44 @@
   .curriculum-item .lesson-list { padding: 0 1.1rem 1rem; }
   .curriculum-item .lesson-row { display: flex; justify-content: space-between; align-items: center; padding: .6rem 0; border-top: 1px solid var(--border); font-size: .9rem; }
   .curriculum-item .lesson-row a button { width: auto; margin: 0; padding: .4rem .9rem; font-size: .82rem; }
+  .batch-chip { display: inline-flex; align-items: center; gap: .5rem; background: var(--info-bg); color: var(--info); font: 600 .82rem var(--font-body); padding: .4rem .9rem; border-radius: 999px; }
 </style>
 </head>
-<body>
-<div class="card wide">
-  <span class="brand"><span class="a">A</span>mpplify Academy</span>
-  <div class="top-bar">
-    <h1>My Courses</h1>
-    <button class="secondary" onclick="doLogout()">Log Out</button>
-  </div>
-  <ul class="course-list" id="courseList"></ul>
+<body class="admin-shell">
+<div class="admin-shell-grid">
 
-  <h2 style="margin-top:1.75rem;">Course Curriculum</h2>
-  <div id="curriculumWrap" style="margin-top:.75rem;"></div>
+  <div class="sidebar">
+    <span class="brand"><span class="a">A</span>mpplify Academy</span>
+    <div class="nav-item active"><span>🏠</span><span>Dashboard</span></div>
+    <div class="sidebar-footer">
+      <div class="avatar" id="studentAvatar">S</div>
+      <div>
+        <div class="name" id="studentName">Student</div>
+        <div class="role" id="studentBatchLabel">—</div>
+      </div>
+    </div>
+    <button class="secondary" style="margin-top:1rem;" onclick="doLogout()">Log Out</button>
+  </div>
+
+  <div class="admin-main">
+    <div class="admin-header">
+      <div>
+        <h1 id="welcomeTitle">Welcome back 👋</h1>
+        <p>Here's your Amazon Selling Course, all in one place.</p>
+      </div>
+      <span class="batch-chip" id="batchChip">No batch assigned</span>
+    </div>
+
+    <div class="panel" style="margin-bottom:1.5rem;">
+      <h2 style="margin-bottom:1rem;">My Courses</h2>
+      <ul class="course-list" id="courseList"></ul>
+    </div>
+
+    <div class="panel">
+      <h2 style="margin-bottom:1rem;">Course Curriculum</h2>
+      <div id="curriculumWrap"></div>
+    </div>
+  </div>
 </div>
 
 <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-app-compat.js"></script>
@@ -44,12 +69,29 @@ auth.onAuthStateChanged(user => {
       location.href = 'login.html';
       return;
     }
+    const data = doc.data();
     const mySession = localStorage.getItem('session_' + user.uid);
-    if (doc.data().currentSessionId && doc.data().currentSessionId !== mySession) {
+    if (data.currentSessionId && data.currentSessionId !== mySession) {
       kickOut(user.uid);
       return;
     }
-    loadCourses(doc.data().blockedCourses || []);
+
+    const displayName = data.name || user.email;
+    document.getElementById('studentName').textContent = displayName;
+    document.getElementById('studentAvatar').textContent = displayName.charAt(0).toUpperCase();
+    document.getElementById('welcomeTitle').textContent = 'Welcome back, ' + displayName.split(' ')[0] + ' 👋';
+
+    if (data.batchId) {
+      db.collection('batches').doc(data.batchId).get().then(bDoc => {
+        const name = bDoc.exists ? bDoc.data().name : 'Batch';
+        document.getElementById('batchChip').textContent = name;
+        document.getElementById('studentBatchLabel').textContent = 'Student — ' + name;
+      });
+    } else {
+      document.getElementById('studentBatchLabel').textContent = 'Student';
+    }
+
+    loadCourses(data.blockedCourses || []);
     loadCurriculum();
     watchSession(user.uid, mySession);
   });
