@@ -14,16 +14,16 @@
   .bank-box .row span:first-child { color: var(--text-muted); }
   .bank-box .row span:last-child { font-weight: 700; }
   .bank-box .note { color: var(--text-muted); font-size: .8rem; margin-top: .6rem; line-height: 1.4; }
+  label.upload-btn { display: block; width: 100%; text-align: center; padding: .8rem; border-radius: var(--radius-sm); border: 1px dashed var(--border-strong); background: var(--surface); color: var(--text-soft); font-size: .9rem; cursor: pointer; margin: .4rem 0; }
 </style>
 </head>
 <body>
 <div class="card">
   <span class="brand"><span class="a">A</span>mpplify Academy</span>
   <h1>Create Account</h1>
-  <p class="subtitle">Pay via bank transfer using the details below, then upload your payment receipt to our Google Drive. We'll approve your account once payment is verified.</p>
+  <p class="subtitle">Pay via bank transfer using the details below, then upload your payment receipt. We'll approve your account once payment is verified.</p>
 
   <div class="bank-box" id="bankBox"></div>
-  <button type="button" class="secondary" id="uploadBtn" style="margin-bottom:1.1rem;" onclick="openUploadLink()">Upload Payment Receipt</button>
 
   <label for="name">Full name</label>
   <input id="name" placeholder="Your full name">
@@ -31,8 +31,9 @@
   <input id="email" type="email" placeholder="you@example.com">
   <label for="password">Password</label>
   <input id="password" type="password" placeholder="Min 6 characters">
-  <label for="invoiceNote">Name/reference used when uploading</label>
-  <input id="invoiceNote" placeholder="e.g. the name you entered on the upload form">
+  <label>Payment receipt</label>
+  <input type="file" id="invoiceFile" accept="image/*,application/pdf" style="display:none;" onchange="onInvoiceChosen(this.files[0])">
+  <label class="upload-btn" for="invoiceFile" id="invoiceLabel">Choose receipt photo/PDF</label>
 
   <button onclick="doSignup()">Sign Up</button>
   <p class="msg" id="msg"></p>
@@ -45,7 +46,8 @@
 <script src="js/firebase-config.js"></script>
 <script src="js/site-content.js"></script>
 <script>
-let uploadLink = '';
+let uploadScriptUrl = '';
+let invoiceFile = null;
 
 loadSiteContent().then(content => {
   const b = content.bankDetails;
@@ -61,34 +63,65 @@ loadSiteContent().then(content => {
     : '<div class="row"><span>Bank details not set up yet — contact us.</span></div>';
   box.innerHTML += (b.instructions ? `<div class="note">${b.instructions}</div>` : '');
 
-  uploadLink = b.driveUploadLink;
-  if (!uploadLink) {
-    document.getElementById('uploadBtn').textContent = 'Upload link not set up yet — contact us';
-  }
+  uploadScriptUrl = b.uploadScriptUrl;
 });
 
-function openUploadLink() {
-  if (uploadLink) window.open(uploadLink, '_blank');
+function onInvoiceChosen(file) {
+  invoiceFile = file;
+  document.getElementById('invoiceLabel').textContent = file ? file.name : 'Choose receipt photo/PDF';
+}
+
+function fileToBase64(file) {
+  return new Promise((resolve, reject) => {
+    const reader = new FileReader();
+    reader.onload = () => resolve(reader.result.split(',')[1]);
+    reader.onerror = reject;
+    reader.readAsDataURL(file);
+  });
+}
+
+function uploadInvoiceToDrive(file, studentName) {
+  if (!uploadScriptUrl) return Promise.resolve('');
+  return fileToBase64(file).then(base64 => {
+    return fetch(uploadScriptUrl, {
+      method: 'POST',
+      headers: { 'Content-Type': 'text/plain;charset=utf-8' },
+      body: JSON.stringify({
+        fileData: base64,
+        mimeType: file.type,
+        fileName: studentName + ' - ' + file.name
+      })
+    }).then(r => r.json()).then(data => data.fileUrl || '');
+  });
 }
 
 function doSignup() {
   const name = document.getElementById('name').value.trim();
   const email = document.getElementById('email').value.trim();
   const password = document.getElementById('password').value;
-  const invoiceNote = document.getElementById('invoiceNote').value.trim();
   const msg = document.getElementById('msg');
 
-  if (!name || !email || !password || !invoiceNote) {
-    msg.textContent = "Please fill in all fields, including the reference you used when uploading your receipt";
+  if (!name || !email || !password || !invoiceFile) {
+    msg.textContent = "Please fill in all fields and choose your payment receipt";
+    return;
+  }
+  if (!uploadScriptUrl) {
+    msg.textContent = "Receipt upload isn't set up yet — please contact us directly";
     return;
   }
 
-  auth.createUserWithEmailAndPassword(email, password)
-    .then(cred => {
-      return db.collection('users').doc(cred.user.uid).set({
-        name, email, invoiceNote,
-        status: 'pending',
-        createdAt: firebase.firestore.FieldValue.serverTimestamp()
+  msg.style.color = 'var(--text-muted)';
+  msg.textContent = "Uploading receipt...";
+
+  uploadInvoiceToDrive(invoiceFile, name)
+    .then(invoiceUrl => {
+      msg.textContent = "Creating account...";
+      return auth.createUserWithEmailAndPassword(email, password).then(cred => {
+        return db.collection('users').doc(cred.user.uid).set({
+          name, email, invoiceUrl,
+          status: 'pending',
+          createdAt: firebase.firestore.FieldValue.serverTimestamp()
+        });
       });
     })
     .then(() => {
