@@ -167,13 +167,13 @@ loadSiteContent().then(content => {
   document.getElementById('heroEnrollBtn').textContent = 'Enroll Now — ' + c.priceNew + ' ' + c.currency;
   document.getElementById('bandEnrollBtn').textContent = 'Enroll Now — ' + c.priceNew + ' ' + c.currency;
 
-  document.getElementById('moduleGrid').innerHTML = c.modules.filter(m => m.published !== false).map((m, i) => `
+  document.getElementById('moduleGrid').innerHTML = c.curriculumTopics.map((m, i) => `
     <details class="module-card">
       <summary>
         <div class="module-num">${String(i + 1).padStart(2, '0')}</div>
         <div class="module-head">
           <h4>${m.title}</h4>
-          <div class="module-meta">${m.lessons ? m.lessons + ' lessons · ' : ''}${m.duration}</div>
+          <div class="module-meta">${m.duration}</div>
         </div>
         <span class="chevron">+</span>
       </summary>

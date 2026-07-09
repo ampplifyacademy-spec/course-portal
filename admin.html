@@ -156,6 +156,19 @@
 
       <button onclick="saveSiteContent()">Save All Site Content</button>
       <p class="msg" id="siteMsg"></p>
+
+      <div class="panel" style="margin-top:1.5rem;">
+        <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:1.25rem;">
+          <div>
+            <h2>Curriculum List (public landing page)</h2>
+            <p style="color:var(--text-muted); font-size:.82rem; margin-top:.3rem;">Marketing-only "What You'll Learn" list on course.html. Independent from Modules — not connected to admin course access or student dashboard.</p>
+          </div>
+          <button onclick="addCurriculumRow()" style="width:auto; margin:0;">+ Add Topic</button>
+        </div>
+        <div id="curriculumEditor"></div>
+        <button onclick="saveCurriculumTopics()" style="margin-top:.5rem;">Save Curriculum List</button>
+        <p class="msg" id="curriculumMsg"></p>
+      </div>
     </div>
 
     <!-- MODULES -->
@@ -200,7 +213,7 @@ const TAB_META = {
   overview: ['Dashboard Overview', "Here's what's happening with Ampplify Academy today."],
   students: ['Students', 'Manage enrolled students and their course access.'],
   batches: ['Batches', 'Organize students into cohorts.'],
-  modules: ['Courses & Modules', 'Manage your Amazon Selling Course content.'],
+  modules: ['Courses & Modules', 'Manage private student lessons and Drive links (not shown on the public landing page).'],
   resources: ['Resources', 'Share Google Sheets, Docs, and other reference files with students.'],
   payments: ['Payments', 'Track revenue and order history.'],
   site: ['Site Content', 'Edit colors, text, and pricing shown on the public site.']
@@ -264,8 +277,9 @@ function deleteResource(i) {
 }
 
 function loadModulesForAccess() {
-  return loadSiteContent().then(content => {
-    allCourses = content.course.modules
+  return db.collection('courseContent').doc('main').get().then(doc => {
+    const modules = (doc.exists && doc.data().modules) || [];
+    allCourses = modules
       .filter(m => m.published !== false)
       .map((m, i) => ({ id: 'mod-' + i, name: m.title }));
   });
@@ -322,16 +336,50 @@ function loadSiteContentIntoForm() {
     document.getElementById('mentorName').value = content.course.mentorName;
     document.getElementById('mentorBio').value = content.course.mentorBio;
 
-    moduleRows = content.course.modules.map(m => Object.assign({}, m));
+    curriculumRows = content.course.curriculumTopics.map(t => Object.assign({}, t));
+    renderCurriculumRows();
+
     return db.collection('courseContent').doc('main').get();
   }).then(doc => {
-    const privateModules = (doc.exists && doc.data().modules) || [];
-    moduleRows.forEach((m, i) => {
-      m.lessonLinks = (privateModules[i] && privateModules[i].lessonLinks) || [];
-      m.driveLink = (privateModules[i] && privateModules[i].driveLink) || '';
-      m.batchId = (privateModules[i] && privateModules[i].batchId) || '';
-    });
+    moduleRows = ((doc.exists && doc.data().modules) || []).map(m => Object.assign({
+      title: '', duration: '', driveLink: '', batchId: '', published: true, lessonLinks: []
+    }, m));
     renderModuleRows();
+  });
+}
+
+let curriculumRows = [];
+
+function renderCurriculumRows() {
+  const container = document.getElementById('curriculumEditor');
+  container.innerHTML = curriculumRows.map((t, i) => `
+    <div class="module-edit-card">
+      <div class="row-top"><span>Topic ${i + 1}</span><button class="danger" onclick="removeCurriculumRow(${i})">Remove</button></div>
+      <input placeholder="Title" value="${(t.title || '').replace(/"/g, '&quot;')}" oninput="curriculumRows[${i}].title = this.value">
+      <input placeholder="Description" value="${(t.desc || '').replace(/"/g, '&quot;')}" oninput="curriculumRows[${i}].desc = this.value">
+      <input placeholder="Duration (e.g. 45 min)" value="${(t.duration || '').replace(/"/g, '&quot;')}" oninput="curriculumRows[${i}].duration = this.value">
+    </div>`).join('');
+}
+
+function addCurriculumRow() {
+  curriculumRows.push({ title: '', desc: '', duration: '' });
+  renderCurriculumRows();
+}
+
+function removeCurriculumRow(i) {
+  curriculumRows.splice(i, 1);
+  renderCurriculumRows();
+}
+
+function saveCurriculumTopics() {
+  const msg = document.getElementById('curriculumMsg');
+  const topics = curriculumRows.filter(t => t.title.trim());
+  db.collection('siteContent').doc('main').update({ 'course.curriculumTopics': topics }).then(() => {
+    msg.style.color = 'var(--success)';
+    msg.textContent = 'Curriculum list saved. Changes are live immediately.';
+  }).catch(err => {
+    msg.style.color = 'var(--danger)';
+    msg.textContent = err.message;
   });
 }
 
@@ -345,11 +393,7 @@ function renderModuleRows() {
         <div class="module-edit-card">
           <div class="row-top"><span>Module ${i + 1}</span><button onclick="editingModuleIndex=null; renderModuleRows();">Done</button></div>
           <input placeholder="Title" value="${(m.title || '').replace(/"/g, '&quot;')}" oninput="moduleRows[${i}].title = this.value">
-          <input placeholder="Description" value="${(m.desc || '').replace(/"/g, '&quot;')}" oninput="moduleRows[${i}].desc = this.value">
-          <div style="display:grid; grid-template-columns:1fr 1fr; gap:.6rem;">
-            <input placeholder="Lessons (e.g. 4)" value="${m.lessons || ''}" oninput="moduleRows[${i}].lessons = this.value">
-            <input placeholder="Duration (e.g. 45 min)" value="${(m.duration || '').replace(/"/g, '&quot;')}" oninput="moduleRows[${i}].duration = this.value">
-          </div>
+          <input placeholder="Duration (e.g. 45 min)" value="${(m.duration || '').replace(/"/g, '&quot;')}" oninput="moduleRows[${i}].duration = this.value">
           <input placeholder="Google Drive link (private, students only — for a single-video class)" value="${(m.driveLink || '').replace(/"/g, '&quot;')}" oninput="moduleRows[${i}].driveLink = this.value">
           <label style="font-size:.82rem; color:var(--text-soft); margin-top:.6rem; display:block;">Batch (which students see this module)</label>
           <select onchange="moduleRows[${i}].batchId = this.value" style="margin-top:.3rem;">
@@ -385,7 +429,7 @@ function renderModuleRows() {
         <div class="mm-num">${String(i + 1).padStart(2, '0')}</div>
         <div class="mm-body">
           <div class="mm-title">${m.title || '(untitled module)'}${batchName ? ' <span style="color:var(--info); font-weight:600; font-size:.78rem;">· ' + batchName + '</span>' : ''}</div>
-          <div class="mm-meta">${m.lessons ? m.lessons + ' lessons · ' : ''}${m.duration || ''}</div>
+          <div class="mm-meta">${m.duration || ''}</div>
         </div>
         <span class="mm-pill ${published ? 'published' : 'draft'}">${published ? 'Published' : 'Draft'}</span>
         <button class="secondary" onclick="editingModuleIndex=${i}; renderModuleRows();">Edit</button>
@@ -394,7 +438,7 @@ function renderModuleRows() {
 }
 
 function addModuleRow() {
-  moduleRows.push({ title: '', desc: '', duration: '', lessons: '', published: true, driveLink: '', batchId: '', lessonLinks: [] });
+  moduleRows.push({ title: '', duration: '', published: true, driveLink: '', batchId: '', lessonLinks: [] });
   editingModuleIndex = moduleRows.length - 1;
   renderModuleRows();
 }
@@ -450,27 +494,19 @@ function saveSiteContent() {
   });
 }
 
-function publicModulesOnly() {
-  return moduleRows.filter(m => m.title.trim()).map(m => ({
-    title: m.title, desc: m.desc, duration: m.duration, lessons: m.lessons, published: m.published !== false
-  }));
-}
-
 function saveModules() {
   const msg = document.getElementById('modulesMsg');
-  const publicModules = publicModulesOnly();
   const privateModules = moduleRows.filter(m => m.title.trim()).map(m => ({
     title: m.title,
+    duration: m.duration || '',
+    published: m.published !== false,
     driveLink: m.driveLink || '',
     batchId: m.batchId || '',
     lessonLinks: (m.lessonLinks || []).filter(l => l.title.trim() && l.driveLink.trim()).map(l => ({
       title: l.title, driveLink: l.driveLink, duration: l.duration || ''
     }))
   }));
-  Promise.all([
-    db.collection('siteContent').doc('main').update({ 'course.modules': publicModules }),
-    db.collection('courseContent').doc('main').set({ modules: privateModules }, { merge: true })
-  ]).then(() => {
+  db.collection('courseContent').doc('main').set({ modules: privateModules }, { merge: true }).then(() => {
     loadModulesForAccess().then(loadUsers);
     msg.style.color = 'var(--success)';
     msg.textContent = 'Modules saved. Changes are live immediately.';
