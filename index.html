@@ -2,54 +2,11 @@
 <html lang="en">
 <head>
 <meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta http-equiv="refresh" content="0; url=course.html">
+<link rel="canonical" href="course.html">
 <title>Ampplify Academy</title>
-<link rel="preconnect" href="https://fonts.googleapis.com">
-<link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@500;600;700;800&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
-<link rel="stylesheet" href="css/style.css">
 </head>
-<body class="landing">
-<div class="hero">
-  <span class="badge">ONLINE COURSES</span>
-  <h1 id="heroTitle">Learn skills that <span id="heroHighlight">actually pay off</span></h1>
-  <p class="subtitle" id="heroSubtitle">Get access to the full Ampplify Academy course library on Google Drive. Sign up, complete your payment, and we'll approve your account so you can start learning.</p>
-  <div class="cta-row">
-    <button onclick="location.href='login.html'">Log In</button>
-    <button class="secondary" onclick="location.href='signup.html'">Sign Up</button>
-  </div>
-
-  <div class="features">
-    <div class="feature">
-      <div class="icon">🎓</div>
-      <h3>Full Course Access</h3>
-      <p>Once approved, view every course we offer directly from Google Drive.</p>
-    </div>
-    <div class="feature">
-      <div class="icon">✅</div>
-      <h3>Manual Approval</h3>
-      <p>Pay via bank transfer, submit your transaction ID, and we'll verify and approve you.</p>
-    </div>
-    <div class="feature">
-      <div class="icon">🔒</div>
-      <h3>Secure Accounts</h3>
-      <p>Your login is protected — passwords are never stored in plain text.</p>
-    </div>
-  </div>
-
-  <p class="footer-note">© 2026 Ampplify Academy. All rights reserved.</p>
-</div>
-
-<script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-app-compat.js"></script>
-<script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-auth-compat.js"></script>
-<script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore-compat.js"></script>
-<script src="js/firebase-config.js"></script>
-<script src="js/site-content.js"></script>
-<script>
-loadSiteContent().then(content => {
-  document.getElementById('heroTitle').firstChild.textContent = content.landing.heroTitlePrefix + ' ';
-  document.getElementById('heroHighlight').textContent = content.landing.heroHighlight;
-  document.getElementById('heroSubtitle').textContent = content.landing.heroSubtitle;
-});
-</script>
+<body>
+<script>location.replace('course.html');</script>
 </body>
 </html>
