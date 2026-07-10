@@ -40,6 +40,13 @@ const SITE_CONTENT_DEFAULTS = {
       { q: 'How much money do I need to start selling?', a: 'We cover budget-friendly sourcing strategies — most students start with a modest initial inventory budget.' },
       { q: 'Is there support if I get stuck?', a: 'Yes — every student gets access to a private community where Yasin Arafat answers questions directly.' },
       { q: "What if the course isn't for me?", a: "There's a 14-day money-back guarantee, no questions asked." }
+    ],
+    services: [
+      { title: 'Amazon Account Setup', desc: 'We set up your Seller Central account correctly from day one.', price: '150', imageUrl: '' },
+      { title: '1-on-1 Coaching Call', desc: 'A private call to review your store and plan next steps.', price: '80', imageUrl: '' }
+    ],
+    successStories: [
+      { name: 'Tanvir Ahmed', text: 'Launched his first product in 3 weeks and hit consistent monthly sales within 2 months.', imageUrl: '' }
     ]
   }
 };
@@ -76,6 +83,12 @@ function loadSiteContent() {
       }
       if (!data.course || !data.course.faqs || !data.course.faqs.length) {
         merged.course.faqs = SITE_CONTENT_DEFAULTS.course.faqs;
+      }
+      if (!data.course || !data.course.services || !data.course.services.length) {
+        merged.course.services = SITE_CONTENT_DEFAULTS.course.services;
+      }
+      if (!data.course || !data.course.successStories || !data.course.successStories.length) {
+        merged.course.successStories = SITE_CONTENT_DEFAULTS.course.successStories;
       }
       applySiteTheme(merged.theme);
       return merged;

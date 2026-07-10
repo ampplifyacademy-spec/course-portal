@@ -203,6 +203,32 @@
         <button onclick="saveFaqs()" style="margin-top:.5rem;">Save FAQ</button>
         <p class="msg" id="faqMsg"></p>
       </div>
+
+      <div class="panel" style="margin-top:1.5rem;">
+        <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:1.25rem;">
+          <div>
+            <h2>Services (services.html)</h2>
+            <p style="color:var(--text-muted); font-size:.82rem; margin-top:.3rem;">What we provide and how much each costs. Shown on its own public page, linked from the nav.</p>
+          </div>
+          <button onclick="addServiceRow()" style="width:auto; margin:0;">+ Add Service</button>
+        </div>
+        <div id="serviceEditor"></div>
+        <button onclick="saveServices()" style="margin-top:.5rem;">Save Services</button>
+        <p class="msg" id="serviceMsg"></p>
+      </div>
+
+      <div class="panel" style="margin-top:1.5rem;">
+        <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:1.25rem;">
+          <div>
+            <h2>Success Stories (success-stories.html)</h2>
+            <p style="color:var(--text-muted); font-size:.82rem; margin-top:.3rem;">Case studies of past students/clients, with photo. Image field takes any public image URL (e.g. a public Google Drive/Imgur link).</p>
+          </div>
+          <button onclick="addSuccessStoryRow()" style="width:auto; margin:0;">+ Add Success Story</button>
+        </div>
+        <div id="successStoryEditor"></div>
+        <button onclick="saveSuccessStories()" style="margin-top:.5rem;">Save Success Stories</button>
+        <p class="msg" id="successStoryMsg"></p>
+      </div>
     </div>
 
     <!-- MODULES -->
@@ -384,6 +410,12 @@ function loadSiteContentIntoForm() {
     faqRows = content.course.faqs.map(f => Object.assign({}, f));
     renderFaqRows();
 
+    serviceRows = (content.course.services || []).map(s => Object.assign({}, s));
+    renderServiceRows();
+
+    successStoryRows = (content.course.successStories || []).map(s => Object.assign({}, s));
+    renderSuccessStoryRows();
+
     return db.collection('courseContent').doc('main').get();
   }).then(doc => {
     moduleRows = ((doc.exists && doc.data().modules) || []).map(m => Object.assign({
@@ -491,6 +523,77 @@ function saveFaqs() {
   db.collection('siteContent').doc('main').update({ 'course.faqs': faqs }).then(() => {
     msg.style.color = 'var(--success)';
     msg.textContent = 'FAQ saved. Changes are live immediately.';
+  }).catch(err => {
+    msg.style.color = 'var(--danger)';
+    msg.textContent = err.message;
+  });
+}
+
+let serviceRows = [];
+
+function renderServiceRows() {
+  const container = document.getElementById('serviceEditor');
+  container.innerHTML = serviceRows.map((s, i) => `
+    <div class="module-edit-card">
+      <div class="row-top"><span>Service ${i + 1}</span><button class="danger" onclick="removeServiceRow(${i})">Remove</button></div>
+      <input placeholder="Title" value="${(s.title || '').replace(/"/g, '&quot;')}" oninput="serviceRows[${i}].title = this.value">
+      <input placeholder="Description" value="${(s.desc || '').replace(/"/g, '&quot;')}" oninput="serviceRows[${i}].desc = this.value">
+      <input placeholder="Price (e.g. 150)" value="${(s.price || '').replace(/"/g, '&quot;')}" oninput="serviceRows[${i}].price = this.value">
+      <input placeholder="Image URL (optional)" value="${(s.imageUrl || '').replace(/"/g, '&quot;')}" oninput="serviceRows[${i}].imageUrl = this.value">
+    </div>`).join('');
+}
+
+function addServiceRow() {
+  serviceRows.push({ title: '', desc: '', price: '', imageUrl: '' });
+  renderServiceRows();
+}
+
+function removeServiceRow(i) {
+  serviceRows.splice(i, 1);
+  renderServiceRows();
+}
+
+function saveServices() {
+  const msg = document.getElementById('serviceMsg');
+  const services = serviceRows.filter(s => s.title.trim());
+  db.collection('siteContent').doc('main').update({ 'course.services': services }).then(() => {
+    msg.style.color = 'var(--success)';
+    msg.textContent = 'Services saved. Changes are live immediately.';
+  }).catch(err => {
+    msg.style.color = 'var(--danger)';
+    msg.textContent = err.message;
+  });
+}
+
+let successStoryRows = [];
+
+function renderSuccessStoryRows() {
+  const container = document.getElementById('successStoryEditor');
+  container.innerHTML = successStoryRows.map((s, i) => `
+    <div class="module-edit-card">
+      <div class="row-top"><span>Success Story ${i + 1}</span><button class="danger" onclick="removeSuccessStoryRow(${i})">Remove</button></div>
+      <input placeholder="Student/client name" value="${(s.name || '').replace(/"/g, '&quot;')}" oninput="successStoryRows[${i}].name = this.value">
+      <input placeholder="Story text" value="${(s.text || '').replace(/"/g, '&quot;')}" oninput="successStoryRows[${i}].text = this.value">
+      <input placeholder="Image URL (optional)" value="${(s.imageUrl || '').replace(/"/g, '&quot;')}" oninput="successStoryRows[${i}].imageUrl = this.value">
+    </div>`).join('');
+}
+
+function addSuccessStoryRow() {
+  successStoryRows.push({ name: '', text: '', imageUrl: '' });
+  renderSuccessStoryRows();
+}
+
+function removeSuccessStoryRow(i) {
+  successStoryRows.splice(i, 1);
+  renderSuccessStoryRows();
+}
+
+function saveSuccessStories() {
+  const msg = document.getElementById('successStoryMsg');
+  const successStories = successStoryRows.filter(s => s.name.trim());
+  db.collection('siteContent').doc('main').update({ 'course.successStories': successStories }).then(() => {
+    msg.style.color = 'var(--success)';
+    msg.textContent = 'Success stories saved. Changes are live immediately.';
   }).catch(err => {
     msg.style.color = 'var(--danger)';
     msg.textContent = err.message;
