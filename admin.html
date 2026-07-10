@@ -533,18 +533,29 @@ let serviceRows = [];
 
 function renderServiceRows() {
   const container = document.getElementById('serviceEditor');
-  container.innerHTML = serviceRows.map((s, i) => `
+  container.innerHTML = serviceRows.map((s, i) => {
+    const points = s.points || [];
+    const pointsHtml = points.map((p, pi) => `
+      <div style="display:flex; gap:.5rem; margin-bottom:.4rem;">
+        <input placeholder="Point ${pi + 1}" value="${(p || '').replace(/"/g, '&quot;')}" oninput="serviceRows[${i}].points[${pi}] = this.value" style="margin:0;">
+        <button class="danger" onclick="removeServicePoint(${i},${pi})" style="width:auto; margin:0;">Remove</button>
+      </div>`).join('');
+    return `
     <div class="module-edit-card">
       <div class="row-top"><span>Service ${i + 1}</span><button class="danger" onclick="removeServiceRow(${i})">Remove</button></div>
       <input placeholder="Title" value="${(s.title || '').replace(/"/g, '&quot;')}" oninput="serviceRows[${i}].title = this.value">
       <input placeholder="Description" value="${(s.desc || '').replace(/"/g, '&quot;')}" oninput="serviceRows[${i}].desc = this.value">
       <input placeholder="Price (e.g. 150)" value="${(s.price || '').replace(/"/g, '&quot;')}" oninput="serviceRows[${i}].price = this.value">
       <input placeholder="Image URL (optional)" value="${(s.imageUrl || '').replace(/"/g, '&quot;')}" oninput="serviceRows[${i}].imageUrl = this.value">
-    </div>`).join('');
+      <label style="display:block; margin:.75rem 0 .4rem; font-size:.8rem; color:var(--text-muted);">Points (shown as numbered list)</label>
+      ${pointsHtml}
+      <button onclick="addServicePoint(${i})" style="width:auto; margin:0;">+ Add Point</button>
+    </div>`;
+  }).join('');
 }
 
 function addServiceRow() {
-  serviceRows.push({ title: '', desc: '', price: '', imageUrl: '' });
+  serviceRows.push({ title: '', desc: '', price: '', imageUrl: '', points: [] });
   renderServiceRows();
 }
 
@@ -553,9 +564,20 @@ function removeServiceRow(i) {
   renderServiceRows();
 }
 
+function addServicePoint(i) {
+  if (!serviceRows[i].points) serviceRows[i].points = [];
+  serviceRows[i].points.push('');
+  renderServiceRows();
+}
+
+function removeServicePoint(i, pi) {
+  serviceRows[i].points.splice(pi, 1);
+  renderServiceRows();
+}
+
 function saveServices() {
   const msg = document.getElementById('serviceMsg');
-  const services = serviceRows.filter(s => s.title.trim());
+  const services = serviceRows.filter(s => s.title.trim()).map(s => Object.assign({}, s, { points: (s.points || []).filter(p => p.trim()) }));
   db.collection('siteContent').doc('main').update({ 'course.services': services }).then(() => {
     msg.style.color = 'var(--success)';
     msg.textContent = 'Services saved. Changes are live immediately.';
@@ -909,8 +931,12 @@ function renderUserRows(list) {
       `<option value="${b.id}" ${u.batchId === b.id ? 'selected' : ''}>${b.name}</option>`
     ).join('');
 
+    const servicesNote = (u.selectedServices && u.selectedServices.length)
+      ? `<div style="font-size:.72rem; color:var(--text-muted); margin-top:.2rem;">Services: ${u.selectedServices.join(', ')} (${u.serviceTotal} ${u.serviceCurrency || ''})</div>`
+      : '';
+
     tr.innerHTML = `
-      <td>${u.name || ''}</td>
+      <td>${u.name || ''}${servicesNote}</td>
       <td>${u.email}</td>
       <td>${u.invoiceUrl ? `<a href="${u.invoiceUrl}" target="_blank"><button style="width:auto; margin:0; padding:.4rem .8rem; font-size:.8rem;">View</button></a>` : '—'}</td>
       <td><select onchange="setUserBatch('${u.id}', this.value)" style="margin:0; padding:.4rem .6rem; font-size:.85rem;">${batchOptions}</select></td>

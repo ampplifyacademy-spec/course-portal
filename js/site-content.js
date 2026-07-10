@@ -42,8 +42,8 @@ const SITE_CONTENT_DEFAULTS = {
       { q: "What if the course isn't for me?", a: "There's a 14-day money-back guarantee, no questions asked." }
     ],
     services: [
-      { title: 'Amazon Account Setup', desc: 'We set up your Seller Central account correctly from day one.', price: '150', imageUrl: '' },
-      { title: '1-on-1 Coaching Call', desc: 'A private call to review your store and plan next steps.', price: '80', imageUrl: '' }
+      { title: 'Amazon Account Setup', desc: 'We set up your Seller Central account correctly from day one.', price: '150', imageUrl: '', points: ['Seller Central registration', 'Category & brand approval guidance', 'Store policy setup'] },
+      { title: '1-on-1 Coaching Call', desc: 'A private call to review your store and plan next steps.', price: '80', imageUrl: '', points: ['60-minute live call', 'Store & listing review', 'Personalized action plan'] }
     ],
     successStories: [
       { name: 'Tanvir Ahmed', text: 'Launched his first product in 3 weeks and hit consistent monthly sales within 2 months.', imageUrl: '' }

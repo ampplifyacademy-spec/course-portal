@@ -28,6 +28,8 @@
   <h1>Create Account</h1>
   <p class="subtitle">Pay via bank transfer using the details below, then upload your payment receipt. We'll approve your account once payment is verified.</p>
 
+  <div class="bank-box" id="selectedServicesBox" style="display:none; margin-bottom:1.1rem;"></div>
+
   <div class="bank-box" id="bankBox"></div>
 
   <label for="name">Full name</label>
@@ -56,6 +58,18 @@
 <script>
 let uploadScriptUrl = '';
 let invoiceFile = null;
+let selectedServices = null;
+
+try {
+  const raw = sessionStorage.getItem('selectedServices');
+  if (raw) {
+    selectedServices = JSON.parse(raw);
+    const box = document.getElementById('selectedServicesBox');
+    box.style.display = 'block';
+    box.innerHTML = `<div class="row"><span>Selected services</span><span>${selectedServices.names.join(', ')}</span></div>
+      <div class="row"><span>Total</span><span>${selectedServices.total} ${selectedServices.currency}</span></div>`;
+  }
+} catch (e) {}
 
 loadSiteContent().then(content => {
   const b = content.bankDetails;
@@ -143,14 +157,21 @@ function doSignup() {
     .then(invoiceUrl => {
       msg.textContent = "Creating account...";
       return auth.createUserWithEmailAndPassword(email, password).then(cred => {
-        return db.collection('users').doc(cred.user.uid).set({
+        const doc = {
           name, email, invoiceUrl,
           status: 'pending',
           createdAt: firebase.firestore.FieldValue.serverTimestamp()
-        });
+        };
+        if (selectedServices) {
+          doc.selectedServices = selectedServices.names;
+          doc.serviceTotal = selectedServices.total;
+          doc.serviceCurrency = selectedServices.currency;
+        }
+        return db.collection('users').doc(cred.user.uid).set(doc);
       });
     })
     .then(() => {
+      sessionStorage.removeItem('selectedServices');
       msg.style.color = 'var(--success)';
       msg.textContent = "Signup successful! We'll notify you by email once your account is approved.";
     })

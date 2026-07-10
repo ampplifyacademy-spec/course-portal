@@ -8,7 +8,7 @@
 <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@500;600;700;800&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
 <link rel="stylesheet" href="css/style.css">
 <style>
-  body.course-page { display: block; padding: 0; }
+  body.course-page { display: block; padding: 0; padding-bottom: 90px; }
   .cnav { display: flex; align-items: center; justify-content: space-between; padding: 1.75rem 4rem; flex-wrap: wrap; gap: 1rem; }
   .cnav-links { display: flex; gap: 2.25rem; font: 600 .95rem var(--font-body); color: var(--text-soft); }
   .cnav-links a { color: inherit; text-decoration: none; cursor: pointer; }
@@ -18,15 +18,36 @@
   .csection h2 { font-size: 2.1rem; text-align: center; margin-bottom: .6rem; }
   .csection > p.lead { text-align: center; color: var(--text-soft); margin-bottom: 2.75rem; }
   .service-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(280px, 1fr)); gap: 1.5rem; max-width: 1100px; margin: 0 auto; }
-  .service-card { background: var(--surface); border: 1px solid var(--border); border-radius: var(--radius); overflow: hidden; display: flex; flex-direction: column; }
+  .service-card { background: var(--surface); border: 2px solid var(--border); border-radius: var(--radius); overflow: hidden; display: flex; flex-direction: column; cursor: pointer; transition: border-color .15s; }
+  .service-card.selected { border-color: var(--accent); }
   .service-card img { width: 100%; height: 180px; object-fit: cover; display: block; }
-  .service-card .body { padding: 1.5rem; display: flex; flex-direction: column; flex: 1; }
-  .service-card h4 { font-size: 1.1rem; margin-bottom: .5rem; }
-  .service-card p { color: var(--text-soft); font-size: .9rem; line-height: 1.6; flex: 1; }
+  .service-card .body { padding: 1.5rem; display: flex; flex-direction: column; flex: 1; position: relative; }
+  .service-card .check { position: absolute; top: -.5rem; right: 1.5rem; width: 26px; height: 26px; border-radius: 50%; border: 2px solid var(--border-strong); background: var(--bg); display: flex; align-items: center; justify-content: center; font-size: .85rem; color: transparent; }
+  .service-card.selected .check { background: var(--accent); border-color: var(--accent); color: #fff; }
+  .service-card h4 { font-size: 1.1rem; margin-bottom: .5rem; padding-right: 1.5rem; }
+  .service-card p.desc { color: var(--text-soft); font-size: .9rem; line-height: 1.6; }
+  .service-card ol.points { margin: .75rem 0 0; padding-left: 1.2rem; color: var(--text-soft); font-size: .85rem; line-height: 1.7; }
   .service-price { color: var(--accent-orange); font: 800 1.3rem var(--font-display); margin: .9rem 0 0; }
   .cta-band { background: linear-gradient(135deg, rgba(0,181,254,.13), rgba(253,125,1,.13)); padding: 3.5rem 4rem; text-align: center; }
   .cta-band h3 { font-size: 1.9rem; margin-bottom: .75rem; }
   .cta-band button { width: auto; margin: 0 auto; padding: 1rem 2.25rem; }
+  .total-bar { position: fixed; bottom: 0; left: 0; right: 0; background: var(--surface-alt); border-top: 1px solid var(--border); padding: 1rem 2rem; display: none; align-items: center; justify-content: space-between; gap: 1rem; flex-wrap: wrap; z-index: 50; }
+  .total-bar.show { display: flex; }
+  .total-bar .info { font-size: .95rem; }
+  .total-bar .info b { color: var(--accent-orange); font-size: 1.2rem; }
+  .total-bar button { width: auto; margin: 0; padding: .8rem 1.75rem; }
+  .payment-panel { max-width: 640px; margin: 3rem auto 0; background: var(--bg); border: 1px solid var(--border); border-radius: var(--radius-sm); padding: 1.5rem 1.75rem; display: none; }
+  .payment-panel.show { display: block; }
+  .bank-tabs { display: flex; flex-wrap: wrap; gap: .5rem; margin-bottom: .9rem; }
+  .bank-tab-btn { padding: .5rem 1rem; border-radius: 999px; border: 1px solid var(--border-strong); background: var(--surface); color: var(--text-soft); font-size: .85rem; font-weight: 600; cursor: pointer; }
+  .bank-tab-btn.active { background: var(--accent); border-color: var(--accent); color: #fff; }
+  .bank-panel2 { display: none; }
+  .bank-panel2.active { display: block; }
+  .payment-panel .row { display: flex; justify-content: space-between; padding: .3rem 0; border-bottom: 1px solid var(--border); font-size: .88rem; }
+  .payment-panel .row:last-child { border-bottom: none; }
+  .payment-panel .row span:first-child { color: var(--text-muted); }
+  .payment-panel .row span:last-child { font-weight: 700; }
+  .payment-panel .note { color: var(--text-muted); font-size: .8rem; margin-top: .9rem; line-height: 1.4; }
   @media (max-width: 760px) { .cnav, .csection { padding-left: 1.5rem; padding-right: 1.5rem; } .cnav-links { display: none; } }
 </style>
 </head>
@@ -46,13 +67,25 @@
 
 <section class="csection" style="padding-top:3.5rem;">
   <h2>Our Services</h2>
-  <p class="lead">What we offer, and how much it costs.</p>
+  <p class="lead">Click one or more services to see your total, then pay below.</p>
   <div class="service-grid" id="serviceGrid"></div>
+
+  <div class="payment-panel" id="paymentPanel">
+    <h3 style="margin-bottom:.25rem;">Pay for Selected Services</h3>
+    <p style="color:var(--text-muted); font-size:.85rem; margin-bottom:1.1rem;" id="selectedSummary"></p>
+    <div id="bankBox"></div>
+    <button onclick="goToSignup()" style="margin-top:1.25rem;">I've Paid — Continue to Sign Up</button>
+  </div>
 </section>
 
 <div class="cta-band">
   <h3>Want to get started?</h3>
   <button onclick="location.href='signup.html'">Enroll Now</button>
+</div>
+
+<div class="total-bar" id="totalBar">
+  <div class="info"><span id="totalCount">0</span> service(s) selected — Total: <b id="totalAmount">0</b></div>
+  <button onclick="showPaymentPanel()">Continue to Payment</button>
 </div>
 
 <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-app-compat.js"></script>
@@ -61,21 +94,81 @@
 <script src="js/firebase-config.js"></script>
 <script src="js/site-content.js"></script>
 <script>
+let allServices = [];
+let currency = 'SAR';
+const selected = new Set();
+
 loadSiteContent().then(content => {
   const c = content.course;
-  const services = c.services || [];
-  document.getElementById('serviceGrid').innerHTML = services.length
-    ? services.map(s => `
-      <div class="service-card">
+  currency = c.currency || 'SAR';
+  allServices = c.services || [];
+
+  document.getElementById('serviceGrid').innerHTML = allServices.length
+    ? allServices.map((s, i) => `
+      <div class="service-card" id="serviceCard${i}" onclick="toggleService(${i})">
         ${s.imageUrl ? `<img src="${s.imageUrl}" alt="${s.title}">` : ''}
         <div class="body">
+          <div class="check">✓</div>
           <h4>${s.title}</h4>
-          <p>${s.desc}</p>
-          ${s.price ? `<div class="service-price">${s.price} ${c.currency}</div>` : ''}
+          <p class="desc">${s.desc}</p>
+          ${(s.points && s.points.length) ? `<ol class="points">${s.points.map(p => `<li>${p}</li>`).join('')}</ol>` : ''}
+          ${s.price ? `<div class="service-price">${s.price} ${currency}</div>` : ''}
         </div>
       </div>`).join('')
     : '<p style="text-align:center; color:var(--text-muted); grid-column:1/-1;">Services coming soon.</p>';
+
+  const bankBox = document.getElementById('bankBox');
+  const accounts = (content.bankDetails.accounts || []).filter(a => a.bankName || a.accountNumber);
+  if (accounts.length) {
+    const tabs = accounts.map((a, i) => `<button type="button" class="bank-tab-btn${i === 0 ? ' active' : ''}" onclick="showBankTab2(${i})">${a.bankName || 'Bank ' + (i + 1)}</button>`).join('');
+    const panels = accounts.map((a, i) => {
+      const rows = [
+        ['Bank Name', a.bankName], ['Account Name', a.accountName],
+        ['Account Number', a.accountNumber], ['IBAN', a.iban]
+      ].filter(r => r[1]).map(r => `<div class="row"><span>${r[0]}</span><span>${r[1]}</span></div>`).join('');
+      return `<div class="bank-panel2${i === 0 ? ' active' : ''}" id="bankPanel2_${i}">${rows}</div>`;
+    }).join('');
+    bankBox.innerHTML = `<div class="bank-tabs">${tabs}</div>${panels}`;
+  } else {
+    bankBox.innerHTML = '<div class="row"><span>Bank details not set up yet — contact us.</span></div>';
+  }
+  bankBox.innerHTML += (content.bankDetails.instructions ? `<div class="note">${content.bankDetails.instructions}</div>` : '');
 });
+
+function showBankTab2(i) {
+  document.querySelectorAll('.bank-tab-btn').forEach((btn, idx) => btn.classList.toggle('active', idx === i));
+  document.querySelectorAll('.bank-panel2').forEach((panel, idx) => panel.classList.toggle('active', idx === i));
+}
+
+function toggleService(i) {
+  if (selected.has(i)) selected.delete(i); else selected.add(i);
+  document.getElementById('serviceCard' + i).classList.toggle('selected', selected.has(i));
+  updateTotal();
+}
+
+function updateTotal() {
+  const bar = document.getElementById('totalBar');
+  const total = [...selected].reduce((sum, i) => sum + (parseFloat(allServices[i].price) || 0), 0);
+  document.getElementById('totalCount').textContent = selected.size;
+  document.getElementById('totalAmount').textContent = total + ' ' + currency;
+  bar.classList.toggle('show', selected.size > 0);
+  if (!selected.size) document.getElementById('paymentPanel').classList.remove('show');
+}
+
+function showPaymentPanel() {
+  const names = [...selected].map(i => allServices[i].title);
+  const total = [...selected].reduce((sum, i) => sum + (parseFloat(allServices[i].price) || 0), 0);
+  document.getElementById('selectedSummary').textContent = names.join(', ') + ' — Total: ' + total + ' ' + currency;
+  document.getElementById('paymentPanel').classList.add('show');
+  document.getElementById('paymentPanel').scrollIntoView({ behavior: 'smooth', block: 'center' });
+}
+
+function goToSignup() {
+  const names = [...selected].map(i => allServices[i].title);
+  const total = [...selected].reduce((sum, i) => sum + (parseFloat(allServices[i].price) || 0), 0);
+  sessionStorage.setItem('selectedServices', JSON.stringify({ names, total, currency }));
+  location.href = 'signup.html';
+}
 </script>
 </body>
 </html>
