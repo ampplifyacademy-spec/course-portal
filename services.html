@@ -49,6 +49,16 @@
   .payment-panel .row span:first-child { color: var(--text-muted); }
   .payment-panel .row span:last-child { font-weight: 700; }
   .payment-panel .note { color: var(--text-muted); font-size: .8rem; margin-top: .9rem; line-height: 1.4; }
+  .testimonial-row { display: flex; gap: 1.4rem; max-width: 1200px; margin: 0 auto; overflow-x: auto; }
+  .testimonial-card { flex: 1; min-width: 300px; background: var(--surface); border: 1px solid var(--border); border-radius: var(--radius); padding: 1.75rem; }
+  .testimonial-card .stars { color: var(--accent-orange); margin-bottom: .75rem; }
+  .testimonial-card p { font-size: .92rem; line-height: 1.7; color: #d4d9e6; margin-bottom: 1.1rem; }
+  .testimonial-card .tname { font: 700 .95rem var(--font-display); }
+  .feedback-form-wrap { max-width: 480px; margin: 3rem auto 0; background: var(--surface); border: 1px solid var(--border); border-radius: var(--radius); padding: 1.75rem; }
+  .feedback-form-wrap h3 { font-size: 1.2rem; margin-bottom: .3rem; }
+  .feedback-form-wrap p.hint { color: var(--text-muted); font-size: .82rem; margin-bottom: 1.1rem; }
+  .feedback-form-wrap label { display: block; font: 600 .8rem var(--font-body); color: var(--text-soft); margin: .9rem 0 .4rem; }
+  .feedback-form-wrap label:first-of-type { margin-top: 0; }
   @media (max-width: 760px) { .cnav, .csection { padding-left: 1.5rem; padding-right: 1.5rem; } .cnav-links { display: none; } }
 </style>
 </head>
@@ -79,6 +89,33 @@
   </div>
 </section>
 
+<section class="csection" style="background:#0d1120;">
+  <h2>Customer Feedback</h2>
+  <p class="lead">What clients say about our services.</p>
+  <div class="testimonial-row" id="serviceFeedbackRow"></div>
+
+  <div class="feedback-form-wrap">
+    <h3>Share Your Feedback</h3>
+    <p class="hint">No account needed. Your feedback will appear above once we approve it.</p>
+    <label>Your name</label>
+    <input id="serviceFbName" placeholder="Your name">
+    <label>Rating</label>
+    <select id="serviceFbRating">
+      <option value="5">★★★★★ (5)</option>
+      <option value="4">★★★★ (4)</option>
+      <option value="3">★★★ (3)</option>
+      <option value="2">★★ (2)</option>
+      <option value="1">★ (1)</option>
+    </select>
+    <label>Your feedback</label>
+    <textarea id="serviceFbQuote" placeholder="Tell us about the service..."></textarea>
+    <input type="file" id="serviceFbImage" accept="image/*" style="display:none;">
+    <label class="upload-btn" for="serviceFbImage" id="serviceFbImageLabel" style="display:block; text-align:center; padding:.8rem; border-radius:var(--radius-sm); border:1px dashed var(--border-strong); background:var(--surface-alt); color:var(--text-soft); font-size:.9rem; cursor:pointer; margin:.4rem 0;">Add a photo (optional)</label>
+    <button id="serviceFbBtn" style="margin-top:1rem;">Submit Feedback</button>
+    <p class="msg" id="serviceFbMsg"></p>
+  </div>
+</section>
+
 <div class="cta-band">
   <h3>Want to get started?</h3>
   <button onclick="location.href='signup.html'">Enroll Now</button>
@@ -94,6 +131,7 @@
 <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore-compat.js"></script>
 <script src="js/firebase-config.js"></script>
 <script src="js/site-content.js"></script>
+<script src="js/feedback.js"></script>
 <script>
 let allServices = [];
 let currency = 'SAR';
@@ -136,6 +174,14 @@ loadSiteContent().then(content => {
     bankBox.innerHTML = '<div class="row"><span>Bank details not set up yet — contact us.</span></div>';
   }
   bankBox.innerHTML += (content.bankDetails.instructions ? `<div class="note">${content.bankDetails.instructions}</div>` : '');
+
+  fbLoadApproved('service').then(list => {
+    document.getElementById('serviceFeedbackRow').innerHTML = list.length
+      ? list.map(fbCard).join('')
+      : '<p style="text-align:center; color:var(--text-muted); flex:1;">No feedback yet — be the first to share.</p>';
+  });
+
+  fbInitForm('serviceFb', 'service', content.bankDetails.uploadScriptUrl);
 });
 
 function showBankTab2(i) {

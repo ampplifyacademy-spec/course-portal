@@ -61,6 +61,11 @@
   .price-features { text-align: left; display: flex; flex-direction: column; gap: .75rem; margin-bottom: 1.75rem; }
   .price-features div { display: flex; gap: .6rem; align-items: flex-start; font-size: .92rem; color: #d4d9e6; }
   .price-features span { color: var(--accent); }
+  .feedback-form-wrap { max-width: 480px; margin: 3rem auto 0; background: var(--surface); border: 1px solid var(--border); border-radius: var(--radius); padding: 1.75rem; }
+  .feedback-form-wrap h3 { font-size: 1.2rem; margin-bottom: .3rem; }
+  .feedback-form-wrap p.hint { color: var(--text-muted); font-size: .82rem; margin-bottom: 1.1rem; }
+  .feedback-form-wrap label { display: block; font: 600 .8rem var(--font-body); color: var(--text-soft); margin: .9rem 0 .4rem; }
+  .feedback-form-wrap label:first-of-type { margin-top: 0; }
   .faq-wrap { max-width: 760px; margin: 0 auto; display: flex; flex-direction: column; gap: .9rem; }
   details { background: var(--surface); border: 1px solid var(--border); border-radius: var(--radius-sm); padding: 1.25rem 1.5rem; }
   details > summary { cursor: pointer; list-style: none; font: 700 1rem var(--font-display); display: flex; justify-content: space-between; }
@@ -116,6 +121,27 @@
   <h2>Real Results From Real Students</h2>
   <p class="lead">&nbsp;</p>
   <div class="testimonial-row" id="testimonialRow"></div>
+
+  <div class="feedback-form-wrap">
+    <h3>Share Your Feedback</h3>
+    <p class="hint">No account needed. Your feedback will appear above once we approve it.</p>
+    <label>Your name</label>
+    <input id="courseFbName" placeholder="Your name">
+    <label>Rating</label>
+    <select id="courseFbRating">
+      <option value="5">★★★★★ (5)</option>
+      <option value="4">★★★★ (4)</option>
+      <option value="3">★★★ (3)</option>
+      <option value="2">★★ (2)</option>
+      <option value="1">★ (1)</option>
+    </select>
+    <label>Your feedback</label>
+    <textarea id="courseFbQuote" placeholder="Tell us about your experience..."></textarea>
+    <input type="file" id="courseFbImage" accept="image/*" style="display:none;">
+    <label class="upload-btn" for="courseFbImage" id="courseFbImageLabel" style="display:block; text-align:center; padding:.8rem; border-radius:var(--radius-sm); border:1px dashed var(--border-strong); background:var(--surface-alt); color:var(--text-soft); font-size:.9rem; cursor:pointer; margin:.4rem 0;">Add a photo (optional)</label>
+    <button id="courseFbBtn" style="margin-top:1rem;">Submit Feedback</button>
+    <p class="msg" id="courseFbMsg"></p>
+  </div>
 </section>
 
 <section class="csection pricing-wrap" id="pricing">
@@ -145,6 +171,7 @@
 <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore-compat.js"></script>
 <script src="js/firebase-config.js"></script>
 <script src="js/site-content.js"></script>
+<script src="js/feedback.js"></script>
 <script>
 const priceFeatures = [
   '6 in-depth video modules', 'Product research spreadsheet templates', 'Private student community access',
@@ -176,13 +203,19 @@ loadSiteContent().then(content => {
       <div class="module-body"><p>${m.desc}</p></div>
     </details>`).join('');
 
-  document.getElementById('testimonialRow').innerHTML = c.testimonials.map(t => `
+  const manualCards = c.testimonials.map(t => `
     <div class="testimonial-card">
       <div class="stars">★★★★★</div>
       <p>"${t.quote}"</p>
       <div class="tname">${t.name}</div>
       <div class="tresult">${t.result}</div>
     </div>`).join('');
+
+  fbLoadApproved('course').then(list => {
+    document.getElementById('testimonialRow').innerHTML = manualCards + list.map(fbCard).join('');
+  });
+
+  fbInitForm('courseFb', 'course', content.bankDetails.uploadScriptUrl);
 
   document.getElementById('faqWrap').innerHTML = c.faqs.map(q => `
     <details>

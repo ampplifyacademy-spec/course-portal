@@ -35,6 +35,7 @@
     <div class="nav-item" data-tab="modules" onclick="switchTab('modules')"><span>🎓</span><span>Modules</span></div>
     <div class="nav-item" data-tab="resources" onclick="switchTab('resources')"><span>📄</span><span>Resources</span></div>
     <div class="nav-item" data-tab="payments" onclick="switchTab('payments')"><span>💳</span><span>Payments</span></div>
+    <div class="nav-item" data-tab="feedback" onclick="switchTab('feedback')"><span>💬</span><span>Feedback</span></div>
     <div class="nav-item" data-tab="site" onclick="switchTab('site')"><span>🎨</span><span>Site Content</span></div>
     <div class="sidebar-footer">
       <div class="avatar" id="adminAvatar">A</div>
@@ -110,6 +111,25 @@
         <table>
           <thead><tr><th>Student</th><th>Receipt</th><th>Date</th><th>Amount</th><th>Status</th><th>Action</th></tr></thead>
           <tbody id="paymentRows"></tbody>
+        </table>
+      </div>
+    </div>
+
+    <!-- FEEDBACK MODERATION -->
+    <div class="tab-section" id="tab-feedback">
+      <div class="panel">
+        <h2 style="margin-bottom:.25rem;">Pending Feedback</h2>
+        <p style="color:var(--text-muted); font-size:.85rem; margin-bottom:1.1rem;">Public submissions (course students & service customers, no login required). Approve to show on the public pages.</p>
+        <table>
+          <thead><tr><th>Type</th><th>Name</th><th>Rating</th><th>Feedback</th><th>Photo</th><th>Action</th></tr></thead>
+          <tbody id="feedbackPendingRows"></tbody>
+        </table>
+      </div>
+      <div class="panel" style="margin-top:1.5rem;">
+        <h2 style="margin-bottom:1rem;">Approved Feedback</h2>
+        <table>
+          <thead><tr><th>Type</th><th>Name</th><th>Rating</th><th>Feedback</th><th>Photo</th><th>Action</th></tr></thead>
+          <tbody id="feedbackApprovedRows"></tbody>
         </table>
       </div>
     </div>
@@ -276,6 +296,7 @@ const TAB_META = {
   modules: ['Courses & Modules', 'Manage private student lessons and Drive links (not shown on the public landing page).'],
   resources: ['Resources', 'Share Google Sheets, Docs, and other reference files with students.'],
   payments: ['Payments', 'Track revenue and order history.'],
+  feedback: ['Feedback', 'Approve public feedback submissions before they appear on the site.'],
   site: ['Site Content', 'Edit colors, text, and pricing shown on the public site.']
 };
 
@@ -298,7 +319,47 @@ auth.onAuthStateChanged(user => {
     loadSiteContentIntoForm();
   });
   loadResources();
+  loadFeedback();
 });
+
+function loadFeedback() {
+  return db.collection('feedback').orderBy('createdAt', 'desc').get().then(snap => {
+    const all = snap.docs.map(d => ({ id: d.id, ...d.data() }));
+    renderFeedbackTable('feedbackPendingRows', all.filter(f => f.status === 'pending'), true);
+    renderFeedbackTable('feedbackApprovedRows', all.filter(f => f.status === 'approved'), false);
+  });
+}
+
+function renderFeedbackTable(tbodyId, list, isPending) {
+  const tbody = document.getElementById(tbodyId);
+  if (!list.length) {
+    tbody.innerHTML = `<tr><td colspan="6" style="color:var(--text-faint);">Nothing here yet.</td></tr>`;
+    return;
+  }
+  tbody.innerHTML = list.map(f => `
+    <tr>
+      <td>${f.type === 'service' ? 'Service' : 'Course'}</td>
+      <td>${f.name || ''}</td>
+      <td>${'★'.repeat(Number(f.rating) || 5)}</td>
+      <td style="max-width:280px;">${f.quote || ''}</td>
+      <td>${f.imageUrl ? `<a href="${f.imageUrl}" target="_blank"><button style="width:auto; margin:0; padding:.4rem .8rem; font-size:.8rem;">View</button></a>` : '—'}</td>
+      <td>
+        ${isPending
+          ? `<button onclick="setFeedbackStatus('${f.id}','approved')">Approve</button>
+             <button class="danger" onclick="setFeedbackStatus('${f.id}','rejected')">Reject</button>`
+          : `<button class="danger" onclick="deleteFeedback('${f.id}')">Remove</button>`}
+      </td>
+    </tr>`).join('');
+}
+
+function setFeedbackStatus(id, status) {
+  db.collection('feedback').doc(id).update({ status }).then(loadFeedback);
+}
+
+function deleteFeedback(id) {
+  if (!confirm('Remove this feedback from the public page?')) return;
+  db.collection('feedback').doc(id).delete().then(loadFeedback);
+}
 
 function loadResources() {
   return db.collection('courseContent').doc('main').get().then(doc => {
