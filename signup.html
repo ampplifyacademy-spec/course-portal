@@ -9,6 +9,11 @@
 <link rel="stylesheet" href="css/style.css">
 <style>
   .bank-box { background: var(--bg); border: 1px solid var(--border); border-radius: var(--radius-sm); padding: 1rem 1.1rem; margin-bottom: 1.1rem; font-size: .88rem; }
+  .bank-tabs { display: flex; flex-wrap: wrap; gap: .5rem; margin-bottom: .9rem; }
+  .bank-tab-btn { padding: .5rem 1rem; border-radius: 999px; border: 1px solid var(--border-strong); background: var(--surface); color: var(--text-soft); font-size: .85rem; font-weight: 600; cursor: pointer; transition: all .15s; }
+  .bank-tab-btn.active { background: var(--accent); border-color: var(--accent); color: #fff; }
+  .bank-panel { display: none; }
+  .bank-panel.active { display: block; }
   .bank-box .row { display: flex; justify-content: space-between; padding: .3rem 0; border-bottom: 1px solid var(--border); }
   .bank-box .row:last-child { border-bottom: none; }
   .bank-box .row span:first-child { color: var(--text-muted); }
@@ -54,17 +59,28 @@ loadSiteContent().then(content => {
   const box = document.getElementById('bankBox');
   const accounts = (b.accounts || []).filter(a => a.bankName || a.accountNumber);
 
-  box.innerHTML = accounts.length
-    ? accounts.map(a => [
+  if (!accounts.length) {
+    box.innerHTML = '<div class="row"><span>Bank details not set up yet — contact us.</span></div>';
+  } else {
+    const tabs = accounts.map((a, i) => `<button type="button" class="bank-tab-btn${i === 0 ? ' active' : ''}" onclick="showBankTab(${i})">${a.bankName || 'Bank ' + (i + 1)}</button>`).join('');
+    const panels = accounts.map((a, i) => {
+      const rows = [
         ['Bank Name', a.bankName], ['Account Name', a.accountName],
         ['Account Number', a.accountNumber], ['IBAN', a.iban]
-      ].filter(r => r[1]).map(r => `<div class="row"><span>${r[0]}</span><span>${r[1]}</span></div>`).join(''))
-      .join('<div style="height:.75rem;"></div>')
-    : '<div class="row"><span>Bank details not set up yet — contact us.</span></div>';
+      ].filter(r => r[1]).map(r => `<div class="row"><span>${r[0]}</span><span>${r[1]}</span></div>`).join('');
+      return `<div class="bank-panel${i === 0 ? ' active' : ''}" id="bankPanel${i}">${rows}</div>`;
+    }).join('');
+    box.innerHTML = `<div class="bank-tabs">${tabs}</div>${panels}`;
+  }
   box.innerHTML += (b.instructions ? `<div class="note">${b.instructions}</div>` : '');
 
   uploadScriptUrl = b.uploadScriptUrl;
 });
+
+function showBankTab(i) {
+  document.querySelectorAll('.bank-tab-btn').forEach((btn, idx) => btn.classList.toggle('active', idx === i));
+  document.querySelectorAll('.bank-panel').forEach((panel, idx) => panel.classList.toggle('active', idx === i));
+}
 
 function onInvoiceChosen(file) {
   invoiceFile = file;
