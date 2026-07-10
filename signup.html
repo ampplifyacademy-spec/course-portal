@@ -35,7 +35,10 @@
   <label for="email">Email</label>
   <input id="email" type="email" placeholder="you@example.com">
   <label for="password">Password</label>
-  <input id="password" type="password" placeholder="Min 6 characters">
+  <div class="password-wrap">
+    <input id="password" type="password" placeholder="Min 6 characters">
+    <button type="button" class="password-toggle" onclick="togglePassword('password', this)">Show</button>
+  </div>
   <label>Payment receipt</label>
   <input type="file" id="invoiceFile" accept="image/*,application/pdf" style="display:none;" onchange="onInvoiceChosen(this.files[0])">
   <label class="upload-btn" for="invoiceFile" id="invoiceLabel">Choose receipt photo/PDF</label>
@@ -76,6 +79,13 @@ loadSiteContent().then(content => {
 
   uploadScriptUrl = b.uploadScriptUrl;
 });
+
+function togglePassword(id, btn) {
+  const input = document.getElementById(id);
+  const show = input.type === 'password';
+  input.type = show ? 'text' : 'password';
+  btn.textContent = show ? 'Hide' : 'Show';
+}
 
 function showBankTab(i) {
   document.querySelectorAll('.bank-tab-btn').forEach((btn, idx) => btn.classList.toggle('active', idx === i));

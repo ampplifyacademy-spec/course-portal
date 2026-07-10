@@ -25,7 +25,10 @@
       <label for="email">Email</label>
       <input id="email" type="email" placeholder="you@example.com">
       <label for="password">Password</label>
-      <input id="password" type="password" placeholder="••••••••">
+      <div class="password-wrap">
+        <input id="password" type="password" placeholder="••••••••">
+        <button type="button" class="password-toggle" onclick="togglePassword('password', this)">Show</button>
+      </div>
       <button onclick="doLogin()">Sign In to Dashboard</button>
       <p class="msg" id="msg"></p>
 
@@ -42,6 +45,13 @@
 <script src="js/site-content.js"></script>
 <script>
 loadSiteContent();
+
+function togglePassword(id, btn) {
+  const input = document.getElementById(id);
+  const show = input.type === 'password';
+  input.type = show ? 'text' : 'password';
+  btn.textContent = show ? 'Hide' : 'Show';
+}
 
 function doLogin() {
   const email = document.getElementById('email').value.trim();
