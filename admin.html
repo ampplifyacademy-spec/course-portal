@@ -542,7 +542,14 @@ function renderServiceRows() {
       </div>`).join('');
     return `
     <div class="module-edit-card">
-      <div class="row-top"><span>Service ${i + 1}</span><button class="danger" onclick="removeServiceRow(${i})">Remove</button></div>
+      <div class="row-top">
+        <span>Service ${i + 1}</span>
+        <span>
+          <button onclick="moveServiceRow(${i},-1)" ${i === 0 ? 'disabled' : ''} style="width:auto; margin:0 .3rem 0 0;">↑ Up</button>
+          <button onclick="moveServiceRow(${i},1)" ${i === serviceRows.length - 1 ? 'disabled' : ''} style="width:auto; margin:0 .3rem 0 0;">↓ Down</button>
+          <button class="danger" onclick="removeServiceRow(${i})">Remove</button>
+        </span>
+      </div>
       <input placeholder="Title" value="${(s.title || '').replace(/"/g, '&quot;')}" oninput="serviceRows[${i}].title = this.value">
       <input placeholder="Description" value="${(s.desc || '').replace(/"/g, '&quot;')}" oninput="serviceRows[${i}].desc = this.value">
       <input placeholder="Price (e.g. 150)" value="${(s.price || '').replace(/"/g, '&quot;')}" oninput="serviceRows[${i}].price = this.value">
@@ -561,6 +568,13 @@ function addServiceRow() {
 
 function removeServiceRow(i) {
   serviceRows.splice(i, 1);
+  renderServiceRows();
+}
+
+function moveServiceRow(i, dir) {
+  const j = i + dir;
+  if (j < 0 || j >= serviceRows.length) return;
+  [serviceRows[i], serviceRows[j]] = [serviceRows[j], serviceRows[i]];
   renderServiceRows();
 }
 

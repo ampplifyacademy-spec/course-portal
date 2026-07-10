@@ -26,7 +26,8 @@
   .service-card.selected .check { background: var(--accent); border-color: var(--accent); color: #fff; }
   .service-card h4 { font-size: 1.1rem; margin-bottom: .5rem; padding-right: 1.5rem; }
   .service-card p.desc { color: var(--text-soft); font-size: .9rem; line-height: 1.6; }
-  .service-card ol.points { margin: .75rem 0 0; padding-left: 1.2rem; color: var(--text-soft); font-size: .85rem; line-height: 1.7; }
+  .service-card ol.points { margin: .5rem 0 0; padding-left: 1.2rem; color: var(--text-soft); font-size: .85rem; line-height: 1.7; }
+  .see-more-btn { width: auto; margin: .6rem 0 0; padding: 0; background: none; border: none; color: var(--info); font-size: .82rem; font-weight: 600; cursor: pointer; text-align: left; }
   .service-price { color: var(--accent-orange); font: 800 1.3rem var(--font-display); margin: .9rem 0 0; }
   .cta-band { background: linear-gradient(135deg, rgba(0,181,254,.13), rgba(253,125,1,.13)); padding: 3.5rem 4rem; text-align: center; }
   .cta-band h3 { font-size: 1.9rem; margin-bottom: .75rem; }
@@ -111,7 +112,9 @@ loadSiteContent().then(content => {
           <div class="check">✓</div>
           <h4>${s.title}</h4>
           <p class="desc">${s.desc}</p>
-          ${(s.points && s.points.length) ? `<ol class="points">${s.points.map(p => `<li>${p}</li>`).join('')}</ol>` : ''}
+          ${(s.points && s.points.length) ? `
+            <button type="button" class="see-more-btn" onclick="event.stopPropagation(); togglePoints(${i})" id="seeMoreBtn${i}">See More ▾</button>
+            <ol class="points" id="servicePoints${i}" style="display:none;">${s.points.map(p => `<li>${p}</li>`).join('')}</ol>` : ''}
           ${s.price ? `<div class="service-price">${s.price} ${currency}</div>` : ''}
         </div>
       </div>`).join('')
@@ -138,6 +141,14 @@ loadSiteContent().then(content => {
 function showBankTab2(i) {
   document.querySelectorAll('.bank-tab-btn').forEach((btn, idx) => btn.classList.toggle('active', idx === i));
   document.querySelectorAll('.bank-panel2').forEach((panel, idx) => panel.classList.toggle('active', idx === i));
+}
+
+function togglePoints(i) {
+  const ol = document.getElementById('servicePoints' + i);
+  const btn = document.getElementById('seeMoreBtn' + i);
+  const showing = ol.style.display !== 'none';
+  ol.style.display = showing ? 'none' : 'block';
+  btn.textContent = showing ? 'See More ▾' : 'See Less ▴';
 }
 
 function toggleService(i) {
