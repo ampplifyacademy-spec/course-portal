@@ -249,6 +249,19 @@
         <button onclick="saveSuccessStories()" style="margin-top:.5rem;">Save Success Stories</button>
         <p class="msg" id="successStoryMsg"></p>
       </div>
+
+      <div class="panel" style="margin-top:1.5rem;">
+        <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:1.25rem;">
+          <div>
+            <h2>Tools (tools.html — monthly subscription)</h2>
+            <p style="color:var(--text-muted); font-size:.82rem; margin-top:.3rem;">Tools sold as a monthly subscription. Link should point to where the tool is hosted (e.g. your GitHub Pages URL).</p>
+          </div>
+          <button onclick="addToolRow()" style="width:auto; margin:0;">+ Add Tool</button>
+        </div>
+        <div id="toolEditor"></div>
+        <button onclick="saveTools()" style="margin-top:.5rem;">Save Tools</button>
+        <p class="msg" id="toolMsg"></p>
+      </div>
     </div>
 
     <!-- MODULES -->
@@ -477,6 +490,9 @@ function loadSiteContentIntoForm() {
     successStoryRows = (content.course.successStories || []).map(s => Object.assign({}, s));
     renderSuccessStoryRows();
 
+    toolRows = (content.course.tools || []).map(t => Object.assign({}, t));
+    renderToolRows();
+
     return db.collection('courseContent').doc('main').get();
   }).then(doc => {
     moduleRows = ((doc.exists && doc.data().modules) || []).map(m => Object.assign({
@@ -691,6 +707,43 @@ function saveSuccessStories() {
   db.collection('siteContent').doc('main').update({ 'course.successStories': successStories }).then(() => {
     msg.style.color = 'var(--success)';
     msg.textContent = 'Success stories saved. Changes are live immediately.';
+  }).catch(err => {
+    msg.style.color = 'var(--danger)';
+    msg.textContent = err.message;
+  });
+}
+
+let toolRows = [];
+
+function renderToolRows() {
+  const container = document.getElementById('toolEditor');
+  container.innerHTML = toolRows.map((t, i) => `
+    <div class="module-edit-card">
+      <div class="row-top"><span>Tool ${i + 1}</span><button class="danger" onclick="removeToolRow(${i})">Remove</button></div>
+      <input placeholder="Name" value="${(t.name || '').replace(/"/g, '&quot;')}" oninput="toolRows[${i}].name = this.value">
+      <input placeholder="Description" value="${(t.desc || '').replace(/"/g, '&quot;')}" oninput="toolRows[${i}].desc = this.value">
+      <input placeholder="Price per month (e.g. 50)" value="${(t.price || '').replace(/"/g, '&quot;')}" oninput="toolRows[${i}].price = this.value">
+      <input placeholder="Tool link (e.g. https://yourname.github.io/tool)" value="${(t.link || '').replace(/"/g, '&quot;')}" oninput="toolRows[${i}].link = this.value">
+      <input placeholder="Image URL (optional)" value="${(t.imageUrl || '').replace(/"/g, '&quot;')}" oninput="toolRows[${i}].imageUrl = this.value">
+    </div>`).join('');
+}
+
+function addToolRow() {
+  toolRows.push({ name: '', desc: '', price: '', link: '', imageUrl: '' });
+  renderToolRows();
+}
+
+function removeToolRow(i) {
+  toolRows.splice(i, 1);
+  renderToolRows();
+}
+
+function saveTools() {
+  const msg = document.getElementById('toolMsg');
+  const tools = toolRows.filter(t => t.name.trim());
+  db.collection('siteContent').doc('main').update({ 'course.tools': tools }).then(() => {
+    msg.style.color = 'var(--success)';
+    msg.textContent = 'Tools saved. Changes are live immediately.';
   }).catch(err => {
     msg.style.color = 'var(--danger)';
     msg.textContent = err.message;
@@ -1009,9 +1062,12 @@ function renderUserRows(list) {
     const servicesNote = (u.selectedServices && u.selectedServices.length)
       ? `<div style="font-size:.72rem; color:var(--text-muted); margin-top:.2rem;">Services: ${u.selectedServices.join(', ')} (${u.serviceTotal} ${u.serviceCurrency || ''})</div>`
       : '';
+    const toolNote = (u.productType === 'tool')
+      ? `<div style="font-size:.72rem; color:var(--info); margin-top:.2rem;">Tool subscription: ${u.toolName} (${u.toolPrice} ${u.toolCurrency || ''}/mo)</div>`
+      : '';
 
     tr.innerHTML = `
-      <td>${u.name || ''}${servicesNote}</td>
+      <td>${u.name || ''}${servicesNote}${toolNote}</td>
       <td>${u.email}</td>
       <td>${u.invoiceUrl ? `<a href="${u.invoiceUrl}" target="_blank"><button style="width:auto; margin:0; padding:.4rem .8rem; font-size:.8rem;">View</button></a>` : '—'}</td>
       <td><select onchange="setUserBatch('${u.id}', this.value)" style="margin:0; padding:.4rem .6rem; font-size:.85rem;">${batchOptions}</select></td>

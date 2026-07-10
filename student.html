@@ -43,6 +43,7 @@
   <div class="sidebar">
     <span class="brand"><span class="a">A</span>mpplify Academy</span>
     <div class="nav-item active" data-tab="dashboard" onclick="switchStudentTab('dashboard')"><span>🏠</span><span>Dashboard</span></div>
+    <div class="nav-item" data-tab="tool" id="navTool" style="display:none;" onclick="switchStudentTab('tool')"><span>🛠️</span><span>My Tool</span></div>
     <div class="nav-item" data-tab="resources" onclick="switchStudentTab('resources')"><span>📄</span><span>Resources</span></div>
     <div class="nav-item" data-tab="settings" onclick="switchStudentTab('settings')"><span>⚙️</span><span>Settings</span></div>
     <div class="sidebar-footer">
@@ -69,6 +70,10 @@
 
     <div class="tab-section active" id="tab-dashboard">
       <div id="batchWrap"></div>
+    </div>
+
+    <div class="tab-section" id="tab-tool">
+      <div class="panel" id="toolPanel"></div>
     </div>
 
     <div class="tab-section" id="tab-resources">
@@ -105,6 +110,7 @@ let completedClasses = [];
 
 const STUDENT_TAB_META = {
   dashboard: ['Here\'s your Amazon Selling Course progress.', true],
+  tool: ['Your subscribed tool.', false],
   resources: ['Google Sheets, Docs, and other reference files.', false],
   settings: ['Update your password.', false]
 };
@@ -142,6 +148,14 @@ auth.onAuthStateChanged(user => {
     }
 
     document.getElementById('studentBatchLabel').textContent = 'Student';
+
+    if (data.productType === 'tool') {
+      document.getElementById('navTool').style.display = '';
+      document.getElementById('toolPanel').innerHTML = `
+        <h2 style="margin-bottom:.5rem;">${data.toolName || 'Your Tool'}</h2>
+        <p style="color:var(--text-muted); font-size:.85rem; margin-bottom:1.25rem;">${data.toolPrice ? data.toolPrice + ' ' + (data.toolCurrency || '') + ' / month subscription' : ''}</p>
+        <a href="${data.toolLink || '#'}" target="_blank"><button style="width:auto;">Open Tool</button></a>`;
+    }
 
     loadAllBatches(data.blockedCourses || []);
     loadResources();

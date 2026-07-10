@@ -29,6 +29,7 @@
   <p class="subtitle">Pay via bank transfer using the details below, then upload your payment receipt. We'll approve your account once payment is verified.</p>
 
   <div class="bank-box" id="selectedServicesBox" style="display:none; margin-bottom:1.1rem;"></div>
+  <div class="bank-box" id="selectedToolBox" style="display:none; margin-bottom:1.1rem;"></div>
 
   <div class="bank-box" id="bankBox"></div>
 
@@ -59,6 +60,7 @@
 let uploadScriptUrl = '';
 let invoiceFile = null;
 let selectedServices = null;
+let selectedTool = null;
 
 try {
   const raw = sessionStorage.getItem('selectedServices');
@@ -68,6 +70,17 @@ try {
     box.style.display = 'block';
     box.innerHTML = `<div class="row"><span>Selected services</span><span>${selectedServices.names.join(', ')}</span></div>
       <div class="row"><span>Total</span><span>${selectedServices.total} ${selectedServices.currency}</span></div>`;
+  }
+} catch (e) {}
+
+try {
+  const rawTool = sessionStorage.getItem('selectedTool');
+  if (rawTool) {
+    selectedTool = JSON.parse(rawTool);
+    const box = document.getElementById('selectedToolBox');
+    box.style.display = 'block';
+    box.innerHTML = `<div class="row"><span>Tool subscription</span><span>${selectedTool.name}</span></div>
+      <div class="row"><span>Price</span><span>${selectedTool.price} ${selectedTool.currency} / month</span></div>`;
   }
 } catch (e) {}
 
@@ -167,11 +180,19 @@ function doSignup() {
           doc.serviceTotal = selectedServices.total;
           doc.serviceCurrency = selectedServices.currency;
         }
+        if (selectedTool) {
+          doc.productType = 'tool';
+          doc.toolName = selectedTool.name;
+          doc.toolPrice = selectedTool.price;
+          doc.toolCurrency = selectedTool.currency;
+          doc.toolLink = selectedTool.link;
+        }
         return db.collection('users').doc(cred.user.uid).set(doc);
       });
     })
     .then(() => {
       sessionStorage.removeItem('selectedServices');
+      sessionStorage.removeItem('selectedTool');
       msg.style.color = 'var(--success)';
       msg.textContent = "Signup successful! We'll notify you by email once your account is approved.";
     })
