@@ -27,9 +27,8 @@
   .lightbox { position: fixed; inset: 0; background: rgba(0,0,0,.85); display: none; align-items: center; justify-content: center; z-index: 100; padding: 2rem; }
   .lightbox.show { display: flex; }
   .lightbox img { max-width: 100%; max-height: 90vh; border-radius: var(--radius); }
-  .folder-card { background: var(--surface); border: 1px solid var(--border); border-radius: var(--radius); padding: 2rem 1.5rem; text-align: center; cursor: pointer; transition: border-color .15s; }
-  .folder-card:hover { border-color: var(--accent); }
-  .folder-card .folder-icon { font-size: 2.5rem; margin-bottom: .75rem; }
+  .folder-card { background: var(--surface); border: 1px solid var(--border); border-radius: var(--radius); overflow: hidden; display: flex; flex-direction: column; cursor: pointer; }
+  .folder-card .body { padding: 1.5rem; }
   .folder-card h4 { font-size: 1.05rem; margin-bottom: .3rem; }
   .folder-card p { color: var(--text-muted); font-size: .82rem; }
   .back-link { display: inline-flex; align-items: center; gap: .4rem; color: var(--info); font-weight: 600; font-size: .9rem; cursor: pointer; margin-bottom: 1.5rem; }
@@ -116,12 +115,18 @@ loadSiteContent().then(content => {
   const folderSection = document.getElementById('folderGridSection');
   if (allFolders.length) {
     folderSection.innerHTML = (ungroupedItems.length ? '<div class="section-label">Folders</div>' : '')
-      + `<div class="portfolio-grid">${allFolders.map((f, fi) => `
+      + `<div class="portfolio-grid">${allFolders.map((f, fi) => {
+        const cover = (f.items || []).find(it => it.imageUrl);
+        const count = (f.items || []).length;
+        return `
         <div class="folder-card" onclick="openFolder(${fi})">
-          <div class="folder-icon">📁</div>
-          <h4>${f.name}</h4>
-          <p>${(f.items || []).length} image${(f.items || []).length === 1 ? '' : 's'}</p>
-        </div>`).join('')}</div>`;
+          ${cover ? `<div class="img-wrap"><img src="${driveImgUrl(cover.imageUrl)}" alt="${f.name}"></div>` : ''}
+          <div class="body">
+            <h4>${f.name}</h4>
+            <p>${count} image${count === 1 ? '' : 's'}</p>
+          </div>
+        </div>`;
+      }).join('')}</div>`;
   }
 
   if (!ungroupedItems.length && !allFolders.length) {
