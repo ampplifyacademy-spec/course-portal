@@ -34,6 +34,7 @@
   @media (max-width: 760px) {
     .cnav { padding: 1rem 1.25rem; }
     .menu-toggle { display: block; }
+    .cnav-right button:not(.menu-toggle) { display: none; }
     .cnav-links { display: none; width: 100%; order: 3; flex-direction: column; gap: 0; margin-top: 1rem; }
     .cnav-links.open { display: flex; }
     .cnav-links a { padding: .85rem 0; border-bottom: 1px solid var(--border); }
@@ -60,7 +61,7 @@
   </div>
   <div class="cnav-right">
     <button onclick="location.href='signup.html'">Enroll Now</button>
-    <button class="menu-toggle" onclick="toggleMobileNav()" id="menuToggleBtn">☰</button>
+    <button class="menu-toggle" onclick="toggleMobileNav()" id="menuToggleBtn">☰ Menu</button>
   </div>
 </nav>
 
