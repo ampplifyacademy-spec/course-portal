@@ -788,7 +788,7 @@ function removeSuccessStoryRow(i) {
 
 function saveSuccessStories() {
   const msg = document.getElementById('successStoryMsg');
-  const successStories = successStoryRows.filter(s => s.name.trim());
+  const successStories = successStoryRows.filter(s => s.name.trim() || s.imageUrl);
   db.collection('siteContent').doc('main').update({ 'course.successStories': successStories }).then(() => {
     msg.style.color = 'var(--success)';
     msg.textContent = 'Success stories saved. Changes are live immediately.';
@@ -892,7 +892,7 @@ function uploadPortfolioImage(i, file) {
 
 function savePortfolio() {
   const msg = document.getElementById('portfolioMsg');
-  const portfolio = portfolioRows.filter(p => p.title.trim());
+  const portfolio = portfolioRows.filter(p => p.title.trim() || p.imageUrl);
   const folderId = parseFolderId(document.getElementById('portfolioFolderId').value.trim());
   db.collection('siteContent').doc('main').update({ 'course.portfolio': portfolio, 'course.portfolioFolderId': folderId }).then(() => {
     msg.style.color = 'var(--success)';
@@ -978,7 +978,7 @@ function savePortfolioFolders() {
   const msg = document.getElementById('portfolioFolderMsg');
   const folders = portfolioFolderRows
     .filter(f => f.name.trim())
-    .map(f => Object.assign({}, f, { items: (f.items || []).filter(it => it.title.trim()) }));
+    .map(f => Object.assign({}, f, { items: (f.items || []).filter(it => it.title.trim() || it.imageUrl) }));
   db.collection('siteContent').doc('main').update({ 'course.portfolioFolders': folders }).then(() => {
     msg.style.color = 'var(--success)';
     msg.textContent = 'Portfolio folders saved. Changes are live immediately.';
