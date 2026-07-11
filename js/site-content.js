@@ -1,3 +1,9 @@
+function driveImgUrl(url) {
+  if (!url) return url;
+  const m = url.match(/drive\.google\.com\/file\/d\/([^/]+)/) || url.match(/[?&]id=([^&]+)/);
+  return m ? `https://lh3.googleusercontent.com/d/${m[1]}` : url;
+}
+
 const SITE_CONTENT_DEFAULTS = {
   theme: { accent: '#00b5fe', accentOrange: '#fd7d01', bg: '#0b0e1a' },
   bankDetails: {

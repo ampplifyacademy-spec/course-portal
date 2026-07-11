@@ -67,7 +67,7 @@ loadSiteContent().then(content => {
   document.getElementById('storyGrid').innerHTML = stories.length
     ? stories.map(s => `
       <div class="story-card">
-        ${s.imageUrl ? `<img src="${s.imageUrl}" alt="${s.name}">` : ''}
+        ${s.imageUrl ? `<img src="${driveImgUrl(s.imageUrl)}" alt="${s.name}">` : ''}
         <div class="body">
           <div class="name">${s.name}</div>
           <p>${s.text}</p>

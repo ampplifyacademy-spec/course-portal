@@ -73,7 +73,7 @@ loadSiteContent().then(content => {
   document.getElementById('portfolioGrid').innerHTML = items.length
     ? items.map((p, i) => `
       <div class="portfolio-card" onclick="openLightbox(${i})">
-        ${p.imageUrl ? `<img src="${p.imageUrl}" alt="${p.title}">` : ''}
+        ${p.imageUrl ? `<img src="${driveImgUrl(p.imageUrl)}" alt="${p.title}">` : ''}
         <div class="body">
           <h4>${p.title}</h4>
           <p>${p.desc || ''}</p>
@@ -94,7 +94,7 @@ loadSiteContent().then(content => {
 function openLightbox(i) {
   const p = window.portfolioItems[i];
   if (!p.imageUrl) return;
-  document.getElementById('lightboxImg').src = p.imageUrl;
+  document.getElementById('lightboxImg').src = driveImgUrl(p.imageUrl);
   document.getElementById('lightbox').classList.add('show');
 }
 

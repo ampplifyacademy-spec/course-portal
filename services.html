@@ -147,7 +147,7 @@ loadSiteContent().then(content => {
   document.getElementById('serviceGrid').innerHTML = allServices.length
     ? allServices.map((s, i) => `
       <div class="service-card" id="serviceCard${i}" onclick="toggleService(${i})">
-        ${s.imageUrl ? `<img src="${s.imageUrl}" alt="${s.title}">` : ''}
+        ${s.imageUrl ? `<img src="${driveImgUrl(s.imageUrl)}" alt="${s.title}">` : ''}
         <div class="body">
           <div class="check">✓</div>
           <h4>${s.title}</h4>

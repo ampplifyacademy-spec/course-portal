@@ -7,13 +7,15 @@ function fbFileToBase64(file) {
   });
 }
 
-function fbUploadImage(file, uploadScriptUrl, label) {
+function fbUploadImage(file, uploadScriptUrl, label, folderId) {
   if (!file || !uploadScriptUrl) return Promise.resolve('');
   return fbFileToBase64(file).then(base64 => {
+    const body = { fileData: base64, mimeType: file.type, fileName: label + ' - ' + file.name };
+    if (folderId) body.folderId = folderId;
     return fetch(uploadScriptUrl, {
       method: 'POST',
       headers: { 'Content-Type': 'text/plain;charset=utf-8' },
-      body: JSON.stringify({ fileData: base64, mimeType: file.type, fileName: label + ' - ' + file.name })
+      body: JSON.stringify(body)
     }).then(r => r.json()).then(data => data.fileUrl || '');
   });
 }
@@ -38,7 +40,7 @@ function fbCard(f) {
   const stars = '★★★★★'.slice(0, Number(f.rating) || 5);
   return `
     <div class="testimonial-card">
-      ${f.imageUrl ? `<img src="${f.imageUrl}" alt="${f.name}" style="width:100%; height:160px; object-fit:cover; border-radius:10px; margin-bottom:1rem;">` : ''}
+      ${f.imageUrl ? `<img src="${driveImgUrl(f.imageUrl)}" alt="${f.name}" style="width:100%; height:160px; object-fit:cover; border-radius:10px; margin-bottom:1rem;">` : ''}
       <div class="stars">${stars}</div>
       <p>"${f.quote}"</p>
       <div class="tname">${f.name}</div>

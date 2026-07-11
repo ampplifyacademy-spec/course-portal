@@ -82,7 +82,7 @@ loadSiteContent().then(content => {
   document.getElementById('toolGrid').innerHTML = allTools.length
     ? allTools.map((t, i) => `
       <div class="tool-card" ${t.link ? `onclick="openTool(${i})" style="cursor:pointer;"` : ''}>
-        ${t.imageUrl ? `<img src="${t.imageUrl}" alt="${t.name}">` : ''}
+        ${t.imageUrl ? `<img src="${driveImgUrl(t.imageUrl)}" alt="${t.name}">` : ''}
         <div class="body">
           <h4>${t.name}</h4>
           <p class="desc">${t.desc || ''}</p>

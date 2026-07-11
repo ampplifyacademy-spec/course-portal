@@ -311,6 +311,8 @@
           <span class="acc-chevron">▾</span>
         </summary>
         <div class="acc-body">
+          <label>Portfolio Drive folder ID (optional — a public folder, separate from your private receipts folder)</label>
+          <input id="portfolioFolderId" placeholder="e.g. 1zVuhgN6NeXKZk5mZW3BJ_4L2ExExnhdL (from the folder's URL)">
           <div style="display:flex; justify-content:flex-end; margin-bottom:1rem;">
             <button onclick="addPortfolioRow()" style="width:auto; margin:0;">+ Add Portfolio Item</button>
           </div>
@@ -552,6 +554,7 @@ function loadSiteContentIntoForm() {
     renderToolRows();
 
     portfolioUploadUrl = content.bankDetails.uploadScriptUrl;
+    document.getElementById('portfolioFolderId').value = content.course.portfolioFolderId || '';
     portfolioRows = (content.course.portfolio || []).map(p => Object.assign({}, p));
     renderPortfolioRows();
 
@@ -822,7 +825,7 @@ function renderPortfolioRows() {
       <div class="row-top"><span>Portfolio Item ${i + 1}</span><button class="danger" onclick="removePortfolioRow(${i})">Remove</button></div>
       <input placeholder="Title" value="${(p.title || '').replace(/"/g, '&quot;')}" oninput="portfolioRows[${i}].title = this.value">
       <input placeholder="Description" value="${(p.desc || '').replace(/"/g, '&quot;')}" oninput="portfolioRows[${i}].desc = this.value">
-      ${p.imageUrl ? `<div style="margin:.6rem 0;"><img src="${p.imageUrl}" style="max-width:160px; border-radius:8px; display:block;"></div>` : ''}
+      ${p.imageUrl ? `<div style="margin:.6rem 0;"><img src="${driveImgUrl(p.imageUrl)}" style="max-width:160px; border-radius:8px; display:block;"></div>` : ''}
       <input type="file" id="portfolioFile${i}" accept="image/*" style="display:none;" onchange="uploadPortfolioImage(${i}, this.files[0])">
       <label class="upload-btn" for="portfolioFile${i}" id="portfolioFileLabel${i}" style="display:block; text-align:center; padding:.7rem; border-radius:var(--radius-sm); border:1px dashed var(--border-strong); background:var(--surface); color:var(--text-soft); font-size:.85rem; cursor:pointer; margin:.4rem 0;">${p.imageUrl ? 'Replace photo' : 'Upload photo'}</label>
       <p class="msg" id="portfolioUploadMsg${i}" style="margin:0;"></p>
@@ -839,6 +842,12 @@ function removePortfolioRow(i) {
   renderPortfolioRows();
 }
 
+function parseFolderId(value) {
+  if (!value) return '';
+  const m = value.match(/folders\/([^/?]+)/);
+  return m ? m[1] : value;
+}
+
 function uploadPortfolioImage(i, file) {
   if (!file) return;
   const msg = document.getElementById('portfolioUploadMsg' + i);
@@ -849,7 +858,8 @@ function uploadPortfolioImage(i, file) {
   }
   msg.style.color = 'var(--text-muted)';
   msg.textContent = 'Uploading...';
-  fbUploadImage(file, portfolioUploadUrl, portfolioRows[i].title || 'portfolio').then(url => {
+  const folderId = parseFolderId(document.getElementById('portfolioFolderId').value.trim());
+  fbUploadImage(file, portfolioUploadUrl, portfolioRows[i].title || 'portfolio', folderId).then(url => {
     portfolioRows[i].imageUrl = url;
     msg.style.color = 'var(--success)';
     msg.textContent = 'Uploaded.';
@@ -863,7 +873,8 @@ function uploadPortfolioImage(i, file) {
 function savePortfolio() {
   const msg = document.getElementById('portfolioMsg');
   const portfolio = portfolioRows.filter(p => p.title.trim());
-  db.collection('siteContent').doc('main').update({ 'course.portfolio': portfolio }).then(() => {
+  const folderId = parseFolderId(document.getElementById('portfolioFolderId').value.trim());
+  db.collection('siteContent').doc('main').update({ 'course.portfolio': portfolio, 'course.portfolioFolderId': folderId }).then(() => {
     msg.style.color = 'var(--success)';
     msg.textContent = 'Portfolio saved. Changes are live immediately.';
   }).catch(err => {
