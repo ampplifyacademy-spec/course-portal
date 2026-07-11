@@ -301,6 +301,24 @@
           <p class="msg" id="toolMsg"></p>
         </div>
       </details>
+
+      <details class="panel acc-panel" style="margin-top:1rem;">
+        <summary>
+          <div>
+            <h2>Portfolio (portfolio.html)</h2>
+            <p style="color:var(--text-muted); font-size:.82rem; margin-top:.3rem;">Work samples. Upload a photo directly — it's saved to your Drive the same way payment receipts are.</p>
+          </div>
+          <span class="acc-chevron">▾</span>
+        </summary>
+        <div class="acc-body">
+          <div style="display:flex; justify-content:flex-end; margin-bottom:1rem;">
+            <button onclick="addPortfolioRow()" style="width:auto; margin:0;">+ Add Portfolio Item</button>
+          </div>
+          <div id="portfolioEditor"></div>
+          <button onclick="savePortfolio()" style="margin-top:.5rem;">Save Portfolio</button>
+          <p class="msg" id="portfolioMsg"></p>
+        </div>
+      </details>
     </div>
 
     <!-- MODULES -->
@@ -335,6 +353,7 @@
 <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore-compat.js"></script>
 <script src="js/firebase-config.js"></script>
 <script src="js/site-content.js"></script>
+<script src="js/feedback.js"></script>
 <script>
 let allCourses = [];
 let allUsers = [];
@@ -531,6 +550,10 @@ function loadSiteContentIntoForm() {
 
     toolRows = (content.course.tools || []).map(t => Object.assign({}, t));
     renderToolRows();
+
+    portfolioUploadUrl = content.bankDetails.uploadScriptUrl;
+    portfolioRows = (content.course.portfolio || []).map(p => Object.assign({}, p));
+    renderPortfolioRows();
 
     return db.collection('courseContent').doc('main').get();
   }).then(doc => {
@@ -783,6 +806,66 @@ function saveTools() {
   db.collection('siteContent').doc('main').update({ 'course.tools': tools }).then(() => {
     msg.style.color = 'var(--success)';
     msg.textContent = 'Tools saved. Changes are live immediately.';
+  }).catch(err => {
+    msg.style.color = 'var(--danger)';
+    msg.textContent = err.message;
+  });
+}
+
+let portfolioRows = [];
+let portfolioUploadUrl = '';
+
+function renderPortfolioRows() {
+  const container = document.getElementById('portfolioEditor');
+  container.innerHTML = portfolioRows.map((p, i) => `
+    <div class="module-edit-card">
+      <div class="row-top"><span>Portfolio Item ${i + 1}</span><button class="danger" onclick="removePortfolioRow(${i})">Remove</button></div>
+      <input placeholder="Title" value="${(p.title || '').replace(/"/g, '&quot;')}" oninput="portfolioRows[${i}].title = this.value">
+      <input placeholder="Description" value="${(p.desc || '').replace(/"/g, '&quot;')}" oninput="portfolioRows[${i}].desc = this.value">
+      ${p.imageUrl ? `<div style="margin:.6rem 0;"><img src="${p.imageUrl}" style="max-width:160px; border-radius:8px; display:block;"></div>` : ''}
+      <input type="file" id="portfolioFile${i}" accept="image/*" style="display:none;" onchange="uploadPortfolioImage(${i}, this.files[0])">
+      <label class="upload-btn" for="portfolioFile${i}" id="portfolioFileLabel${i}" style="display:block; text-align:center; padding:.7rem; border-radius:var(--radius-sm); border:1px dashed var(--border-strong); background:var(--surface); color:var(--text-soft); font-size:.85rem; cursor:pointer; margin:.4rem 0;">${p.imageUrl ? 'Replace photo' : 'Upload photo'}</label>
+      <p class="msg" id="portfolioUploadMsg${i}" style="margin:0;"></p>
+    </div>`).join('');
+}
+
+function addPortfolioRow() {
+  portfolioRows.push({ title: '', desc: '', imageUrl: '' });
+  renderPortfolioRows();
+}
+
+function removePortfolioRow(i) {
+  portfolioRows.splice(i, 1);
+  renderPortfolioRows();
+}
+
+function uploadPortfolioImage(i, file) {
+  if (!file) return;
+  const msg = document.getElementById('portfolioUploadMsg' + i);
+  if (!portfolioUploadUrl) {
+    msg.style.color = 'var(--danger)';
+    msg.textContent = 'Set the Google Apps Script upload URL in Bank Details first.';
+    return;
+  }
+  msg.style.color = 'var(--text-muted)';
+  msg.textContent = 'Uploading...';
+  fbUploadImage(file, portfolioUploadUrl, portfolioRows[i].title || 'portfolio').then(url => {
+    portfolioRows[i].imageUrl = url;
+    msg.style.color = 'var(--success)';
+    msg.textContent = 'Uploaded.';
+    renderPortfolioRows();
+  }).catch(err => {
+    msg.style.color = 'var(--danger)';
+    msg.textContent = err.message;
+  });
+}
+
+function savePortfolio() {
+  const msg = document.getElementById('portfolioMsg');
+  const portfolio = portfolioRows.filter(p => p.title.trim());
+  db.collection('siteContent').doc('main').update({ 'course.portfolio': portfolio }).then(() => {
+    msg.style.color = 'var(--success)';
+    msg.textContent = 'Portfolio saved. Changes are live immediately.';
   }).catch(err => {
     msg.style.color = 'var(--danger)';
     msg.textContent = err.message;

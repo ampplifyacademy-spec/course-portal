@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<title>Tools · Ampplify Academy</title>
+<title>Portfolio · Ampplify Academy</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@500;600;700;800&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
 <link rel="stylesheet" href="css/style.css">
@@ -17,15 +17,15 @@
   .csection { padding: 5rem 4rem; }
   .csection h2 { font-size: 2.1rem; text-align: center; margin-bottom: .6rem; }
   .csection > p.lead { text-align: center; color: var(--text-soft); margin-bottom: 2.75rem; }
-  .tool-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(280px, 1fr)); gap: 1.5rem; max-width: 1100px; margin: 0 auto; }
-  .tool-card { background: var(--surface); border: 1px solid var(--border); border-radius: var(--radius); overflow: hidden; display: flex; flex-direction: column; }
-  .tool-card img { width: 100%; height: 180px; object-fit: cover; display: block; }
-  .tool-card .body { padding: 1.5rem; display: flex; flex-direction: column; flex: 1; }
-  .tool-card h4 { font-size: 1.1rem; margin-bottom: .5rem; }
-  .tool-card p.desc { color: var(--text-soft); font-size: .9rem; line-height: 1.6; flex: 1; }
-  .tool-price { color: var(--accent-orange); font: 800 1.3rem var(--font-display); margin: .9rem 0 0; }
-  .tool-price span { font-size: .85rem; color: var(--text-muted); font-weight: 600; }
-  .tool-card button { margin-top: 1rem; }
+  .portfolio-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(300px, 1fr)); gap: 1.5rem; max-width: 1100px; margin: 0 auto; }
+  .portfolio-card { background: var(--surface); border: 1px solid var(--border); border-radius: var(--radius); overflow: hidden; display: flex; flex-direction: column; cursor: pointer; }
+  .portfolio-card img { width: 100%; height: 240px; object-fit: cover; display: block; }
+  .portfolio-card .body { padding: 1.5rem; }
+  .portfolio-card h4 { font-size: 1.05rem; margin-bottom: .5rem; }
+  .portfolio-card p { color: var(--text-soft); font-size: .9rem; line-height: 1.6; }
+  .lightbox { position: fixed; inset: 0; background: rgba(0,0,0,.85); display: none; align-items: center; justify-content: center; z-index: 100; padding: 2rem; }
+  .lightbox.show { display: flex; }
+  .lightbox img { max-width: 100%; max-height: 90vh; border-radius: var(--radius); }
   .cta-band { background: linear-gradient(135deg, rgba(0,181,254,.13), rgba(253,125,1,.13)); padding: 3.5rem 4rem; text-align: center; }
   .cta-band h3 { font-size: 1.9rem; margin-bottom: .75rem; }
   .cta-band button { width: auto; margin: 0 auto; padding: 1rem 2.25rem; }
@@ -39,24 +39,27 @@
   <div class="cnav-links">
     <a href="course.html#curriculum">Curriculum</a>
     <a href="services.html">Services</a>
-    <a href="tools.html">Tools</a>
+    <a href="tools.html" id="navToolsLink">Tools</a>
     <a href="portfolio.html">Portfolio</a>
     <a href="success-stories.html">Success Stories</a>
     <a href="course.html#pricing">Pricing</a>
-    <a href="course.html#faq">FAQ</a>
   </div>
   <button onclick="location.href='signup.html'">Enroll Now</button>
 </nav>
 
 <section class="csection" style="padding-top:3.5rem;">
-  <h2>Our Tools</h2>
-  <p class="lead">Monthly subscription access to our in-house tools.</p>
-  <div class="tool-grid" id="toolGrid"></div>
+  <h2>Our Portfolio</h2>
+  <p class="lead">A look at work we've done.</p>
+  <div class="portfolio-grid" id="portfolioGrid"></div>
 </section>
 
 <div class="cta-band">
-  <h3>Want to get started?</h3>
-  <button onclick="location.href='signup.html'">Enroll Now</button>
+  <h3>Want work like this?</h3>
+  <button onclick="location.href='services.html'">See Our Services</button>
+</div>
+
+<div class="lightbox" id="lightbox" onclick="closeLightbox()">
+  <img id="lightboxImg" src="" alt="">
 </div>
 
 <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-app-compat.js"></script>
@@ -65,43 +68,38 @@
 <script src="js/firebase-config.js"></script>
 <script src="js/site-content.js"></script>
 <script>
-let allTools = [];
-let toolCurrency = 'SAR';
-
 loadSiteContent().then(content => {
-  const c = content.course;
-  const currency = c.currency || 'SAR';
-  toolCurrency = currency;
-  allTools = c.tools || [];
-
-  if (allTools.length === 1 && allTools[0].link) {
-    location.replace(allTools[0].link);
-    return;
-  }
-
-  document.getElementById('toolGrid').innerHTML = allTools.length
-    ? allTools.map((t, i) => `
-      <div class="tool-card" ${t.link ? `onclick="openTool(${i})" style="cursor:pointer;"` : ''}>
-        ${t.imageUrl ? `<img src="${t.imageUrl}" alt="${t.name}">` : ''}
+  const items = content.course.portfolio || [];
+  document.getElementById('portfolioGrid').innerHTML = items.length
+    ? items.map((p, i) => `
+      <div class="portfolio-card" onclick="openLightbox(${i})">
+        ${p.imageUrl ? `<img src="${p.imageUrl}" alt="${p.title}">` : ''}
         <div class="body">
-          <h4>${t.name}</h4>
-          <p class="desc">${t.desc || ''}</p>
-          ${t.price ? `<div class="tool-price">${t.price} ${currency} <span>/ month</span></div>` : ''}
-          <button onclick="event.stopPropagation(); subscribeToTool(${i})">Subscribe</button>
+          <h4>${p.title}</h4>
+          <p>${p.desc || ''}</p>
         </div>
       </div>`).join('')
-    : '<p style="text-align:center; color:var(--text-muted); grid-column:1/-1;">Tools coming soon.</p>';
+    : '<p style="text-align:center; color:var(--text-muted); grid-column:1/-1;">Portfolio coming soon.</p>';
+
+  window.portfolioItems = items;
+
+  const firstTool = (content.course.tools || [])[0];
+  if (firstTool && firstTool.link) {
+    const link = document.getElementById('navToolsLink');
+    link.href = firstTool.link;
+    link.target = '_blank';
+  }
 });
 
-function openTool(i) {
-  const t = allTools[i];
-  if (t.link) window.open(t.link, '_blank');
+function openLightbox(i) {
+  const p = window.portfolioItems[i];
+  if (!p.imageUrl) return;
+  document.getElementById('lightboxImg').src = p.imageUrl;
+  document.getElementById('lightbox').classList.add('show');
 }
 
-function subscribeToTool(i) {
-  const t = allTools[i];
-  sessionStorage.setItem('selectedTool', JSON.stringify({ name: t.name, price: t.price, currency: toolCurrency, link: t.link }));
-  location.href = 'signup.html';
+function closeLightbox() {
+  document.getElementById('lightbox').classList.remove('show');
 }
 </script>
 </body>
