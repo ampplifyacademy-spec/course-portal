@@ -85,7 +85,7 @@
   <div class="cnav-links">
     <a onclick="document.getElementById('curriculum').scrollIntoView({behavior:'smooth'})">Curriculum</a>
     <a href="services.html">Services</a>
-    <a href="tools.html">Tools</a>
+    <a href="tools.html" id="navToolsLink">Tools</a>
     <a href="success-stories.html">Success Stories</a>
     <a onclick="document.getElementById('pricing').scrollIntoView({behavior:'smooth'})">Pricing</a>
     <a onclick="document.getElementById('faq').scrollIntoView({behavior:'smooth'})">FAQ</a>
@@ -217,6 +217,13 @@ loadSiteContent().then(content => {
   });
 
   fbInitForm('courseFb', 'course', content.bankDetails.uploadScriptUrl);
+
+  const firstTool = (c.tools || [])[0];
+  if (firstTool && firstTool.link) {
+    const link = document.getElementById('navToolsLink');
+    link.href = firstTool.link;
+    link.target = '_blank';
+  }
 
   document.getElementById('faqWrap').innerHTML = c.faqs.map(q => `
     <details>

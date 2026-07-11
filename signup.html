@@ -69,7 +69,8 @@ try {
     const box = document.getElementById('selectedServicesBox');
     box.style.display = 'block';
     box.innerHTML = `<div class="row"><span>Selected services</span><span>${selectedServices.names.join(', ')}</span></div>
-      <div class="row"><span>Total</span><span>${selectedServices.total} ${selectedServices.currency}</span></div>`;
+      <div class="row"><span>Total</span><span>${selectedServices.total} ${selectedServices.currency}</span></div>
+      <button type="button" class="secondary" onclick="cancelSelectedServices()" style="margin-top:.8rem;">Cancel these services</button>`;
   }
 } catch (e) {}
 
@@ -80,7 +81,8 @@ try {
     const box = document.getElementById('selectedToolBox');
     box.style.display = 'block';
     box.innerHTML = `<div class="row"><span>Tool subscription</span><span>${selectedTool.name}</span></div>
-      <div class="row"><span>Price</span><span>${selectedTool.price} ${selectedTool.currency} / month</span></div>`;
+      <div class="row"><span>Price</span><span>${selectedTool.price} ${selectedTool.currency} / month</span></div>
+      <button type="button" class="secondary" onclick="cancelSelectedTool()" style="margin-top:.8rem;">Cancel this subscription</button>`;
   }
 } catch (e) {}
 
@@ -106,6 +108,22 @@ loadSiteContent().then(content => {
 
   uploadScriptUrl = b.uploadScriptUrl;
 });
+
+function cancelSelectedServices() {
+  sessionStorage.removeItem('selectedServices');
+  selectedServices = null;
+  const box = document.getElementById('selectedServicesBox');
+  box.style.display = 'none';
+  box.innerHTML = '';
+}
+
+function cancelSelectedTool() {
+  sessionStorage.removeItem('selectedTool');
+  selectedTool = null;
+  const box = document.getElementById('selectedToolBox');
+  box.style.display = 'none';
+  box.innerHTML = '';
+}
 
 function togglePassword(id, btn) {
   const input = document.getElementById(id);

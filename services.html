@@ -69,7 +69,7 @@
   <div class="cnav-links">
     <a href="course.html#curriculum">Curriculum</a>
     <a href="services.html">Services</a>
-    <a href="tools.html">Tools</a>
+    <a href="tools.html" id="navToolsLink">Tools</a>
     <a href="success-stories.html">Success Stories</a>
     <a href="course.html#pricing">Pricing</a>
     <a href="course.html#faq">FAQ</a>
@@ -183,6 +183,13 @@ loadSiteContent().then(content => {
   });
 
   fbInitForm('serviceFb', 'service', content.bankDetails.uploadScriptUrl);
+
+  const firstTool = (c.tools || [])[0];
+  if (firstTool && firstTool.link) {
+    const link = document.getElementById('navToolsLink');
+    link.href = firstTool.link;
+    link.target = '_blank';
+  }
 });
 
 function showBankTab2(i) {
