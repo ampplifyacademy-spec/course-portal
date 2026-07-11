@@ -73,6 +73,11 @@ loadSiteContent().then(content => {
   toolCurrency = currency;
   allTools = c.tools || [];
 
+  if (allTools.length === 1 && allTools[0].link) {
+    location.replace(allTools[0].link);
+    return;
+  }
+
   document.getElementById('toolGrid').innerHTML = allTools.length
     ? allTools.map((t, i) => `
       <div class="tool-card" ${t.link ? `onclick="openTool(${i})" style="cursor:pointer;"` : ''}>
