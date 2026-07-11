@@ -306,37 +306,36 @@
         <summary>
           <div>
             <h2>Portfolio (portfolio.html)</h2>
-            <p style="color:var(--text-muted); font-size:.82rem; margin-top:.3rem;">Work samples. Upload a photo directly — it's saved to your Drive the same way payment receipts are.</p>
+            <p style="color:var(--text-muted); font-size:.82rem; margin-top:.3rem;">Work samples, grouped into folders (e.g. "Image Design", "Content Design"). Visitors click a folder to see the images inside. Upload photos directly — saved to your Drive the same way payment receipts are.</p>
           </div>
           <span class="acc-chevron">▾</span>
         </summary>
         <div class="acc-body">
           <label>Portfolio Drive folder ID (optional — a public folder, separate from your private receipts folder)</label>
           <input id="portfolioFolderId" placeholder="e.g. 1zVuhgN6NeXKZk5mZW3BJ_4L2ExExnhdL (from the folder's URL)">
-          <div style="display:flex; justify-content:flex-end; margin-bottom:1rem;">
-            <button onclick="addPortfolioRow()" style="width:auto; margin:0;">+ Add Portfolio Item</button>
-          </div>
-          <div id="portfolioEditor"></div>
-          <button onclick="savePortfolio()" style="margin-top:.5rem;">Save Portfolio</button>
-          <p class="msg" id="portfolioMsg"></p>
-        </div>
-      </details>
 
-      <details class="panel acc-panel" style="margin-top:1rem;">
-        <summary>
-          <div>
-            <h2>Portfolio Folders (portfolio.html)</h2>
-            <p style="color:var(--text-muted); font-size:.82rem; margin-top:.3rem;">Group work samples into folders (e.g. "Image Design", "Content Design"). Visitors click a folder to see the images inside.</p>
+          <div style="margin-top:1.5rem; padding-top:1.25rem; border-top:1px solid var(--border);">
+            <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:1rem;">
+              <h3 style="font-size:1rem;">Folders</h3>
+              <button onclick="addPortfolioFolder()" style="width:auto; margin:0;">+ Add Folder</button>
+            </div>
+            <div id="portfolioFolderEditor"></div>
+            <button onclick="savePortfolioFolders()" style="margin-top:.5rem;">Save Folders</button>
+            <p class="msg" id="portfolioFolderMsg"></p>
           </div>
-          <span class="acc-chevron">▾</span>
-        </summary>
-        <div class="acc-body">
-          <div style="display:flex; justify-content:flex-end; margin-bottom:1rem;">
-            <button onclick="addPortfolioFolder()" style="width:auto; margin:0;">+ Add Folder</button>
+
+          <div style="margin-top:1.75rem; padding-top:1.25rem; border-top:1px solid var(--border);">
+            <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:1rem;">
+              <div>
+                <h3 style="font-size:1rem;">Ungrouped Items</h3>
+                <p style="color:var(--text-muted); font-size:.8rem; margin-top:.2rem;">Shown above the folders, not inside any folder.</p>
+              </div>
+              <button onclick="addPortfolioRow()" style="width:auto; margin:0;">+ Add Item</button>
+            </div>
+            <div id="portfolioEditor"></div>
+            <button onclick="savePortfolio()" style="margin-top:.5rem;">Save Ungrouped Items</button>
+            <p class="msg" id="portfolioMsg"></p>
           </div>
-          <div id="portfolioFolderEditor"></div>
-          <button onclick="savePortfolioFolders()" style="margin-top:.5rem;">Save Portfolio Folders</button>
-          <p class="msg" id="portfolioFolderMsg"></p>
         </div>
       </details>
     </div>
