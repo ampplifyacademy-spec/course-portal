@@ -27,10 +27,13 @@
   .lightbox { position: fixed; inset: 0; background: rgba(0,0,0,.85); display: none; align-items: center; justify-content: center; z-index: 100; padding: 2rem; }
   .lightbox.show { display: flex; }
   .lightbox img { max-width: 100%; max-height: 90vh; border-radius: var(--radius); }
+  .folder-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(140px, 140px)); gap: 1.25rem; max-width: 1100px; margin: 0 auto; }
   .folder-card { background: var(--surface); border: 1px solid var(--border); border-radius: var(--radius); overflow: hidden; display: flex; flex-direction: column; cursor: pointer; }
-  .folder-card .body { padding: 1.5rem; }
-  .folder-card h4 { font-size: 1.05rem; margin-bottom: .3rem; }
-  .folder-card p { color: var(--text-muted); font-size: .82rem; }
+  .folder-card .img-wrap { width: 100%; padding-top: 100%; position: relative; background: var(--surface-alt); flex-shrink: 0; }
+  .folder-card .img-wrap img { position: absolute; inset: 0; width: 100%; height: 100%; object-fit: cover; display: block; }
+  .folder-card .body { padding: .75rem; }
+  .folder-card h4 { font-size: .85rem; margin-bottom: .15rem; }
+  .folder-card p { color: var(--text-muted); font-size: .72rem; }
   .back-link { display: inline-flex; align-items: center; gap: .4rem; color: var(--info); font-weight: 600; font-size: .9rem; cursor: pointer; margin-bottom: 1.5rem; }
   .folder-heading { text-align: center; margin-bottom: 2rem; }
   .section-label { text-align: center; color: var(--text-muted); font: 700 .85rem var(--font-display); letter-spacing: .04em; text-transform: uppercase; margin: 3rem 0 1.5rem; }
@@ -115,7 +118,7 @@ loadSiteContent().then(content => {
   const folderSection = document.getElementById('folderGridSection');
   if (allFolders.length) {
     folderSection.innerHTML = (ungroupedItems.length ? '<div class="section-label">Folders</div>' : '')
-      + `<div class="portfolio-grid">${allFolders.map((f, fi) => {
+      + `<div class="folder-grid">${allFolders.map((f, fi) => {
         const cover = (f.items || []).find(it => it.imageUrl);
         const count = (f.items || []).length;
         return `
