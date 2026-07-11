@@ -19,8 +19,8 @@
   .csection > p.lead { text-align: center; color: var(--text-soft); margin-bottom: 2.75rem; }
   .portfolio-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(300px, 1fr)); gap: 1.5rem; max-width: 1100px; margin: 0 auto; }
   .portfolio-card { background: var(--surface); border: 1px solid var(--border); border-radius: var(--radius); overflow: hidden; display: flex; flex-direction: column; cursor: pointer; }
-  .portfolio-card .img-wrap { width: 100%; height: 280px; background: var(--surface-alt); display: flex; align-items: center; justify-content: center; }
-  .portfolio-card img { width: 100%; height: 100%; object-fit: cover; display: block; }
+  .portfolio-card .img-wrap { width: 100%; max-width: 1000px; padding-top: 100%; position: relative; background: var(--surface-alt); flex-shrink: 0; }
+  .portfolio-card img { position: absolute; inset: 0; width: 100%; height: 100%; object-fit: cover; display: block; }
   .portfolio-card .body { padding: 1.5rem; }
   .portfolio-card h4 { font-size: 1.05rem; margin-bottom: .5rem; }
   .portfolio-card p { color: var(--text-soft); font-size: .9rem; line-height: 1.6; }
