@@ -321,6 +321,24 @@
           <p class="msg" id="portfolioMsg"></p>
         </div>
       </details>
+
+      <details class="panel acc-panel" style="margin-top:1rem;">
+        <summary>
+          <div>
+            <h2>Portfolio Folders (portfolio.html)</h2>
+            <p style="color:var(--text-muted); font-size:.82rem; margin-top:.3rem;">Group work samples into folders (e.g. "Image Design", "Content Design"). Visitors click a folder to see the images inside.</p>
+          </div>
+          <span class="acc-chevron">▾</span>
+        </summary>
+        <div class="acc-body">
+          <div style="display:flex; justify-content:flex-end; margin-bottom:1rem;">
+            <button onclick="addPortfolioFolder()" style="width:auto; margin:0;">+ Add Folder</button>
+          </div>
+          <div id="portfolioFolderEditor"></div>
+          <button onclick="savePortfolioFolders()" style="margin-top:.5rem;">Save Portfolio Folders</button>
+          <p class="msg" id="portfolioFolderMsg"></p>
+        </div>
+      </details>
     </div>
 
     <!-- MODULES -->
@@ -557,6 +575,9 @@ function loadSiteContentIntoForm() {
     document.getElementById('portfolioFolderId').value = content.course.portfolioFolderId || '';
     portfolioRows = (content.course.portfolio || []).map(p => Object.assign({}, p));
     renderPortfolioRows();
+
+    portfolioFolderRows = (content.course.portfolioFolders || []).map(f => Object.assign({}, f, { items: (f.items || []).map(it => Object.assign({}, it)) }));
+    renderPortfolioFolderRows();
 
     return db.collection('courseContent').doc('main').get();
   }).then(doc => {
@@ -877,6 +898,91 @@ function savePortfolio() {
   db.collection('siteContent').doc('main').update({ 'course.portfolio': portfolio, 'course.portfolioFolderId': folderId }).then(() => {
     msg.style.color = 'var(--success)';
     msg.textContent = 'Portfolio saved. Changes are live immediately.';
+  }).catch(err => {
+    msg.style.color = 'var(--danger)';
+    msg.textContent = err.message;
+  });
+}
+
+let portfolioFolderRows = [];
+
+function renderPortfolioFolderRows() {
+  const container = document.getElementById('portfolioFolderEditor');
+  container.innerHTML = portfolioFolderRows.map((f, fi) => {
+    const items = f.items || [];
+    const itemsHtml = items.map((it, ii) => `
+      <div class="module-edit-card" style="margin-left:1rem;">
+        <div class="row-top"><span>Image ${ii + 1}</span><button class="danger" onclick="removePortfolioFolderItem(${fi},${ii})">Remove</button></div>
+        <input placeholder="Title" value="${(it.title || '').replace(/"/g, '&quot;')}" oninput="portfolioFolderRows[${fi}].items[${ii}].title = this.value">
+        <input placeholder="Description" value="${(it.desc || '').replace(/"/g, '&quot;')}" oninput="portfolioFolderRows[${fi}].items[${ii}].desc = this.value">
+        ${it.imageUrl ? `<div style="margin:.6rem 0;"><img src="${driveImgUrl(it.imageUrl)}" style="max-width:160px; border-radius:8px; display:block;"></div>` : ''}
+        <input type="file" id="pfFolderFile${fi}_${ii}" accept="image/*" style="display:none;" onchange="uploadPortfolioFolderImage(${fi},${ii},this.files[0])">
+        <label class="upload-btn" for="pfFolderFile${fi}_${ii}" style="display:block; text-align:center; padding:.7rem; border-radius:var(--radius-sm); border:1px dashed var(--border-strong); background:var(--surface); color:var(--text-soft); font-size:.85rem; cursor:pointer; margin:.4rem 0;">${it.imageUrl ? 'Replace photo' : 'Upload photo'}</label>
+        <p class="msg" id="pfFolderMsg${fi}_${ii}" style="margin:0;"></p>
+      </div>`).join('');
+    return `
+      <div class="module-edit-card">
+        <div class="row-top">
+          <input placeholder="Folder name (e.g. Image Design)" value="${(f.name || '').replace(/"/g, '&quot;')}" oninput="portfolioFolderRows[${fi}].name = this.value" style="margin:0; max-width:320px;">
+          <button class="danger" onclick="removePortfolioFolder(${fi})">Remove Folder</button>
+        </div>
+        <div style="margin-top:1rem;">${itemsHtml}</div>
+        <button onclick="addPortfolioFolderItem(${fi})" style="width:auto; margin:.6rem 0 0;">+ Add Image to This Folder</button>
+      </div>`;
+  }).join('');
+}
+
+function addPortfolioFolder() {
+  portfolioFolderRows.push({ name: '', items: [] });
+  renderPortfolioFolderRows();
+}
+
+function removePortfolioFolder(fi) {
+  portfolioFolderRows.splice(fi, 1);
+  renderPortfolioFolderRows();
+}
+
+function addPortfolioFolderItem(fi) {
+  if (!portfolioFolderRows[fi].items) portfolioFolderRows[fi].items = [];
+  portfolioFolderRows[fi].items.push({ title: '', desc: '', imageUrl: '' });
+  renderPortfolioFolderRows();
+}
+
+function removePortfolioFolderItem(fi, ii) {
+  portfolioFolderRows[fi].items.splice(ii, 1);
+  renderPortfolioFolderRows();
+}
+
+function uploadPortfolioFolderImage(fi, ii, file) {
+  if (!file) return;
+  const msg = document.getElementById('pfFolderMsg' + fi + '_' + ii);
+  if (!portfolioUploadUrl) {
+    msg.style.color = 'var(--danger)';
+    msg.textContent = 'Set the Google Apps Script upload URL in Bank Details first.';
+    return;
+  }
+  msg.style.color = 'var(--text-muted)';
+  msg.textContent = 'Uploading...';
+  const folderId = parseFolderId(document.getElementById('portfolioFolderId').value.trim());
+  fbUploadImage(file, portfolioUploadUrl, portfolioFolderRows[fi].items[ii].title || 'portfolio', folderId).then(url => {
+    portfolioFolderRows[fi].items[ii].imageUrl = url;
+    msg.style.color = 'var(--success)';
+    msg.textContent = 'Uploaded.';
+    renderPortfolioFolderRows();
+  }).catch(err => {
+    msg.style.color = 'var(--danger)';
+    msg.textContent = err.message;
+  });
+}
+
+function savePortfolioFolders() {
+  const msg = document.getElementById('portfolioFolderMsg');
+  const folders = portfolioFolderRows
+    .filter(f => f.name.trim())
+    .map(f => Object.assign({}, f, { items: (f.items || []).filter(it => it.title.trim()) }));
+  db.collection('siteContent').doc('main').update({ 'course.portfolioFolders': folders }).then(() => {
+    msg.style.color = 'var(--success)';
+    msg.textContent = 'Portfolio folders saved. Changes are live immediately.';
   }).catch(err => {
     msg.style.color = 'var(--danger)';
     msg.textContent = err.message;

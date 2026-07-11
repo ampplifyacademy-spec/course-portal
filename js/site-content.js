@@ -55,7 +55,8 @@ const SITE_CONTENT_DEFAULTS = {
       { name: 'Tanvir Ahmed', text: 'Launched his first product in 3 weeks and hit consistent monthly sales within 2 months.', imageUrl: '' }
     ],
     tools: [],
-    portfolio: []
+    portfolio: [],
+    portfolioFolders: []
   }
 };
 

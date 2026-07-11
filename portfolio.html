@@ -27,6 +27,15 @@
   .lightbox { position: fixed; inset: 0; background: rgba(0,0,0,.85); display: none; align-items: center; justify-content: center; z-index: 100; padding: 2rem; }
   .lightbox.show { display: flex; }
   .lightbox img { max-width: 100%; max-height: 90vh; border-radius: var(--radius); }
+  .folder-card { background: var(--surface); border: 1px solid var(--border); border-radius: var(--radius); padding: 2rem 1.5rem; text-align: center; cursor: pointer; transition: border-color .15s; }
+  .folder-card:hover { border-color: var(--accent); }
+  .folder-card .folder-icon { font-size: 2.5rem; margin-bottom: .75rem; }
+  .folder-card h4 { font-size: 1.05rem; margin-bottom: .3rem; }
+  .folder-card p { color: var(--text-muted); font-size: .82rem; }
+  .back-link { display: inline-flex; align-items: center; gap: .4rem; color: var(--info); font-weight: 600; font-size: .9rem; cursor: pointer; margin-bottom: 1.5rem; }
+  .folder-heading { text-align: center; margin-bottom: 2rem; }
+  .section-label { text-align: center; color: var(--text-muted); font: 700 .85rem var(--font-display); letter-spacing: .04em; text-transform: uppercase; margin: 3rem 0 1.5rem; }
+  .section-label:first-child { margin-top: 0; }
   .cta-band { background: linear-gradient(135deg, rgba(0,181,254,.13), rgba(253,125,1,.13)); padding: 3.5rem 4rem; text-align: center; }
   .cta-band h3 { font-size: 1.9rem; margin-bottom: .75rem; }
   .cta-band button { width: auto; margin: 0 auto; padding: 1rem 2.25rem; }
@@ -51,7 +60,17 @@
 <section class="csection" style="padding-top:3.5rem;">
   <h2>Our Portfolio</h2>
   <p class="lead">A look at work we've done.</p>
-  <div class="portfolio-grid" id="portfolioGrid"></div>
+
+  <div id="folderListView">
+    <div id="ungroupedSection"></div>
+    <div id="folderGridSection"></div>
+  </div>
+
+  <div id="folderDetailView" style="display:none;">
+    <span class="back-link" onclick="showFolderList()">← Back to Portfolio</span>
+    <div class="folder-heading"><h2 id="folderDetailTitle"></h2></div>
+    <div class="portfolio-grid" id="folderDetailGrid"></div>
+  </div>
 </section>
 
 <div class="cta-band">
@@ -69,20 +88,45 @@
 <script src="js/firebase-config.js"></script>
 <script src="js/site-content.js"></script>
 <script>
-loadSiteContent().then(content => {
-  const items = content.course.portfolio || [];
-  document.getElementById('portfolioGrid').innerHTML = items.length
-    ? items.map((p, i) => `
-      <div class="portfolio-card" onclick="openLightbox(${i})">
-        ${p.imageUrl ? `<div class="img-wrap"><img src="${driveImgUrl(p.imageUrl)}" alt="${p.title}"></div>` : ''}
-        <div class="body">
-          <h4>${p.title}</h4>
-          <p>${p.desc || ''}</p>
-        </div>
-      </div>`).join('')
-    : '<p style="text-align:center; color:var(--text-muted); grid-column:1/-1;">Portfolio coming soon.</p>';
+let allFolders = [];
+let ungroupedItems = [];
+let activeLightboxItems = [];
 
-  window.portfolioItems = items;
+function itemCard(p, i) {
+  return `
+    <div class="portfolio-card" onclick="openLightbox(${i})">
+      ${p.imageUrl ? `<div class="img-wrap"><img src="${driveImgUrl(p.imageUrl)}" alt="${p.title}"></div>` : ''}
+      <div class="body">
+        <h4>${p.title}</h4>
+        <p>${p.desc || ''}</p>
+      </div>
+    </div>`;
+}
+
+loadSiteContent().then(content => {
+  ungroupedItems = content.course.portfolio || [];
+  allFolders = content.course.portfolioFolders || [];
+
+  const ungroupedSection = document.getElementById('ungroupedSection');
+  if (ungroupedItems.length) {
+    ungroupedSection.innerHTML = (allFolders.length ? '<div class="section-label">Portfolio</div>' : '')
+      + `<div class="portfolio-grid">${ungroupedItems.map((p, i) => itemCard(p, i)).join('')}</div>`;
+  }
+
+  const folderSection = document.getElementById('folderGridSection');
+  if (allFolders.length) {
+    folderSection.innerHTML = (ungroupedItems.length ? '<div class="section-label">Folders</div>' : '')
+      + `<div class="portfolio-grid">${allFolders.map((f, fi) => `
+        <div class="folder-card" onclick="openFolder(${fi})">
+          <div class="folder-icon">📁</div>
+          <h4>${f.name}</h4>
+          <p>${(f.items || []).length} image${(f.items || []).length === 1 ? '' : 's'}</p>
+        </div>`).join('')}</div>`;
+  }
+
+  if (!ungroupedItems.length && !allFolders.length) {
+    document.getElementById('ungroupedSection').innerHTML = '<p style="text-align:center; color:var(--text-muted);">Portfolio coming soon.</p>';
+  }
 
   const firstTool = (content.course.tools || [])[0];
   if (firstTool && firstTool.link) {
@@ -92,8 +136,25 @@ loadSiteContent().then(content => {
   }
 });
 
+function openFolder(fi) {
+  const folder = allFolders[fi];
+  activeLightboxItems = folder.items || [];
+  document.getElementById('folderDetailTitle').textContent = folder.name;
+  document.getElementById('folderDetailGrid').innerHTML = activeLightboxItems.map((p, i) => itemCard(p, i)).join('');
+  document.getElementById('folderListView').style.display = 'none';
+  document.getElementById('folderDetailView').style.display = 'block';
+  window.scrollTo({ top: 0, behavior: 'smooth' });
+}
+
+function showFolderList() {
+  document.getElementById('folderDetailView').style.display = 'none';
+  document.getElementById('folderListView').style.display = 'block';
+  activeLightboxItems = [];
+}
+
 function openLightbox(i) {
-  const p = window.portfolioItems[i];
+  const source = activeLightboxItems.length ? activeLightboxItems : ungroupedItems;
+  const p = source[i];
   if (!p.imageUrl) return;
   document.getElementById('lightboxImg').src = driveImgUrl(p.imageUrl);
   document.getElementById('lightbox').classList.add('show');
