@@ -133,6 +133,20 @@ body.admin-shell { display: block; padding: 0; background: var(--bg); }
 .tab-section { display: none; }
 .tab-section.active { display: block; }
 
+@media (max-width: 860px) {
+  .admin-shell-grid { grid-template-columns: 1fr; }
+  .sidebar { flex-direction: row; align-items: center; gap: .4rem; padding: .85rem 1rem; overflow-x: auto; white-space: nowrap; }
+  .sidebar .brand { padding: 0; margin: 0 .5rem 0 0; flex-shrink: 0; }
+  .nav-item { flex-shrink: 0; padding: .5rem .8rem; font-size: .82rem; margin-bottom: 0; }
+  .sidebar-footer { margin-top: 0; margin-left: auto; border-top: none; padding: 0; flex-shrink: 0; }
+  .sidebar-footer .name, .sidebar-footer .role { display: none; }
+  .admin-main { padding: 1.5rem 1.25rem; }
+  .admin-header { flex-direction: column; align-items: flex-start; }
+  .admin-header h1 { font-size: 1.3rem; }
+  .panel { padding: 1.25rem; }
+  table { display: block; overflow-x: auto; white-space: nowrap; }
+}
+
 /* ===== Password show/hide toggle ===== */
 .password-wrap { position: relative; }
 .password-wrap input { padding-right: 2.8rem; }

@@ -59,7 +59,17 @@
   .feedback-form-wrap p.hint { color: var(--text-muted); font-size: .82rem; margin-bottom: 1.1rem; }
   .feedback-form-wrap label { display: block; font: 600 .8rem var(--font-body); color: var(--text-soft); margin: .9rem 0 .4rem; }
   .feedback-form-wrap label:first-of-type { margin-top: 0; }
-  @media (max-width: 760px) { .cnav, .csection { padding-left: 1.5rem; padding-right: 1.5rem; } .cnav-links { display: none; } }
+  @media (max-width: 760px) {
+    .cnav { padding: 1rem 1.25rem; }
+    .cnav-links { display: none; }
+    .cnav button { padding: .6rem 1.1rem; font-size: .85rem; }
+    .csection { padding: 3rem 1.25rem; }
+    .cta-band { padding: 2.5rem 1.25rem; }
+    .cta-band button { padding: .8rem 1.5rem; font-size: .9rem; }
+    .total-bar { padding: .85rem 1.25rem; flex-direction: column; align-items: stretch; gap: .6rem; }
+    .total-bar button { width: 100%; padding: .8rem 1rem; font-size: .9rem; }
+    .payment-panel { padding: 1.25rem 1.25rem; }
+  }
 </style>
 </head>
 <body class="course-page">
