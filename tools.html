@@ -75,17 +75,22 @@ loadSiteContent().then(content => {
 
   document.getElementById('toolGrid').innerHTML = allTools.length
     ? allTools.map((t, i) => `
-      <div class="tool-card">
+      <div class="tool-card" ${t.link ? `onclick="openTool(${i})" style="cursor:pointer;"` : ''}>
         ${t.imageUrl ? `<img src="${t.imageUrl}" alt="${t.name}">` : ''}
         <div class="body">
           <h4>${t.name}</h4>
           <p class="desc">${t.desc || ''}</p>
           ${t.price ? `<div class="tool-price">${t.price} ${currency} <span>/ month</span></div>` : ''}
-          <button onclick="subscribeToTool(${i})">Subscribe</button>
+          <button onclick="event.stopPropagation(); subscribeToTool(${i})">Subscribe</button>
         </div>
       </div>`).join('')
     : '<p style="text-align:center; color:var(--text-muted); grid-column:1/-1;">Tools coming soon.</p>';
 });
+
+function openTool(i) {
+  const t = allTools[i];
+  if (t.link) window.open(t.link, '_blank');
+}
 
 function subscribeToTool(i) {
   const t = allTools[i];
