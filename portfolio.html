@@ -23,6 +23,7 @@
   .portfolio-card { background: var(--surface); border: 1px solid var(--border); border-radius: var(--radius); overflow: hidden; display: flex; flex-direction: column; cursor: pointer; }
   .portfolio-card .img-wrap { width: 100%; max-width: 1000px; padding-top: 100%; position: relative; background: var(--surface-alt); flex-shrink: 0; }
   .portfolio-card img { position: absolute; inset: 0; width: 100%; height: 100%; object-fit: cover; display: block; }
+  .portfolio-card .video-badge { position: absolute; top: .6rem; right: .6rem; background: rgba(0,0,0,.7); color: #fff; font-size: .75rem; font-weight: 700; padding: .3rem .6rem; border-radius: 999px; }
   .portfolio-card .body { padding: 1.5rem; }
   .portfolio-card h4 { font-size: 1.05rem; margin-bottom: .5rem; }
   .portfolio-card p { color: var(--text-soft); font-size: .9rem; line-height: 1.6; }
@@ -97,8 +98,13 @@
   <button onclick="location.href='services.html'">See Our Services</button>
 </div>
 
+<div class="social-footer" id="socialFooter"></div>
+
 <div class="lightbox" id="lightbox" onclick="closeLightbox()">
   <img id="lightboxImg" src="" alt="">
+  <div id="lightboxVideoWrap" style="display:none; width:100%; max-width:560px; aspect-ratio:16/9;" onclick="event.stopPropagation()">
+    <iframe id="lightboxVideo" src="" style="width:100%; height:100%; border:none;" allowfullscreen scrolling="no"></iframe>
+  </div>
 </div>
 
 <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-app-compat.js"></script>
@@ -118,7 +124,7 @@ let activeLightboxItems = [];
 function itemCard(p, i) {
   return `
     <div class="portfolio-card" onclick="openLightbox(${i})">
-      ${p.imageUrl ? `<div class="img-wrap"><img src="${driveImgUrl(p.imageUrl)}" alt="${p.title}"></div>` : ''}
+      ${p.imageUrl ? `<div class="img-wrap"><img src="${driveImgUrl(p.imageUrl)}" alt="${p.title}">${p.videoUrl ? '<span class="video-badge">▶ Video</span>' : ''}</div>` : (p.videoUrl ? `<div class="img-wrap"><div style="position:absolute; inset:0; display:flex; align-items:center; justify-content:center; font-size:2.5rem; background:var(--surface-alt);">▶</div></div>` : '')}
       <div class="body">
         <h4>${p.title}</h4>
         <p>${p.desc || ''}</p>
@@ -163,6 +169,8 @@ loadSiteContent().then(content => {
     link.href = firstTool.link;
     link.target = '_blank';
   }
+
+  renderSocialFooter(content.social);
 });
 
 function openFolder(fi) {
@@ -184,13 +192,28 @@ function showFolderList() {
 function openLightbox(i) {
   const source = activeLightboxItems.length ? activeLightboxItems : ungroupedItems;
   const p = source[i];
-  if (!p.imageUrl) return;
-  document.getElementById('lightboxImg').src = driveImgUrl(p.imageUrl);
+  if (!p.imageUrl && !p.videoUrl) return;
+
+  const img = document.getElementById('lightboxImg');
+  const videoWrap = document.getElementById('lightboxVideoWrap');
+  const videoFrame = document.getElementById('lightboxVideo');
+
+  if (p.videoUrl) {
+    videoFrame.src = fbVideoEmbedUrl(p.videoUrl);
+    videoWrap.style.display = 'block';
+    img.style.display = 'none';
+  } else {
+    img.src = driveImgUrl(p.imageUrl);
+    img.style.display = 'block';
+    videoWrap.style.display = 'none';
+    videoFrame.src = '';
+  }
   document.getElementById('lightbox').classList.add('show');
 }
 
 function closeLightbox() {
   document.getElementById('lightbox').classList.remove('show');
+  document.getElementById('lightboxVideo').src = '';
 }
 </script>
 </body>

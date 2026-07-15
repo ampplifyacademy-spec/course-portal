@@ -6,6 +6,7 @@ function driveImgUrl(url) {
 
 const SITE_CONTENT_DEFAULTS = {
   theme: { accent: '#00b5fe', accentOrange: '#fd7d01', bg: '#0b0e1a' },
+  social: { facebook: '', instagram: '' },
   bankDetails: {
     accounts: [
       { bankName: '', accountName: '', accountNumber: '', iban: '' }
@@ -77,6 +78,7 @@ function loadSiteContent() {
       const data = doc.exists ? doc.data() : {};
       const merged = {
         theme: Object.assign({}, SITE_CONTENT_DEFAULTS.theme, data.theme || {}),
+        social: Object.assign({}, SITE_CONTENT_DEFAULTS.social, data.social || {}),
         bankDetails: Object.assign({}, SITE_CONTENT_DEFAULTS.bankDetails, data.bankDetails || {}),
         landing: Object.assign({}, SITE_CONTENT_DEFAULTS.landing, data.landing || {}),
         course: Object.assign({}, SITE_CONTENT_DEFAULTS.course, data.course || {})
@@ -106,4 +108,18 @@ function loadSiteContent() {
       applySiteTheme(SITE_CONTENT_DEFAULTS.theme);
       return SITE_CONTENT_DEFAULTS;
     });
+}
+
+function renderSocialFooter(social, elId) {
+  const el = document.getElementById(elId || 'socialFooter');
+  if (!el) return;
+  const links = [];
+  if (social && social.facebook) links.push(`<a href="${social.facebook}" target="_blank" aria-label="Facebook">📘 Facebook</a>`);
+  if (social && social.instagram) links.push(`<a href="${social.instagram}" target="_blank" aria-label="Instagram">📷 Instagram</a>`);
+  el.innerHTML = links.join('');
+  el.style.display = links.length ? 'flex' : 'none';
+}
+
+function fbVideoEmbedUrl(videoUrl) {
+  return 'https://www.facebook.com/plugins/video.php?href=' + encodeURIComponent(videoUrl) + '&show_text=false';
 }

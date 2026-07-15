@@ -155,6 +155,18 @@
       </details>
 
       <details class="panel acc-panel" style="margin-bottom:1rem;">
+        <summary><h2>Social Media Links</h2><span class="acc-chevron">▾</span></summary>
+        <div class="acc-body">
+          <label>Facebook page URL</label>
+          <input id="socialFacebook" placeholder="https://facebook.com/yourpage">
+          <label>Instagram page URL</label>
+          <input id="socialInstagram" placeholder="https://instagram.com/yourpage">
+          <button onclick="saveSocialLinks()" style="margin-top:.75rem;">Save Social Links</button>
+          <p class="msg" id="socialMsg"></p>
+        </div>
+      </details>
+
+      <details class="panel acc-panel" style="margin-bottom:1rem;">
         <summary><h2>Bank Details (shown on Sign Up page)</h2><span class="acc-chevron">▾</span></summary>
         <div class="acc-body">
           <div style="display:flex; justify-content:flex-end; margin-bottom:1rem;">
@@ -537,6 +549,9 @@ function loadSiteContentIntoForm() {
     document.getElementById('themeAccentOrange').value = content.theme.accentOrange;
     document.getElementById('themeBg').value = content.theme.bg;
 
+    document.getElementById('socialFacebook').value = content.social.facebook || '';
+    document.getElementById('socialInstagram').value = content.social.instagram || '';
+
     bankAccountRows = content.bankDetails.accounts.map(a => Object.assign({}, a));
     renderBankAccountRows();
     document.getElementById('bankInstructions').value = content.bankDetails.instructions;
@@ -848,6 +863,7 @@ function renderPortfolioRows() {
       <div class="row-top"><span>Portfolio Item ${i + 1}</span><button class="danger" onclick="removePortfolioRow(${i})">Remove</button></div>
       <input placeholder="Title" value="${(p.title || '').replace(/"/g, '&quot;')}" oninput="portfolioRows[${i}].title = this.value">
       <input placeholder="Description" value="${(p.desc || '').replace(/"/g, '&quot;')}" oninput="portfolioRows[${i}].desc = this.value">
+      <input placeholder="Facebook video link (optional)" value="${(p.videoUrl || '').replace(/"/g, '&quot;')}" oninput="portfolioRows[${i}].videoUrl = this.value">
       ${p.imageUrl ? `<div style="margin:.6rem 0;"><img src="${driveImgUrl(p.imageUrl)}" style="max-width:160px; border-radius:8px; display:block;"></div>` : ''}
       <input type="file" id="portfolioFile${i}" accept="image/*" style="display:none;" onchange="uploadPortfolioImage(${i}, this.files[0])">
       <label class="upload-btn" for="portfolioFile${i}" id="portfolioFileLabel${i}" style="display:block; text-align:center; padding:.7rem; border-radius:var(--radius-sm); border:1px dashed var(--border-strong); background:var(--surface); color:var(--text-soft); font-size:.85rem; cursor:pointer; margin:.4rem 0;">${p.imageUrl ? 'Replace photo' : 'Upload photo'}</label>
@@ -856,7 +872,7 @@ function renderPortfolioRows() {
 }
 
 function addPortfolioRow() {
-  portfolioRows.push({ title: '', desc: '', imageUrl: '' });
+  portfolioRows.push({ title: '', desc: '', imageUrl: '', videoUrl: '' });
   renderPortfolioRows();
 }
 
@@ -955,6 +971,7 @@ function renderPortfolioFolderRows() {
         <div class="row-top"><span>Image ${ii + 1}</span><button class="danger" onclick="removePortfolioFolderItem(${fi},${ii})">Remove</button></div>
         <input placeholder="Title" value="${(it.title || '').replace(/"/g, '&quot;')}" oninput="portfolioFolderRows[${fi}].items[${ii}].title = this.value">
         <input placeholder="Description" value="${(it.desc || '').replace(/"/g, '&quot;')}" oninput="portfolioFolderRows[${fi}].items[${ii}].desc = this.value">
+        <input placeholder="Facebook video link (optional)" value="${(it.videoUrl || '').replace(/"/g, '&quot;')}" oninput="portfolioFolderRows[${fi}].items[${ii}].videoUrl = this.value">
         ${it.imageUrl ? `<div style="margin:.6rem 0;"><img src="${driveImgUrl(it.imageUrl)}" style="max-width:160px; border-radius:8px; display:block;"></div>` : ''}
         <input type="file" id="pfFolderFile${fi}_${ii}" accept="image/*" style="display:none;" onchange="uploadPortfolioFolderImage(${fi},${ii},this.files[0])">
         <label class="upload-btn" for="pfFolderFile${fi}_${ii}" style="display:block; text-align:center; padding:.7rem; border-radius:var(--radius-sm); border:1px dashed var(--border-strong); background:var(--surface); color:var(--text-soft); font-size:.85rem; cursor:pointer; margin:.4rem 0;">${it.imageUrl ? 'Replace photo' : 'Upload photo'}</label>
@@ -1025,7 +1042,7 @@ function removePortfolioFolder(fi) {
 
 function addPortfolioFolderItem(fi) {
   if (!portfolioFolderRows[fi].items) portfolioFolderRows[fi].items = [];
-  portfolioFolderRows[fi].items.push({ title: '', desc: '', imageUrl: '' });
+  portfolioFolderRows[fi].items.push({ title: '', desc: '', imageUrl: '', videoUrl: '' });
   renderPortfolioFolderRows();
 }
 
@@ -1169,6 +1186,21 @@ function addBankAccountRow() {
 function removeBankAccountRow(i) {
   bankAccountRows.splice(i, 1);
   renderBankAccountRows();
+}
+
+function saveSocialLinks() {
+  const msg = document.getElementById('socialMsg');
+  const social = {
+    facebook: document.getElementById('socialFacebook').value.trim(),
+    instagram: document.getElementById('socialInstagram').value.trim()
+  };
+  db.collection('siteContent').doc('main').set({ social }, { merge: true }).then(() => {
+    msg.style.color = 'var(--success)';
+    msg.textContent = 'Social links saved. Changes are live immediately.';
+  }).catch(err => {
+    msg.style.color = 'var(--danger)';
+    msg.textContent = err.message;
+  });
 }
 
 function saveBankDetails() {

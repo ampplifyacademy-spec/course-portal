@@ -142,6 +142,8 @@
   <button onclick="location.href='signup.html'">Enroll Now</button>
 </div>
 
+<div class="social-footer" id="socialFooter"></div>
+
 <div class="total-bar" id="totalBar">
   <div class="info"><span id="totalCount">0</span> service(s) selected — Total: <b id="totalAmount">0</b></div>
   <button onclick="showPaymentPanel()">Continue to Payment</button>
@@ -207,6 +209,7 @@ loadSiteContent().then(content => {
   });
 
   fbInitForm('serviceFb', 'service', content.bankDetails.uploadScriptUrl);
+  renderSocialFooter(content.social);
 
   const firstTool = (c.tools || [])[0];
   if (firstTool && firstTool.link) {

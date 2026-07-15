@@ -76,6 +76,8 @@
   <button onclick="location.href='signup.html'">Enroll Now</button>
 </div>
 
+<div class="social-footer" id="socialFooter"></div>
+
 <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-app-compat.js"></script>
 <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-auth-compat.js"></script>
 <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore-compat.js"></script>
@@ -112,6 +114,8 @@ loadSiteContent().then(content => {
         </div>
       </div>`).join('')
     : '<p style="text-align:center; color:var(--text-muted); grid-column:1/-1;">Tools coming soon.</p>';
+
+  renderSocialFooter(content.social);
 });
 
 function openTool(i) {
