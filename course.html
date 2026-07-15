@@ -27,7 +27,8 @@
   .chero-ctas { display: flex; gap: 1rem; justify-content: center; flex-wrap: wrap; margin-bottom: 3.25rem; }
   .chero-ctas button, .chero-ctas a.btn { width: auto; margin-top: 0; padding: 1rem 2rem; }
   .chero img { width: 240px; height: 240px; object-fit: cover; border-radius: 50%; border: 4px solid rgba(0,181,254,.4); box-shadow: 0 30px 60px rgba(0,0,0,.5); }
-  .instructor-strip { padding: 3rem 4rem; display: flex; justify-content: center; }
+  .instructor-strip { padding: 3rem 4rem; display: flex; justify-content: center; align-items: center; gap: 2rem; flex-wrap: wrap; }
+  .instructor-strip img#mentorImg { width: 110px; height: 110px; object-fit: cover; border-radius: 50%; border: 3px solid rgba(0,181,254,.4); flex-shrink: 0; }
   .instructor-strip .inner { max-width: 720px; }
   .instructor-strip .eyebrow { color: var(--accent-orange); font: 700 .85rem var(--font-display); margin-bottom: .5rem; }
   .instructor-strip h3 { font-size: 1.6rem; margin-bottom: .6rem; }
@@ -122,10 +123,11 @@
     <button onclick="location.href='signup.html'" id="heroEnrollBtn">Enroll Now — 320 SAR</button>
     <button class="secondary" onclick="document.getElementById('curriculum').scrollIntoView({behavior:'smooth'})">View Curriculum</button>
   </div>
-  <img src="assets/instructor.png" alt="Instructor">
+  <img src="assets/instructor.png" alt="Instructor" id="heroImg">
 </section>
 
 <div class="instructor-strip">
+  <img src="" alt="Mentor" id="mentorImg" style="display:none;">
   <div class="inner">
     <div class="eyebrow">MEET YOUR MENTOR</div>
     <h3>Hey, I'm <span id="mentorName">Yasin Arafat</span> — Founder of Ampplify Academy</h3>
@@ -216,6 +218,12 @@ loadSiteContent().then(content => {
   document.getElementById('heroSubtitle').textContent = c.heroSubtitle;
   document.getElementById('mentorName').textContent = c.mentorName;
   document.getElementById('mentorBio').textContent = c.mentorBio;
+  if (c.heroImageUrl) document.getElementById('heroImg').src = driveImgUrl(c.heroImageUrl);
+  if (c.mentorImageUrl) {
+    const mentorImg = document.getElementById('mentorImg');
+    mentorImg.src = driveImgUrl(c.mentorImageUrl);
+    mentorImg.style.display = 'block';
+  }
   document.getElementById('priceOld').textContent = c.priceOld + ' ' + c.currency;
   document.getElementById('priceNew').textContent = c.priceNew + ' ' + c.currency;
   document.getElementById('heroEnrollBtn').textContent = 'Enroll Now — ' + c.priceNew + ' ' + c.currency;

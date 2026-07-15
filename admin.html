@@ -212,6 +212,18 @@
           <input id="mentorName">
           <label>Mentor bio</label>
           <input id="mentorBio">
+
+          <label style="margin-top:1.25rem;">Hero / Logo Image (top circular image)</label>
+          <div id="heroImagePreview" style="margin:.4rem 0;"></div>
+          <input type="file" id="heroImageFile" accept="image/*" style="display:none;" onchange="uploadCourseImage('hero', this.files[0])">
+          <label class="upload-btn" for="heroImageFile" style="display:block; text-align:center; padding:.7rem; border-radius:var(--radius-sm); border:1px dashed var(--border-strong); background:var(--surface); color:var(--text-soft); font-size:.85rem; cursor:pointer; margin:.4rem 0;">Upload hero/logo image</label>
+          <p class="msg" id="heroImageMsg" style="margin:0;"></p>
+
+          <label style="margin-top:1.25rem;">Mentor Photo (shown next to mentor introduction)</label>
+          <div id="mentorImagePreview" style="margin:.4rem 0;"></div>
+          <input type="file" id="mentorImageFile" accept="image/*" style="display:none;" onchange="uploadCourseImage('mentor', this.files[0])">
+          <label class="upload-btn" for="mentorImageFile" style="display:block; text-align:center; padding:.7rem; border-radius:var(--radius-sm); border:1px dashed var(--border-strong); background:var(--surface); color:var(--text-soft); font-size:.85rem; cursor:pointer; margin:.4rem 0;">Upload mentor photo</label>
+          <p class="msg" id="mentorImageMsg" style="margin:0;"></p>
         </div>
       </details>
 
@@ -568,6 +580,9 @@ function loadSiteContentIntoForm() {
     document.getElementById('priceNew').value = content.course.priceNew;
     document.getElementById('currency').value = content.course.currency;
     document.getElementById('mentorName').value = content.course.mentorName;
+    courseHeroImageUrl = content.course.heroImageUrl || '';
+    courseMentorImageUrl = content.course.mentorImageUrl || '';
+    renderCourseImagePreviews();
     document.getElementById('mentorBio').value = content.course.mentorBio;
 
     curriculumRows = content.course.curriculumTopics.map(t => Object.assign({}, t));
@@ -855,6 +870,38 @@ function saveTools() {
 
 let portfolioRows = [];
 let portfolioUploadUrl = '';
+let courseHeroImageUrl = '';
+let courseMentorImageUrl = '';
+
+function renderCourseImagePreviews() {
+  document.getElementById('heroImagePreview').innerHTML = courseHeroImageUrl
+    ? `<img src="${driveImgUrl(courseHeroImageUrl)}" style="max-width:120px; border-radius:50%; display:block;">` : '';
+  document.getElementById('mentorImagePreview').innerHTML = courseMentorImageUrl
+    ? `<img src="${driveImgUrl(courseMentorImageUrl)}" style="max-width:120px; border-radius:50%; display:block;">` : '';
+}
+
+function uploadCourseImage(which, file) {
+  if (!file) return;
+  const msgId = which === 'hero' ? 'heroImageMsg' : 'mentorImageMsg';
+  const msg = document.getElementById(msgId);
+  const uploadUrl = document.getElementById('bankDriveLink').value.trim();
+  if (!uploadUrl) {
+    msg.style.color = 'var(--danger)';
+    msg.textContent = 'Set the Google Apps Script upload URL in Bank Details first.';
+    return;
+  }
+  msg.style.color = 'var(--text-muted)';
+  msg.textContent = 'Uploading...';
+  fbUploadImage(file, uploadUrl, which === 'hero' ? 'hero-logo' : 'mentor-photo').then(url => {
+    if (which === 'hero') courseHeroImageUrl = url; else courseMentorImageUrl = url;
+    renderCourseImagePreviews();
+    msg.style.color = 'var(--success)';
+    msg.textContent = 'Uploaded. Click "Save All Site Content" below to publish.';
+  }).catch(err => {
+    msg.style.color = 'var(--danger)';
+    msg.textContent = err.message;
+  });
+}
 
 function renderPortfolioRows() {
   const container = document.getElementById('portfolioEditor');
@@ -1222,29 +1269,24 @@ function saveBankDetails() {
 function saveSiteContent() {
   const msg = document.getElementById('siteMsg');
   const data = {
-    theme: {
-      accent: document.getElementById('themeAccent').value,
-      accentOrange: document.getElementById('themeAccentOrange').value,
-      bg: document.getElementById('themeBg').value
-    },
-    landing: {
-      heroTitlePrefix: document.getElementById('landingTitlePrefix').value,
-      heroHighlight: document.getElementById('landingHighlight').value,
-      heroSubtitle: document.getElementById('landingSubtitle').value
-    },
-    course: {
-      heroTitlePrefix: document.getElementById('courseTitlePrefix').value,
-      heroHighlight: document.getElementById('courseHighlight').value,
-      heroSubtitle: document.getElementById('courseSubtitle').value,
-      priceOld: document.getElementById('priceOld').value,
-      priceNew: document.getElementById('priceNew').value,
-      currency: document.getElementById('currency').value,
-      mentorName: document.getElementById('mentorName').value,
-      mentorBio: document.getElementById('mentorBio').value,
-      modules: publicModulesOnly()
-    }
+    'theme.accent': document.getElementById('themeAccent').value,
+    'theme.accentOrange': document.getElementById('themeAccentOrange').value,
+    'theme.bg': document.getElementById('themeBg').value,
+    'landing.heroTitlePrefix': document.getElementById('landingTitlePrefix').value,
+    'landing.heroHighlight': document.getElementById('landingHighlight').value,
+    'landing.heroSubtitle': document.getElementById('landingSubtitle').value,
+    'course.heroTitlePrefix': document.getElementById('courseTitlePrefix').value,
+    'course.heroHighlight': document.getElementById('courseHighlight').value,
+    'course.heroSubtitle': document.getElementById('courseSubtitle').value,
+    'course.priceOld': document.getElementById('priceOld').value,
+    'course.priceNew': document.getElementById('priceNew').value,
+    'course.currency': document.getElementById('currency').value,
+    'course.mentorName': document.getElementById('mentorName').value,
+    'course.mentorBio': document.getElementById('mentorBio').value,
+    'course.heroImageUrl': courseHeroImageUrl,
+    'course.mentorImageUrl': courseMentorImageUrl
   };
-  db.collection('siteContent').doc('main').set(data).then(() => {
+  db.collection('siteContent').doc('main').update(data).then(() => {
     msg.style.color = 'var(--success)';
     msg.textContent = 'Site content saved. Changes are live immediately.';
   }).catch(err => {
