@@ -37,6 +37,8 @@
   <input id="name" placeholder="Your full name">
   <label for="email">Email</label>
   <input id="email" type="email" placeholder="you@example.com">
+  <label for="whatsapp">WhatsApp number</label>
+  <input id="whatsapp" placeholder="e.g. +966 5xxxxxxxx">
   <label for="password">Password</label>
   <div class="password-wrap">
     <input id="password" type="password" placeholder="Min 6 characters">
@@ -45,6 +47,12 @@
   <label>Payment receipt</label>
   <input type="file" id="invoiceFile" accept="image/*,application/pdf" style="display:none;" onchange="onInvoiceChosen(this.files[0])">
   <label class="upload-btn" for="invoiceFile" id="invoiceLabel">Choose receipt photo/PDF</label>
+
+  <div id="serviceDocsSection" style="display:none;">
+    <label>Required documents (e.g. passport, bank statement — whatever this service needs)</label>
+    <input type="file" id="serviceDocsFile" accept="image/*,application/pdf" multiple style="display:none;" onchange="onServiceDocsChosen(this.files)">
+    <label class="upload-btn" for="serviceDocsFile" id="serviceDocsLabel">Choose document(s)</label>
+  </div>
 
   <button onclick="doSignup()">Sign Up</button>
   <p class="msg" id="msg"></p>
@@ -59,6 +67,7 @@
 <script>
 let uploadScriptUrl = '';
 let invoiceFile = null;
+let serviceDocFiles = [];
 let selectedServices = null;
 let selectedTool = null;
 
@@ -71,6 +80,7 @@ try {
     box.innerHTML = `<div class="row"><span>Selected services</span><span>${selectedServices.names.join(', ')}</span></div>
       <div class="row"><span>Total</span><span>${selectedServices.total} ${selectedServices.currency}</span></div>
       <button type="button" class="secondary" onclick="cancelSelectedServices()" style="margin-top:.8rem;">Cancel these services</button>`;
+    document.getElementById('serviceDocsSection').style.display = 'block';
   }
 } catch (e) {}
 
@@ -115,6 +125,9 @@ function cancelSelectedServices() {
   const box = document.getElementById('selectedServicesBox');
   box.style.display = 'none';
   box.innerHTML = '';
+  document.getElementById('serviceDocsSection').style.display = 'none';
+  serviceDocFiles = [];
+  document.getElementById('serviceDocsLabel').textContent = 'Choose document(s)';
 }
 
 function cancelSelectedTool() {
@@ -140,6 +153,13 @@ function showBankTab(i) {
 function onInvoiceChosen(file) {
   invoiceFile = file;
   document.getElementById('invoiceLabel').textContent = file ? file.name : 'Choose receipt photo/PDF';
+}
+
+function onServiceDocsChosen(files) {
+  serviceDocFiles = [...files];
+  document.getElementById('serviceDocsLabel').textContent = serviceDocFiles.length
+    ? serviceDocFiles.length + ' document(s) selected'
+    : 'Choose document(s)';
 }
 
 function fileToBase64(file) {
@@ -169,11 +189,12 @@ function uploadInvoiceToDrive(file, studentName) {
 function doSignup() {
   const name = document.getElementById('name').value.trim();
   const email = document.getElementById('email').value.trim();
+  const whatsapp = document.getElementById('whatsapp').value.trim();
   const password = document.getElementById('password').value;
   const msg = document.getElementById('msg');
 
-  if (!name || !email || !password || !invoiceFile) {
-    msg.textContent = "Please fill in all fields and choose your payment receipt";
+  if (!name || !email || !whatsapp || !password || !invoiceFile) {
+    msg.textContent = "Please fill in all fields (including WhatsApp number) and choose your payment receipt";
     return;
   }
   if (!uploadScriptUrl) {
@@ -184,15 +205,22 @@ function doSignup() {
   msg.style.color = 'var(--text-muted)';
   msg.textContent = "Uploading receipt...";
 
+  let invoiceUrl = '';
   uploadInvoiceToDrive(invoiceFile, name)
-    .then(invoiceUrl => {
+    .then(url => {
+      invoiceUrl = url;
+      msg.textContent = serviceDocFiles.length ? "Uploading documents..." : "Creating account...";
+      return Promise.all(serviceDocFiles.map(f => uploadInvoiceToDrive(f, name).then(url => ({ name: f.name, url }))));
+    })
+    .then(serviceDocuments => {
       msg.textContent = "Creating account...";
       return auth.createUserWithEmailAndPassword(email, password).then(cred => {
         const doc = {
-          name, email, invoiceUrl,
+          name, email, whatsapp, invoiceUrl,
           status: 'pending',
           createdAt: firebase.firestore.FieldValue.serverTimestamp()
         };
+        if (serviceDocuments.length) doc.serviceDocuments = serviceDocuments;
         if (selectedServices) {
           doc.selectedServices = selectedServices.names;
           doc.serviceTotal = selectedServices.total;

@@ -87,7 +87,7 @@
     <div class="tab-section" id="tab-students">
       <div class="panel">
         <table>
-          <thead><tr><th>Name</th><th>Email</th><th>Receipt</th><th>Batch</th><th>Enrolled</th><th>Amount</th><th>Status</th><th>Action</th><th>Course Access</th><th>Account</th></tr></thead>
+          <thead><tr><th>Name</th><th>Email</th><th>Receipt</th><th>Documents</th><th>Batch</th><th>Enrolled</th><th>Amount</th><th>Status</th><th>Action</th><th>Course Access</th><th>Account</th></tr></thead>
           <tbody id="userRows"></tbody>
         </table>
       </div>
@@ -1385,11 +1385,18 @@ function renderUserRows(list) {
     const toolNote = (u.productType === 'tool')
       ? `<div style="font-size:.72rem; color:var(--info); margin-top:.2rem;">Tool subscription: ${u.toolName} (${u.toolPrice} ${u.toolCurrency || ''}/mo)</div>`
       : '';
+    const whatsappNote = u.whatsapp
+      ? `<div style="font-size:.72rem; color:var(--text-muted); margin-top:.2rem;">WhatsApp: ${u.whatsapp}</div>`
+      : '';
+    const docsHtml = (u.serviceDocuments && u.serviceDocuments.length)
+      ? u.serviceDocuments.map(d => `<a href="${d.url}" target="_blank"><button style="width:auto; margin:0 .3rem .3rem 0; padding:.35rem .7rem; font-size:.75rem;">${d.name}</button></a>`).join('')
+      : '—';
 
     tr.innerHTML = `
-      <td>${u.name || ''}${servicesNote}${toolNote}</td>
+      <td>${u.name || ''}${servicesNote}${toolNote}${whatsappNote}</td>
       <td>${u.email}</td>
       <td>${u.invoiceUrl ? `<a href="${u.invoiceUrl}" target="_blank"><button style="width:auto; margin:0; padding:.4rem .8rem; font-size:.8rem;">View</button></a>` : '—'}</td>
+      <td>${docsHtml}</td>
       <td><select onchange="setUserBatch('${u.id}', this.value)" style="margin:0; padding:.4rem .6rem; font-size:.85rem;">${batchOptions}</select></td>
       <td>${enrolled}</td>
       <td>${amount}</td>
