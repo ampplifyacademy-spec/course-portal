@@ -258,7 +258,8 @@ function showPaymentPanel() {
 function goToSignup() {
   const names = [...selected].map(i => allServices[i].title);
   const total = [...selected].reduce((sum, i) => sum + (parseFloat(allServices[i].price) || 0), 0);
-  sessionStorage.setItem('selectedServices', JSON.stringify({ names, total, currency }));
+  const docFolders = [...new Set([...selected].flatMap(i => allServices[i].docFolders || []))];
+  sessionStorage.setItem('selectedServices', JSON.stringify({ names, total, currency, docFolders }));
   location.href = 'signup.html';
 }
 </script>

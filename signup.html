@@ -48,11 +48,7 @@
   <input type="file" id="invoiceFile" accept="image/*,application/pdf" style="display:none;" onchange="onInvoiceChosen(this.files[0])">
   <label class="upload-btn" for="invoiceFile" id="invoiceLabel">Choose receipt photo/PDF</label>
 
-  <div id="serviceDocsSection" style="display:none;">
-    <label>Required documents (e.g. passport, bank statement — whatever this service needs)</label>
-    <input type="file" id="serviceDocsFile" accept="image/*,application/pdf" multiple style="display:none;" onchange="onServiceDocsChosen(this.files)">
-    <label class="upload-btn" for="serviceDocsFile" id="serviceDocsLabel">Choose document(s)</label>
-  </div>
+  <div id="serviceDocsSection" style="display:none;"></div>
 
   <button onclick="doSignup()">Sign Up</button>
   <p class="msg" id="msg"></p>
@@ -67,9 +63,24 @@
 <script>
 let uploadScriptUrl = '';
 let invoiceFile = null;
-let serviceDocFiles = [];
+let serviceDocFilesByFolder = {};
 let selectedServices = null;
 let selectedTool = null;
+
+function renderServiceDocsSection() {
+  const section = document.getElementById('serviceDocsSection');
+  const folders = (selectedServices && selectedServices.docFolders) || [];
+  if (!folders.length) {
+    section.style.display = 'none';
+    section.innerHTML = '';
+    return;
+  }
+  section.style.display = 'block';
+  section.innerHTML = `<label>Required documents for your selected service(s)</label>` + folders.map((folder, fi) => `
+    <input type="file" id="serviceDocsFile${fi}" accept="image/*,application/pdf" style="display:none;" onchange="onServiceDocsChosen(${fi}, '${folder.replace(/'/g, "\\'")}', this.files[0])">
+    <label class="upload-btn" for="serviceDocsFile${fi}" id="serviceDocsLabel${fi}">Upload: ${folder}</label>
+  `).join('');
+}
 
 try {
   const raw = sessionStorage.getItem('selectedServices');
@@ -80,7 +91,7 @@ try {
     box.innerHTML = `<div class="row"><span>Selected services</span><span>${selectedServices.names.join(', ')}</span></div>
       <div class="row"><span>Total</span><span>${selectedServices.total} ${selectedServices.currency}</span></div>
       <button type="button" class="secondary" onclick="cancelSelectedServices()" style="margin-top:.8rem;">Cancel these services</button>`;
-    document.getElementById('serviceDocsSection').style.display = 'block';
+    renderServiceDocsSection();
   }
 } catch (e) {}
 
@@ -125,9 +136,8 @@ function cancelSelectedServices() {
   const box = document.getElementById('selectedServicesBox');
   box.style.display = 'none';
   box.innerHTML = '';
-  document.getElementById('serviceDocsSection').style.display = 'none';
-  serviceDocFiles = [];
-  document.getElementById('serviceDocsLabel').textContent = 'Choose document(s)';
+  serviceDocFilesByFolder = {};
+  renderServiceDocsSection();
 }
 
 function cancelSelectedTool() {
@@ -155,11 +165,9 @@ function onInvoiceChosen(file) {
   document.getElementById('invoiceLabel').textContent = file ? file.name : 'Choose receipt photo/PDF';
 }
 
-function onServiceDocsChosen(files) {
-  serviceDocFiles = [...files];
-  document.getElementById('serviceDocsLabel').textContent = serviceDocFiles.length
-    ? serviceDocFiles.length + ' document(s) selected'
-    : 'Choose document(s)';
+function onServiceDocsChosen(fi, folder, file) {
+  serviceDocFilesByFolder[folder] = file || null;
+  document.getElementById('serviceDocsLabel' + fi).textContent = file ? file.name : 'Upload: ' + folder;
 }
 
 function fileToBase64(file) {
@@ -206,11 +214,12 @@ function doSignup() {
   msg.textContent = "Uploading receipt...";
 
   let invoiceUrl = '';
+  const docEntries = Object.entries(serviceDocFilesByFolder).filter(([, f]) => f);
   uploadInvoiceToDrive(invoiceFile, name)
     .then(url => {
       invoiceUrl = url;
-      msg.textContent = serviceDocFiles.length ? "Uploading documents..." : "Creating account...";
-      return Promise.all(serviceDocFiles.map(f => uploadInvoiceToDrive(f, name).then(url => ({ name: f.name, url }))));
+      msg.textContent = docEntries.length ? "Uploading documents..." : "Creating account...";
+      return Promise.all(docEntries.map(([folder, f]) => uploadInvoiceToDrive(f, name).then(url => ({ folder, name: f.name, url }))));
     })
     .then(serviceDocuments => {
       msg.textContent = "Creating account...";

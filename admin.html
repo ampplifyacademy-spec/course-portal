@@ -765,6 +765,12 @@ function renderServiceRows() {
         <input placeholder="Point ${pi + 1}" value="${(p || '').replace(/"/g, '&quot;')}" oninput="serviceRows[${i}].points[${pi}] = this.value" style="margin:0;">
         <button class="danger" onclick="removeServicePoint(${i},${pi})" style="width:auto; margin:0;">Remove</button>
       </div>`).join('');
+    const docFolders = s.docFolders || [];
+    const docFoldersHtml = docFolders.map((d, di) => `
+      <div style="display:flex; gap:.5rem; margin-bottom:.4rem;">
+        <input placeholder="e.g. Trade License" value="${(d || '').replace(/"/g, '&quot;')}" oninput="serviceRows[${i}].docFolders[${di}] = this.value" style="margin:0;">
+        <button class="danger" onclick="removeServiceDocFolder(${i},${di})" style="width:auto; margin:0;">Remove</button>
+      </div>`).join('');
     return `
     <div class="module-edit-card">
       <div class="row-top">
@@ -782,12 +788,16 @@ function renderServiceRows() {
       <label style="display:block; margin:.75rem 0 .4rem; font-size:.8rem; color:var(--text-muted);">Points (shown as numbered list)</label>
       ${pointsHtml}
       <button onclick="addServicePoint(${i})" style="width:auto; margin:0;">+ Add Point</button>
+
+      <label style="display:block; margin:.75rem 0 .4rem; font-size:.8rem; color:var(--text-muted);">Required document folders (leave empty if this service needs no documents — customers will only see an upload step at signup if at least one folder is added here)</label>
+      ${docFoldersHtml}
+      <button onclick="addServiceDocFolder(${i})" style="width:auto; margin:0;">+ Add Document Folder</button>
     </div>`;
   }).join('');
 }
 
 function addServiceRow() {
-  serviceRows.push({ title: '', desc: '', price: '', imageUrl: '', points: [] });
+  serviceRows.push({ title: '', desc: '', price: '', imageUrl: '', points: [], docFolders: [] });
   renderServiceRows();
 }
 
@@ -814,9 +824,23 @@ function removeServicePoint(i, pi) {
   renderServiceRows();
 }
 
+function addServiceDocFolder(i) {
+  if (!serviceRows[i].docFolders) serviceRows[i].docFolders = [];
+  serviceRows[i].docFolders.push('');
+  renderServiceRows();
+}
+
+function removeServiceDocFolder(i, di) {
+  serviceRows[i].docFolders.splice(di, 1);
+  renderServiceRows();
+}
+
 function saveServices() {
   const msg = document.getElementById('serviceMsg');
-  const services = serviceRows.filter(s => s.title.trim()).map(s => Object.assign({}, s, { points: (s.points || []).filter(p => p.trim()) }));
+  const services = serviceRows.filter(s => s.title.trim()).map(s => Object.assign({}, s, {
+    points: (s.points || []).filter(p => p.trim()),
+    docFolders: (s.docFolders || []).filter(d => d.trim())
+  }));
   db.collection('siteContent').doc('main').update({ 'course.services': services }).then(() => {
     msg.style.color = 'var(--success)';
     msg.textContent = 'Services saved. Changes are live immediately.';
@@ -1600,7 +1624,7 @@ function renderUserRows(list) {
       ? `<div style="font-size:.72rem; color:var(--text-muted); margin-top:.2rem;">WhatsApp: ${u.whatsapp}</div>`
       : '';
     const docsHtml = (u.serviceDocuments && u.serviceDocuments.length)
-      ? u.serviceDocuments.map(d => `<a href="${d.url}" target="_blank"><button style="width:auto; margin:0 .3rem .3rem 0; padding:.35rem .7rem; font-size:.75rem;">${d.name}</button></a>`).join('')
+      ? u.serviceDocuments.map(d => `<a href="${d.url}" target="_blank"><button style="width:auto; margin:0 .3rem .3rem 0; padding:.35rem .7rem; font-size:.75rem;">${d.folder ? d.folder + ': ' : ''}${d.name}</button></a>`).join('')
       : '—';
 
     tr.innerHTML = `
