@@ -29,9 +29,34 @@
   .acc-panel[open] .acc-chevron { transform: rotate(180deg); }
   .acc-panel[open] summary { border-bottom: 1px solid var(--border); }
   .acc-body { padding: 1.75rem; }
+
+  .cropper-overlay { display: none; position: fixed; inset: 0; background: rgba(0,0,0,.65); z-index: 999; align-items: center; justify-content: center; }
+  .cropper-overlay.open { display: flex; }
+  .cropper-box { background: var(--surface-alt); border-radius: var(--radius-lg); padding: 1.5rem; width: 340px; max-width: 92vw; text-align: center; }
+  .cropper-box h3 { font-size: 1rem; margin-bottom: 1rem; }
+  .cropper-viewport { width: 260px; height: 260px; margin: 0 auto; overflow: hidden; position: relative; background: #000; border-radius: 12px; cursor: grab; touch-action: none; }
+  .cropper-viewport.round { border-radius: 50%; }
+  .cropper-viewport img { position: absolute; top: 0; left: 0; user-select: none; -webkit-user-drag: none; transform-origin: 0 0; }
+  .cropper-zoom { width: 100%; margin: 1.1rem 0 .6rem; }
+  .cropper-actions { display: flex; gap: .75rem; margin-top: .5rem; }
+  .cropper-actions button { flex: 1; margin-top: 0; }
 </style>
 </head>
 <body class="admin-shell">
+
+<div class="cropper-overlay" id="cropperOverlay">
+  <div class="cropper-box">
+    <h3>Position your photo</h3>
+    <div class="cropper-viewport" id="cropperViewport">
+      <img id="cropperImg" alt="">
+    </div>
+    <input type="range" class="cropper-zoom" id="cropperZoom" min="1" max="3" step="0.01" value="1">
+    <div class="cropper-actions">
+      <button class="secondary" type="button" onclick="cancelCrop()">Cancel</button>
+      <button type="button" onclick="confirmCrop()">Use This Photo</button>
+    </div>
+  </div>
+</div>
 <div class="admin-shell-grid">
 
   <div class="sidebar">
@@ -887,25 +912,132 @@ function renderCourseImagePreviews() {
 
 function uploadCourseImage(which, file) {
   if (!file) return;
-  const msgId = which === 'hero' ? 'heroImageMsg' : 'siteLogoMsg';
-  const msg = document.getElementById(msgId);
-  const uploadUrl = document.getElementById('bankDriveLink').value.trim();
-  if (!uploadUrl) {
-    msg.style.color = 'var(--danger)';
-    msg.textContent = 'Set the Google Apps Script upload URL in Bank Details first.';
-    return;
-  }
-  msg.style.color = 'var(--text-muted)';
-  msg.textContent = 'Uploading...';
-  fbUploadImage(file, uploadUrl, which === 'hero' ? 'mentor-photo' : 'site-logo').then(url => {
-    if (which === 'hero') courseHeroImageUrl = url; else courseSiteLogoUrl = url;
-    renderCourseImagePreviews();
-    msg.style.color = 'var(--success)';
-    msg.textContent = 'Uploaded. Click "Save All Site Content" below to publish.';
-  }).catch(err => {
-    msg.style.color = 'var(--danger)';
-    msg.textContent = err.message;
+  openCropper(file, which === 'hero' ? 'round' : 'square', croppedBlob => {
+    const msgId = which === 'hero' ? 'heroImageMsg' : 'siteLogoMsg';
+    const msg = document.getElementById(msgId);
+    const uploadUrl = document.getElementById('bankDriveLink').value.trim();
+    if (!uploadUrl) {
+      msg.style.color = 'var(--danger)';
+      msg.textContent = 'Set the Google Apps Script upload URL in Bank Details first.';
+      return;
+    }
+    msg.style.color = 'var(--text-muted)';
+    msg.textContent = 'Uploading...';
+    const namedFile = new File([croppedBlob], (which === 'hero' ? 'mentor-photo' : 'site-logo') + '.png', { type: 'image/png' });
+    fbUploadImage(namedFile, uploadUrl, which === 'hero' ? 'mentor-photo' : 'site-logo').then(url => {
+      if (which === 'hero') courseHeroImageUrl = url; else courseSiteLogoUrl = url;
+      renderCourseImagePreviews();
+      msg.style.color = 'var(--success)';
+      msg.textContent = 'Uploaded. Click "Save All Site Content" below to publish.';
+    }).catch(err => {
+      msg.style.color = 'var(--danger)';
+      msg.textContent = err.message;
+    });
   });
+}
+
+// ---- Image cropper (drag to reposition, slider to zoom, fixed 1:1 output) ----
+let cropperState = null;
+
+function openCropper(file, shape, onDone) {
+  const overlay = document.getElementById('cropperOverlay');
+  const viewport = document.getElementById('cropperViewport');
+  const img = document.getElementById('cropperImg');
+  const zoom = document.getElementById('cropperZoom');
+  viewport.classList.toggle('round', shape === 'round');
+  zoom.value = 1;
+
+  const reader = new FileReader();
+  reader.onload = e => {
+    img.onload = () => {
+      const vp = 260;
+      const baseScale = vp / Math.min(img.naturalWidth, img.naturalHeight);
+      cropperState = { img, viewport, zoom, baseScale, scale: baseScale, x: 0, y: 0, onDone, vp,
+        naturalW: img.naturalWidth, naturalH: img.naturalHeight };
+      centerCrop();
+      applyCropTransform();
+      overlay.classList.add('open');
+    };
+    img.src = e.target.result;
+  };
+  reader.readAsDataURL(file);
+}
+
+function centerCrop() {
+  const s = cropperState;
+  s.x = (s.vp - s.naturalW * s.scale) / 2;
+  s.y = (s.vp - s.naturalH * s.scale) / 2;
+}
+
+function clampCrop() {
+  const s = cropperState;
+  const w = s.naturalW * s.scale, h = s.naturalH * s.scale;
+  s.x = Math.min(0, Math.max(s.vp - w, s.x));
+  s.y = Math.min(0, Math.max(s.vp - h, s.y));
+}
+
+function applyCropTransform() {
+  const s = cropperState;
+  s.img.style.transform = `translate(${s.x}px, ${s.y}px) scale(${s.scale})`;
+  s.img.style.width = s.naturalW + 'px';
+  s.img.style.height = s.naturalH + 'px';
+}
+
+(function setupCropperDrag() {
+  const viewport = document.getElementById('cropperViewport');
+  const zoom = document.getElementById('cropperZoom');
+  let dragging = false, startX = 0, startY = 0, origX = 0, origY = 0;
+
+  viewport.addEventListener('pointerdown', e => {
+    if (!cropperState) return;
+    dragging = true;
+    startX = e.clientX; startY = e.clientY;
+    origX = cropperState.x; origY = cropperState.y;
+    viewport.setPointerCapture(e.pointerId);
+  });
+  viewport.addEventListener('pointermove', e => {
+    if (!dragging || !cropperState) return;
+    cropperState.x = origX + (e.clientX - startX);
+    cropperState.y = origY + (e.clientY - startY);
+    clampCrop();
+    applyCropTransform();
+  });
+  viewport.addEventListener('pointerup', () => { dragging = false; });
+  viewport.addEventListener('pointerleave', () => { dragging = false; });
+
+  zoom.addEventListener('input', () => {
+    if (!cropperState) return;
+    const s = cropperState;
+    const cx = s.vp / 2, cy = s.vp / 2;
+    const relX = (cx - s.x) / s.scale, relY = (cy - s.y) / s.scale;
+    s.scale = s.baseScale * Number(zoom.value);
+    s.x = cx - relX * s.scale;
+    s.y = cy - relY * s.scale;
+    clampCrop();
+    applyCropTransform();
+  });
+})();
+
+function cancelCrop() {
+  document.getElementById('cropperOverlay').classList.remove('open');
+  cropperState = null;
+}
+
+function confirmCrop() {
+  const s = cropperState;
+  if (!s) return;
+  const OUT = 600;
+  const canvas = document.createElement('canvas');
+  canvas.width = OUT; canvas.height = OUT;
+  const ctx = canvas.getContext('2d');
+  const factor = OUT / s.vp;
+  ctx.drawImage(s.img, s.x * factor, s.y * factor, s.naturalW * s.scale * factor, s.naturalH * s.scale * factor);
+  canvas.toBlob(blob => {
+    document.getElementById('cropperOverlay').classList.remove('open');
+    const done = s.onDone;
+    cropperState = null;
+    done(blob);
+  }, 'image/png');
 }
 
 function renderPortfolioRows() {

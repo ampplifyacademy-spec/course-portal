@@ -135,7 +135,7 @@ body.admin-shell { display: block; padding: 0; background: var(--bg); }
 
 /* ===== Public page social footer ===== */
 .social-footer { display: none; justify-content: center; gap: 1.5rem; padding: 2rem 1.5rem; background: var(--bg-alt); }
-.social-footer a { color: var(--text-soft); text-decoration: none; font: 600 .9rem var(--font-body); }
+.social-footer a { display: inline-flex; align-items: center; gap: .5rem; color: var(--text-soft); text-decoration: none; font: 600 .9rem var(--font-body); }
 .social-footer a:hover { color: var(--accent); }
 
 @media (max-width: 860px) {
