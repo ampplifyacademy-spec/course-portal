@@ -213,17 +213,22 @@
           <label>Mentor bio</label>
           <input id="mentorBio">
 
-          <label style="margin-top:1.25rem;">Hero / Logo Image (top circular image)</label>
+          <label style="margin-top:1.25rem;">Mentor Photo (top circular image)</label>
           <div id="heroImagePreview" style="margin:.4rem 0;"></div>
           <input type="file" id="heroImageFile" accept="image/*" style="display:none;" onchange="uploadCourseImage('hero', this.files[0])">
-          <label class="upload-btn" for="heroImageFile" style="display:block; text-align:center; padding:.7rem; border-radius:var(--radius-sm); border:1px dashed var(--border-strong); background:var(--surface); color:var(--text-soft); font-size:.85rem; cursor:pointer; margin:.4rem 0;">Upload hero/logo image</label>
+          <label class="upload-btn" for="heroImageFile" style="display:block; text-align:center; padding:.7rem; border-radius:var(--radius-sm); border:1px dashed var(--border-strong); background:var(--surface); color:var(--text-soft); font-size:.85rem; cursor:pointer; margin:.4rem 0;">Upload mentor photo</label>
           <p class="msg" id="heroImageMsg" style="margin:0;"></p>
+        </div>
+      </details>
 
-          <label style="margin-top:1.25rem;">Mentor Photo (shown next to mentor introduction)</label>
-          <div id="mentorImagePreview" style="margin:.4rem 0;"></div>
-          <input type="file" id="mentorImageFile" accept="image/*" style="display:none;" onchange="uploadCourseImage('mentor', this.files[0])">
-          <label class="upload-btn" for="mentorImageFile" style="display:block; text-align:center; padding:.7rem; border-radius:var(--radius-sm); border:1px dashed var(--border-strong); background:var(--surface); color:var(--text-soft); font-size:.85rem; cursor:pointer; margin:.4rem 0;">Upload mentor photo</label>
-          <p class="msg" id="mentorImageMsg" style="margin:0;"></p>
+      <details class="panel acc-panel" style="margin-bottom:1rem;">
+        <summary><h2>Site Branding</h2><span class="acc-chevron">▾</span></summary>
+        <div class="acc-body">
+          <label>Site Logo (shown in nav bar next to the site name)</label>
+          <div id="siteLogoPreview" style="margin:.4rem 0;"></div>
+          <input type="file" id="siteLogoFile" accept="image/*" style="display:none;" onchange="uploadCourseImage('logo', this.files[0])">
+          <label class="upload-btn" for="siteLogoFile" style="display:block; text-align:center; padding:.7rem; border-radius:var(--radius-sm); border:1px dashed var(--border-strong); background:var(--surface); color:var(--text-soft); font-size:.85rem; cursor:pointer; margin:.4rem 0;">Upload site logo</label>
+          <p class="msg" id="siteLogoMsg" style="margin:0;"></p>
         </div>
       </details>
 
@@ -581,7 +586,7 @@ function loadSiteContentIntoForm() {
     document.getElementById('currency').value = content.course.currency;
     document.getElementById('mentorName').value = content.course.mentorName;
     courseHeroImageUrl = content.course.heroImageUrl || '';
-    courseMentorImageUrl = content.course.mentorImageUrl || '';
+    courseSiteLogoUrl = content.course.siteLogoUrl || '';
     renderCourseImagePreviews();
     document.getElementById('mentorBio').value = content.course.mentorBio;
 
@@ -871,18 +876,18 @@ function saveTools() {
 let portfolioRows = [];
 let portfolioUploadUrl = '';
 let courseHeroImageUrl = '';
-let courseMentorImageUrl = '';
+let courseSiteLogoUrl = '';
 
 function renderCourseImagePreviews() {
   document.getElementById('heroImagePreview').innerHTML = courseHeroImageUrl
     ? `<img src="${driveImgUrl(courseHeroImageUrl)}" style="max-width:120px; border-radius:50%; display:block;">` : '';
-  document.getElementById('mentorImagePreview').innerHTML = courseMentorImageUrl
-    ? `<img src="${driveImgUrl(courseMentorImageUrl)}" style="max-width:120px; border-radius:50%; display:block;">` : '';
+  document.getElementById('siteLogoPreview').innerHTML = courseSiteLogoUrl
+    ? `<img src="${driveImgUrl(courseSiteLogoUrl)}" style="max-width:60px; border-radius:8px; display:block;">` : '';
 }
 
 function uploadCourseImage(which, file) {
   if (!file) return;
-  const msgId = which === 'hero' ? 'heroImageMsg' : 'mentorImageMsg';
+  const msgId = which === 'hero' ? 'heroImageMsg' : 'siteLogoMsg';
   const msg = document.getElementById(msgId);
   const uploadUrl = document.getElementById('bankDriveLink').value.trim();
   if (!uploadUrl) {
@@ -892,8 +897,8 @@ function uploadCourseImage(which, file) {
   }
   msg.style.color = 'var(--text-muted)';
   msg.textContent = 'Uploading...';
-  fbUploadImage(file, uploadUrl, which === 'hero' ? 'hero-logo' : 'mentor-photo').then(url => {
-    if (which === 'hero') courseHeroImageUrl = url; else courseMentorImageUrl = url;
+  fbUploadImage(file, uploadUrl, which === 'hero' ? 'mentor-photo' : 'site-logo').then(url => {
+    if (which === 'hero') courseHeroImageUrl = url; else courseSiteLogoUrl = url;
     renderCourseImagePreviews();
     msg.style.color = 'var(--success)';
     msg.textContent = 'Uploaded. Click "Save All Site Content" below to publish.';
@@ -1284,7 +1289,7 @@ function saveSiteContent() {
     'course.mentorName': document.getElementById('mentorName').value,
     'course.mentorBio': document.getElementById('mentorBio').value,
     'course.heroImageUrl': courseHeroImageUrl,
-    'course.mentorImageUrl': courseMentorImageUrl
+    'course.siteLogoUrl': courseSiteLogoUrl
   };
   db.collection('siteContent').doc('main').update(data).then(() => {
     msg.style.color = 'var(--success)';

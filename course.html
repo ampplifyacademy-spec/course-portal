@@ -28,7 +28,6 @@
   .chero-ctas button, .chero-ctas a.btn { width: auto; margin-top: 0; padding: 1rem 2rem; }
   .chero img { width: 240px; height: 240px; object-fit: cover; border-radius: 50%; border: 4px solid rgba(0,181,254,.4); box-shadow: 0 30px 60px rgba(0,0,0,.5); }
   .instructor-strip { padding: 3rem 4rem; display: flex; justify-content: center; align-items: center; gap: 2rem; flex-wrap: wrap; }
-  .instructor-strip img#mentorImg { width: 110px; height: 110px; object-fit: cover; border-radius: 50%; border: 3px solid rgba(0,181,254,.4); flex-shrink: 0; }
   .instructor-strip .inner { max-width: 720px; }
   .instructor-strip .eyebrow { color: var(--accent-orange); font: 700 .85rem var(--font-display); margin-bottom: .5rem; }
   .instructor-strip h3 { font-size: 1.6rem; margin-bottom: .6rem; }
@@ -99,7 +98,7 @@
 <body class="course-page">
 
 <nav class="cnav">
-  <span class="brand"><span class="a">A</span>mpplify Academy</span>
+  <span class="brand"><img src="" alt="" id="siteLogo" style="display:none; height:32px; width:32px; object-fit:contain; border-radius:8px; margin-right:.5rem;"><span class="a">A</span>mpplify Academy</span>
   <div class="cnav-links">
     <a onclick="document.getElementById('curriculum').scrollIntoView({behavior:'smooth'}); closeMobileNav()">Curriculum</a>
     <a href="services.html">Services</a>
@@ -127,7 +126,6 @@
 </section>
 
 <div class="instructor-strip">
-  <img src="" alt="Mentor" id="mentorImg" style="display:none;">
   <div class="inner">
     <div class="eyebrow">MEET YOUR MENTOR</div>
     <h3>Hey, I'm <span id="mentorName">Yasin Arafat</span> — Founder of Ampplify Academy</h3>
@@ -219,10 +217,10 @@ loadSiteContent().then(content => {
   document.getElementById('mentorName').textContent = c.mentorName;
   document.getElementById('mentorBio').textContent = c.mentorBio;
   if (c.heroImageUrl) document.getElementById('heroImg').src = driveImgUrl(c.heroImageUrl);
-  if (c.mentorImageUrl) {
-    const mentorImg = document.getElementById('mentorImg');
-    mentorImg.src = driveImgUrl(c.mentorImageUrl);
-    mentorImg.style.display = 'block';
+  if (c.siteLogoUrl) {
+    const siteLogo = document.getElementById('siteLogo');
+    siteLogo.src = driveImgUrl(c.siteLogoUrl);
+    siteLogo.style.display = 'inline-block';
   }
   document.getElementById('priceOld').textContent = c.priceOld + ' ' + c.currency;
   document.getElementById('priceNew').textContent = c.priceNew + ' ' + c.currency;

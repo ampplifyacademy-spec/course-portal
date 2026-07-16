@@ -29,7 +29,7 @@ const SITE_CONTENT_DEFAULTS = {
     mentorName: 'Yasin Arafat',
     mentorBio: "I've spent the last 6 years selling on Amazon full-time. This course is everything I wish someone had handed me on day one — no fluff, just what actually works.",
     heroImageUrl: '',
-    mentorImageUrl: '',
+    siteLogoUrl: '',
     curriculumTopics: [
       { title: 'Amazon Seller Account Setup', desc: 'Register your seller account correctly the first time and avoid the common mistakes that get new sellers suspended.', duration: '45 min' },
       { title: 'Product Research & Sourcing', desc: 'Find profitable products with real demand, validate them with data, and source reliable suppliers.', duration: '1.5 hr' },
