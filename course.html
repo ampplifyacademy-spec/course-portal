@@ -109,7 +109,7 @@
     <a onclick="document.getElementById('faq').scrollIntoView({behavior:'smooth'}); closeMobileNav()">FAQ</a>
   </div>
   <div class="cnav-right">
-    <button onclick="location.href='signup.html'">Enroll Now</button>
+    <div class="nav-social" id="navSocial"></div>
     <button class="menu-toggle" onclick="toggleMobileNav()" id="menuToggleBtn">☰ Menu</button>
   </div>
 </nav>
@@ -188,8 +188,6 @@
   <button onclick="location.href='signup.html'" id="bandEnrollBtn">Enroll Now — 320 SAR</button>
 </div>
 
-<div class="social-footer" id="socialFooter"></div>
-
 <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-app-compat.js"></script>
 <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-auth-compat.js"></script>
 <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore-compat.js"></script>
@@ -253,7 +251,7 @@ loadSiteContent().then(content => {
   });
 
   fbInitForm('courseFb', 'course', content.bankDetails.uploadScriptUrl);
-  renderSocialFooter(content.social);
+  renderSocialNav(content.social, 'navSocial');
 
   const firstTool = (c.tools || [])[0];
   if (firstTool && firstTool.link) {

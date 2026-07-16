@@ -92,7 +92,7 @@
     <a href="course.html#faq">FAQ</a>
   </div>
   <div class="cnav-right">
-    <button onclick="location.href='signup.html'">Enroll Now</button>
+    <div class="nav-social" id="navSocial"></div>
     <button class="menu-toggle" onclick="toggleMobileNav()" id="menuToggleBtn">☰ Menu</button>
   </div>
 </nav>
@@ -141,8 +141,6 @@
   <h3>Want to get started?</h3>
   <button onclick="location.href='signup.html'">Enroll Now</button>
 </div>
-
-<div class="social-footer" id="socialFooter"></div>
 
 <div class="total-bar" id="totalBar">
   <div class="info"><span id="totalCount">0</span> service(s) selected — Total: <b id="totalAmount">0</b></div>
@@ -209,7 +207,7 @@ loadSiteContent().then(content => {
   });
 
   fbInitForm('serviceFb', 'service', content.bankDetails.uploadScriptUrl);
-  renderSocialFooter(content.social);
+  renderSocialNav(content.social, 'navSocial');
 
   const firstTool = (c.tools || [])[0];
   if (firstTool && firstTool.link) {

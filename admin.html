@@ -186,6 +186,8 @@
           <input id="socialFacebook" placeholder="https://facebook.com/yourpage">
           <label>Instagram page URL</label>
           <input id="socialInstagram" placeholder="https://instagram.com/yourpage">
+          <label>WhatsApp link</label>
+          <input id="socialWhatsapp" placeholder="https://wa.me/9665xxxxxxxx">
           <button onclick="saveSocialLinks()" style="margin-top:.75rem;">Save Social Links</button>
           <p class="msg" id="socialMsg"></p>
         </div>
@@ -593,6 +595,7 @@ function loadSiteContentIntoForm() {
 
     document.getElementById('socialFacebook').value = content.social.facebook || '';
     document.getElementById('socialInstagram').value = content.social.instagram || '';
+    document.getElementById('socialWhatsapp').value = content.social.whatsapp || '';
 
     bankAccountRows = content.bankDetails.accounts.map(a => Object.assign({}, a));
     renderBankAccountRows();
@@ -1400,7 +1403,8 @@ function saveSocialLinks() {
   const msg = document.getElementById('socialMsg');
   const social = {
     facebook: document.getElementById('socialFacebook').value.trim(),
-    instagram: document.getElementById('socialInstagram').value.trim()
+    instagram: document.getElementById('socialInstagram').value.trim(),
+    whatsapp: document.getElementById('socialWhatsapp').value.trim()
   };
   db.collection('siteContent').doc('main').set({ social }, { merge: true }).then(() => {
     msg.style.color = 'var(--success)';

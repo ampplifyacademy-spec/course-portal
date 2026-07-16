@@ -6,7 +6,7 @@ function driveImgUrl(url) {
 
 const SITE_CONTENT_DEFAULTS = {
   theme: { accent: '#00b5fe', accentOrange: '#fd7d01', bg: '#0b0e1a' },
-  social: { facebook: '', instagram: '' },
+  social: { facebook: '', instagram: '', whatsapp: '' },
   bankDetails: {
     accounts: [
       { bankName: '', accountName: '', accountNumber: '', iban: '' }
@@ -114,17 +114,18 @@ function loadSiteContent() {
 
 const SOCIAL_ICONS = {
   facebook: '<svg viewBox="0 0 24 24" width="18" height="18" fill="currentColor" aria-hidden="true"><path d="M22 12.06C22 6.5 17.52 2 12 2S2 6.5 2 12.06c0 5 3.66 9.15 8.44 9.94v-7.03H7.9v-2.91h2.54V9.85c0-2.51 1.49-3.9 3.77-3.9 1.09 0 2.24.2 2.24.2v2.46h-1.26c-1.24 0-1.63.77-1.63 1.56v1.89h2.78l-.44 2.91h-2.34V22c4.78-.79 8.44-4.94 8.44-9.94Z"/></svg>',
-  instagram: '<svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="1.8" aria-hidden="true"><rect x="3" y="3" width="18" height="18" rx="5"/><circle cx="12" cy="12" r="4.2"/><circle cx="17.4" cy="6.6" r="1.1" fill="currentColor" stroke="none"/></svg>'
+  instagram: '<svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="1.8" aria-hidden="true"><rect x="3" y="3" width="18" height="18" rx="5"/><circle cx="12" cy="12" r="4.2"/><circle cx="17.4" cy="6.6" r="1.1" fill="currentColor" stroke="none"/></svg>',
+  whatsapp: '<svg viewBox="0 0 24 24" width="18" height="18" fill="currentColor" aria-hidden="true"><path d="M12.04 2c-5.52 0-10 4.48-10 10 0 1.77.46 3.44 1.27 4.89L2 22l5.25-1.28A9.96 9.96 0 0 0 12.04 22c5.52 0 10-4.48 10-10s-4.48-10-10-10Zm0 18.13c-1.55 0-3-.42-4.24-1.15l-.3-.18-3.12.76.76-3.04-.2-.31A8.13 8.13 0 1 1 12.04 20.13Zm4.5-6.1c-.25-.12-1.45-.72-1.68-.8-.22-.08-.39-.12-.55.12-.16.25-.63.8-.78.96-.14.16-.29.18-.53.06-.25-.12-1.04-.38-1.98-1.22-.73-.65-1.23-1.46-1.37-1.71-.14-.25-.02-.38.11-.5.11-.11.25-.29.37-.43.12-.14.16-.25.25-.41.08-.16.04-.31-.02-.43-.06-.12-.55-1.32-.75-1.81-.2-.48-.4-.42-.55-.42h-.47c-.16 0-.43.06-.65.31-.22.25-.86.84-.86 2.04 0 1.2.88 2.36 1 2.52.12.16 1.73 2.64 4.2 3.7.59.25 1.05.4 1.41.52.59.19 1.13.16 1.56.1.48-.07 1.45-.59 1.65-1.16.2-.57.2-1.06.14-1.16-.06-.1-.22-.16-.47-.28Z"/></svg>'
 };
 
-function renderSocialFooter(social, elId) {
-  const el = document.getElementById(elId || 'socialFooter');
+function renderSocialNav(social, elId) {
+  const el = document.getElementById(elId || 'navSocial');
   if (!el) return;
   const links = [];
-  if (social && social.facebook) links.push(`<a href="${social.facebook}" target="_blank" aria-label="Facebook">${SOCIAL_ICONS.facebook} Facebook</a>`);
-  if (social && social.instagram) links.push(`<a href="${social.instagram}" target="_blank" aria-label="Instagram">${SOCIAL_ICONS.instagram} Instagram</a>`);
+  if (social && social.facebook) links.push(`<a href="${social.facebook}" target="_blank" aria-label="Facebook">${SOCIAL_ICONS.facebook}</a>`);
+  if (social && social.instagram) links.push(`<a href="${social.instagram}" target="_blank" aria-label="Instagram">${SOCIAL_ICONS.instagram}</a>`);
+  if (social && social.whatsapp) links.push(`<a href="${social.whatsapp}" target="_blank" aria-label="WhatsApp">${SOCIAL_ICONS.whatsapp}</a>`);
   el.innerHTML = links.join('');
-  el.style.display = links.length ? 'flex' : 'none';
 }
 
 function fbVideoEmbedUrl(videoUrl) {

@@ -72,7 +72,7 @@
     <a href="course.html#pricing">Pricing</a>
   </div>
   <div class="cnav-right">
-    <button onclick="location.href='signup.html'">Enroll Now</button>
+    <div class="nav-social" id="navSocial"></div>
     <button class="menu-toggle" onclick="toggleMobileNav()" id="menuToggleBtn">☰ Menu</button>
   </div>
 </nav>
@@ -97,8 +97,6 @@
   <h3>Want work like this?</h3>
   <button onclick="location.href='services.html'">See Our Services</button>
 </div>
-
-<div class="social-footer" id="socialFooter"></div>
 
 <div class="lightbox" id="lightbox" onclick="closeLightbox()">
   <img id="lightboxImg" src="" alt="">
@@ -170,7 +168,7 @@ loadSiteContent().then(content => {
     link.target = '_blank';
   }
 
-  renderSocialFooter(content.social);
+  renderSocialNav(content.social, 'navSocial');
 });
 
 function openFolder(fi) {

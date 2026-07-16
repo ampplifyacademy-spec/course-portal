@@ -134,9 +134,9 @@ body.admin-shell { display: block; padding: 0; background: var(--bg); }
 .tab-section.active { display: block; }
 
 /* ===== Public page social footer ===== */
-.social-footer { display: none; justify-content: center; gap: 1.5rem; padding: 2rem 1.5rem; background: var(--bg-alt); }
-.social-footer a { display: inline-flex; align-items: center; gap: .5rem; color: var(--text-soft); text-decoration: none; font: 600 .9rem var(--font-body); }
-.social-footer a:hover { color: var(--accent); }
+.nav-social { display: flex; align-items: center; gap: .9rem; }
+.nav-social a { color: var(--text-soft); display: inline-flex; }
+.nav-social a:hover { color: var(--accent); }
 
 @media (max-width: 860px) {
   .admin-shell-grid { grid-template-columns: 1fr; }
