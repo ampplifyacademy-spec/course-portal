@@ -30,6 +30,7 @@
 
   <div class="bank-box" id="selectedServicesBox" style="display:none; margin-bottom:1.1rem;"></div>
   <div class="bank-box" id="selectedToolBox" style="display:none; margin-bottom:1.1rem;"></div>
+  <div class="bank-box" id="courseAmountBox" style="display:none; margin-bottom:1.1rem;"></div>
 
   <div class="bank-box" id="bankBox"></div>
 
@@ -108,6 +109,13 @@ try {
 } catch (e) {}
 
 loadSiteContent().then(content => {
+  if (!selectedServices && !selectedTool) {
+    const c = content.course;
+    const amountBox = document.getElementById('courseAmountBox');
+    amountBox.style.display = 'block';
+    amountBox.innerHTML = `<div class="row"><span>Course price</span><span>${c.priceNew} ${c.currency}</span></div>`;
+  }
+
   const b = content.bankDetails;
   const box = document.getElementById('bankBox');
   const accounts = (b.accounts || []).filter(a => a.bankName || a.accountNumber);
