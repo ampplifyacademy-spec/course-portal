@@ -47,8 +47,8 @@
   .module-card[open] .chevron { transform: rotate(45deg); }
   .module-card .module-body { padding: 0 1.75rem 1.5rem 5.75rem; }
   .module-card .module-body p { color: var(--text-soft); font-size: .9rem; line-height: 1.7; }
-  .testimonial-row { display: flex; gap: 1.4rem; max-width: 1200px; margin: 0 auto; overflow-x: auto; }
-  .testimonial-card { flex: 1; min-width: 300px; background: var(--surface); border: 1px solid var(--border); border-radius: var(--radius); padding: 1.75rem; }
+  .testimonial-row { display: flex; gap: 1.4rem; max-width: 1200px; margin: 0 auto; overflow-x: auto; scroll-snap-type: x proximity; -webkit-overflow-scrolling: touch; padding-bottom: .5rem; }
+  .testimonial-card { flex: 1; min-width: 300px; background: var(--surface); border: 1px solid var(--border); border-radius: var(--radius); padding: 1.75rem; scroll-snap-align: start; }
   .testimonial-card .stars { color: var(--accent-orange); margin-bottom: .75rem; }
   .testimonial-card p { font-size: .92rem; line-height: 1.7; color: #d4d9e6; margin-bottom: 1.1rem; }
   .testimonial-card .tname { font: 700 .95rem var(--font-display); }
