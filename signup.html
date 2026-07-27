@@ -20,6 +20,22 @@
   .bank-box .row span:last-child { font-weight: 700; }
   .bank-box .note { color: var(--text-muted); font-size: .8rem; margin-top: .6rem; line-height: 1.4; }
   label.upload-btn { display: block; width: 100%; text-align: center; padding: .8rem; border-radius: var(--radius-sm); border: 1px dashed var(--border-strong); background: var(--surface); color: var(--text-soft); font-size: .9rem; cursor: pointer; margin: .4rem 0; }
+
+  .phone-row { display: flex; gap: .5rem; }
+  .phone-row select { flex: 0 0 auto; width: 128px; }
+  .phone-row input { flex: 1; margin: 0; }
+  select#whatsappCountry { color-scheme: dark; }
+
+  .booking-card { background: var(--bg); border: 1px solid var(--border); border-radius: var(--radius-sm); padding: 1.1rem 1.1rem 1.25rem; margin: 1rem 0; }
+  .booking-card .booking-title { display: flex; align-items: center; gap: .5rem; font: 700 .9rem var(--font-display); margin-bottom: .9rem; }
+  .booking-card .booking-title .icon { color: var(--accent); }
+  .booking-card label { margin-top: 0; }
+  .booking-card input[type="date"] { color-scheme: dark; }
+  .slot-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: .55rem; margin: .5rem 0 .2rem; }
+  .slot-btn { padding: .6rem .4rem; border-radius: var(--radius-sm); border: 1px solid var(--border-strong); background: var(--surface); color: var(--text-soft); font: 600 .82rem var(--font-body); cursor: pointer; transition: all .15s; text-align: center; }
+  .slot-btn:hover { border-color: var(--accent); color: var(--text); }
+  .slot-btn.selected { background: var(--accent); border-color: var(--accent); color: #fff; }
+  .booking-hint { font-size: .78rem; color: var(--text-muted); margin-top: .5rem; line-height: 1.4; }
 </style>
 </head>
 <body>
@@ -38,8 +54,11 @@
   <input id="name" placeholder="Your full name">
   <label for="email">Email</label>
   <input id="email" type="email" placeholder="you@example.com">
-  <label for="whatsapp">WhatsApp number</label>
-  <input id="whatsapp" placeholder="e.g. +966 5xxxxxxxx">
+  <label for="whatsappNumber">WhatsApp number</label>
+  <div class="phone-row">
+    <select id="whatsappCountry" aria-label="Country code"></select>
+    <input id="whatsappNumber" placeholder="5xxxxxxxx">
+  </div>
   <label for="password">Password</label>
   <div class="password-wrap">
     <input id="password" type="password" placeholder="Min 6 characters">
@@ -52,10 +71,14 @@
   <div id="serviceDocsSection" style="display:none;"></div>
 
   <div id="schedulingSection" style="display:none;">
-    <label>Preferred date for your 1-on-1 call</label>
-    <input type="date" id="callDate">
-    <label>Preferred time</label>
-    <input type="time" id="callTime">
+    <div class="booking-card">
+      <div class="booking-title"><span class="icon">📅</span> Book your 1-on-1 call</div>
+      <label for="callDate">Preferred date</label>
+      <input type="date" id="callDate">
+      <label>Preferred time slot</label>
+      <div class="slot-grid" id="slotGrid"></div>
+      <div class="booking-hint">Times shown are approximate — we'll confirm the exact slot with you over WhatsApp.</div>
+    </div>
   </div>
 
   <button onclick="doSignup()">Sign Up</button>
@@ -68,12 +91,32 @@
 <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore-compat.js"></script>
 <script src="js/firebase-config.js"></script>
 <script src="js/site-content.js"></script>
+<script src="js/country-codes.js"></script>
 <script>
 let uploadScriptUrl = '';
 let invoiceFile = null;
 let serviceDocFilesByFolder = {};
 let selectedServices = null;
 let selectedTool = null;
+let selectedCallTime = '';
+
+populateCountrySelect(document.getElementById('whatsappCountry'), 'SA');
+
+const CALL_SLOTS = ['09:00','10:00','11:00','12:00','13:00','14:00','15:00','16:00','17:00','18:00','19:00','20:00'];
+function slotLabel(t) {
+  const [h, m] = t.split(':').map(Number);
+  const period = h < 12 ? 'AM' : 'PM';
+  const h12 = h % 12 === 0 ? 12 : h % 12;
+  return `${h12}:${String(m).padStart(2, '0')} ${period}`;
+}
+document.getElementById('slotGrid').innerHTML = CALL_SLOTS.map(t =>
+  `<div class="slot-btn" data-time="${t}" onclick="selectCallSlot('${t}')">${slotLabel(t)}</div>`
+).join('');
+
+function selectCallSlot(t) {
+  selectedCallTime = t;
+  document.querySelectorAll('.slot-btn').forEach(el => el.classList.toggle('selected', el.dataset.time === t));
+}
 
 function renderServiceDocsSection() {
   const section = document.getElementById('serviceDocsSection');
@@ -156,7 +199,8 @@ function cancelSelectedServices() {
   renderServiceDocsSection();
   document.getElementById('schedulingSection').style.display = 'none';
   document.getElementById('callDate').value = '';
-  document.getElementById('callTime').value = '';
+  selectedCallTime = '';
+  document.querySelectorAll('.slot-btn').forEach(el => el.classList.remove('selected'));
 }
 
 function cancelSelectedTool() {
@@ -216,16 +260,18 @@ function uploadInvoiceToDrive(file, studentName) {
 function doSignup() {
   const name = document.getElementById('name').value.trim();
   const email = document.getElementById('email').value.trim();
-  const whatsapp = document.getElementById('whatsapp').value.trim();
+  const whatsappNumber = document.getElementById('whatsappNumber').value.trim().replace(/\D/g, '').replace(/^0+/, '');
+  const whatsappCode = document.getElementById('whatsappCountry').value;
+  const whatsapp = whatsappNumber ? '+' + whatsappCode + ' ' + whatsappNumber : '';
   const password = document.getElementById('password').value;
   const msg = document.getElementById('msg');
 
-  if (!name || !email || !whatsapp || !password || !invoiceFile) {
+  if (!name || !email || !whatsappNumber || !password || !invoiceFile) {
     msg.textContent = "Please fill in all fields (including WhatsApp number) and choose your payment receipt";
     return;
   }
   const callDate = document.getElementById('callDate').value;
-  const callTime = document.getElementById('callTime').value;
+  const callTime = selectedCallTime;
   if (selectedServices && selectedServices.needsScheduling && (!callDate || !callTime)) {
     msg.textContent = "Please pick your preferred date and time for the 1-on-1 call";
     return;
