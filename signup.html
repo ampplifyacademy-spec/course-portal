@@ -22,9 +22,10 @@
   label.upload-btn { display: block; width: 100%; text-align: center; padding: .8rem; border-radius: var(--radius-sm); border: 1px dashed var(--border-strong); background: var(--surface); color: var(--text-soft); font-size: .9rem; cursor: pointer; margin: .4rem 0; }
 
   .phone-row { display: flex; gap: .5rem; }
-  .phone-row select { flex: 0 0 auto; width: 128px; }
   .phone-row input { flex: 1; margin: 0; }
-  select#whatsappCountry { color-scheme: dark; }
+  .code-select-wrap { position: relative; flex: 0 0 auto; width: 88px; }
+  .code-select-display { display: flex; align-items: center; padding: .8rem .95rem; border-radius: var(--radius-sm); border: 1px solid var(--border-strong); background: var(--surface); color: var(--text); font-size: .95rem; white-space: nowrap; pointer-events: none; }
+  select#whatsappCountry { position: absolute; inset: 0; width: 100%; height: 100%; opacity: 0; cursor: pointer; color-scheme: dark; }
 
   .booking-card { background: var(--bg); border: 1px solid var(--border); border-radius: var(--radius-sm); padding: 1.1rem 1.1rem 1.25rem; margin: 1rem 0; }
   .booking-card .booking-title { display: flex; align-items: center; gap: .5rem; font: 700 .9rem var(--font-display); margin-bottom: .9rem; }
@@ -56,7 +57,10 @@
   <input id="email" type="email" placeholder="you@example.com">
   <label for="whatsappNumber">WhatsApp number</label>
   <div class="phone-row">
-    <select id="whatsappCountry" aria-label="Country code"></select>
+    <div class="code-select-wrap">
+      <div class="code-select-display" id="whatsappCodeDisplay"></div>
+      <select id="whatsappCountry" aria-label="Country code"></select>
+    </div>
     <input id="whatsappNumber" placeholder="5xxxxxxxx">
   </div>
   <label for="password">Password</label>
@@ -100,7 +104,12 @@ let selectedServices = null;
 let selectedTool = null;
 let selectedCallTime = '';
 
-populateCountrySelect(document.getElementById('whatsappCountry'), 'SA');
+const whatsappCountrySelect = document.getElementById('whatsappCountry');
+const whatsappCodeDisplay = document.getElementById('whatsappCodeDisplay');
+populateCountrySelect(whatsappCountrySelect, 'SA');
+function syncWhatsappCodeDisplay() { whatsappCodeDisplay.textContent = '+' + whatsappCountrySelect.value; }
+whatsappCountrySelect.addEventListener('change', syncWhatsappCodeDisplay);
+syncWhatsappCodeDisplay();
 
 const CALL_SLOTS = ['09:00','10:00','11:00','12:00','13:00','14:00','15:00','16:00','17:00','18:00','19:00','20:00'];
 function slotLabel(t) {
