@@ -51,6 +51,13 @@
 
   <div id="serviceDocsSection" style="display:none;"></div>
 
+  <div id="schedulingSection" style="display:none;">
+    <label>Preferred date for your 1-on-1 call</label>
+    <input type="date" id="callDate">
+    <label>Preferred time</label>
+    <input type="time" id="callTime">
+  </div>
+
   <button onclick="doSignup()">Sign Up</button>
   <p class="msg" id="msg"></p>
   <p class="link">Already have an account? <a href="login.html">Log in</a></p>
@@ -93,6 +100,7 @@ try {
       <div class="row"><span>Total</span><span>${selectedServices.total} ${selectedServices.currency}</span></div>
       <button type="button" class="secondary" onclick="cancelSelectedServices()" style="margin-top:.8rem;">Cancel these services</button>`;
     renderServiceDocsSection();
+    document.getElementById('schedulingSection').style.display = selectedServices.needsScheduling ? 'block' : 'none';
   }
 } catch (e) {}
 
@@ -146,6 +154,9 @@ function cancelSelectedServices() {
   box.innerHTML = '';
   serviceDocFilesByFolder = {};
   renderServiceDocsSection();
+  document.getElementById('schedulingSection').style.display = 'none';
+  document.getElementById('callDate').value = '';
+  document.getElementById('callTime').value = '';
 }
 
 function cancelSelectedTool() {
@@ -213,6 +224,12 @@ function doSignup() {
     msg.textContent = "Please fill in all fields (including WhatsApp number) and choose your payment receipt";
     return;
   }
+  const callDate = document.getElementById('callDate').value;
+  const callTime = document.getElementById('callTime').value;
+  if (selectedServices && selectedServices.needsScheduling && (!callDate || !callTime)) {
+    msg.textContent = "Please pick your preferred date and time for the 1-on-1 call";
+    return;
+  }
   if (!uploadScriptUrl) {
     msg.textContent = "Receipt upload isn't set up yet — please contact us directly";
     return;
@@ -242,6 +259,10 @@ function doSignup() {
           doc.selectedServices = selectedServices.names;
           doc.serviceTotal = selectedServices.total;
           doc.serviceCurrency = selectedServices.currency;
+          if (selectedServices.needsScheduling) {
+            doc.preferredCallDate = callDate;
+            doc.preferredCallTime = callTime;
+          }
         }
         if (selectedTool) {
           doc.productType = 'tool';

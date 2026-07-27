@@ -795,12 +795,17 @@ function renderServiceRows() {
       <label style="display:block; margin:.75rem 0 .4rem; font-size:.8rem; color:var(--text-muted);">Required document folders (leave empty if this service needs no documents — customers will only see an upload step at signup if at least one folder is added here)</label>
       ${docFoldersHtml}
       <button onclick="addServiceDocFolder(${i})" style="width:auto; margin:0;">+ Add Document Folder</button>
+
+      <label style="display:flex; align-items:center; gap:.5rem; margin-top:1rem; font-size:.85rem;">
+        <input type="checkbox" style="width:auto; margin:0;" ${s.needsScheduling ? 'checked' : ''} onchange="serviceRows[${i}].needsScheduling = this.checked">
+        Needs a preferred date &amp; time (e.g. 1-on-1 calls — customers will pick one at signup)
+      </label>
     </div>`;
   }).join('');
 }
 
 function addServiceRow() {
-  serviceRows.push({ title: '', desc: '', price: '', imageUrl: '', points: [], docFolders: [] });
+  serviceRows.push({ title: '', desc: '', price: '', imageUrl: '', points: [], docFolders: [], needsScheduling: false });
   renderServiceRows();
 }
 
@@ -1618,6 +1623,9 @@ function renderUserRows(list) {
       `<option value="${b.id}" ${u.batchId === b.id ? 'selected' : ''}>${b.name}</option>`
     ).join('');
 
+    const callNote = u.preferredCallDate
+      ? `<div style="font-size:.72rem; color:var(--accent); margin-top:.2rem;">Preferred call: ${u.preferredCallDate} ${u.preferredCallTime || ''}</div>`
+      : '';
     const servicesNote = (u.selectedServices && u.selectedServices.length)
       ? `<div style="font-size:.72rem; color:var(--text-muted); margin-top:.2rem;">Services: ${u.selectedServices.join(', ')} (${u.serviceTotal} ${u.serviceCurrency || ''})</div>`
       : '';
@@ -1632,7 +1640,7 @@ function renderUserRows(list) {
       : '—';
 
     tr.innerHTML = `
-      <td>${u.name || ''}${servicesNote}${toolNote}${whatsappNote}</td>
+      <td>${u.name || ''}${servicesNote}${callNote}${toolNote}${whatsappNote}</td>
       <td>${u.email}</td>
       <td>${u.invoiceUrl ? `<a href="${u.invoiceUrl}" target="_blank"><button style="width:auto; margin:0; padding:.4rem .8rem; font-size:.8rem;">View</button></a>` : '—'}</td>
       <td>${docsHtml}</td>

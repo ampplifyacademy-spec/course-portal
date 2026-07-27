@@ -257,7 +257,8 @@ function goToSignup() {
   const names = [...selected].map(i => allServices[i].title);
   const total = [...selected].reduce((sum, i) => sum + (parseFloat(allServices[i].price) || 0), 0);
   const docFolders = [...new Set([...selected].flatMap(i => allServices[i].docFolders || []))];
-  sessionStorage.setItem('selectedServices', JSON.stringify({ names, total, currency, docFolders }));
+  const needsScheduling = [...selected].some(i => allServices[i].needsScheduling);
+  sessionStorage.setItem('selectedServices', JSON.stringify({ names, total, currency, docFolders, needsScheduling }));
   location.href = 'signup.html';
 }
 </script>
