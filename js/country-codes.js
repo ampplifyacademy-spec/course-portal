@@ -21,8 +21,7 @@ const COUNTRY_CODES = [
 ];
 
 function populateCountrySelect(selectEl, defaultIso) {
-  selectEl.innerHTML = COUNTRY_CODES.map(([iso, name, code]) => {
-    const flag = String.fromCodePoint(...[...iso].map(c => 127397 + c.charCodeAt(0)));
-    return `<option value="${code}" data-iso="${iso}" ${iso === defaultIso ? 'selected' : ''}>${flag} +${code} ${name}</option>`;
-  }).join('');
+  selectEl.innerHTML = COUNTRY_CODES.map(([iso, name, code]) =>
+    `<option value="${code}" data-iso="${iso}" ${iso === defaultIso ? 'selected' : ''}>+${code} ${name}</option>`
+  ).join('');
 }
