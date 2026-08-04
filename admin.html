@@ -836,6 +836,7 @@ function renderServiceRows() {
       <input placeholder="Title" value="${(s.title || '').replace(/"/g, '&quot;')}" oninput="serviceRows[${i}].title = this.value">
       <input placeholder="Description" value="${(s.desc || '').replace(/"/g, '&quot;')}" oninput="serviceRows[${i}].desc = this.value">
       <input placeholder="Price (e.g. 150)" value="${(s.price || '').replace(/"/g, '&quot;')}" oninput="serviceRows[${i}].price = this.value">
+      <input placeholder="Old price (optional, shown crossed out)" value="${(s.oldPrice || '').replace(/"/g, '&quot;')}" oninput="serviceRows[${i}].oldPrice = this.value">
       <input placeholder="Image URL (optional)" value="${(s.imageUrl || '').replace(/"/g, '&quot;')}" oninput="serviceRows[${i}].imageUrl = this.value">
       <label style="display:block; margin:.75rem 0 .4rem; font-size:.8rem; color:var(--text-muted);">Points (shown as numbered list)</label>
       ${pointsHtml}
@@ -854,7 +855,7 @@ function renderServiceRows() {
 }
 
 function addServiceRow() {
-  serviceRows.push({ title: '', desc: '', price: '', imageUrl: '', points: [], docFolders: [], needsScheduling: false });
+  serviceRows.push({ title: '', desc: '', price: '', oldPrice: '', imageUrl: '', points: [], docFolders: [], needsScheduling: false });
   renderServiceRows();
 }
 
