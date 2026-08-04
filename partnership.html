@@ -1,0 +1,228 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Partnership · Ampplify Academy</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@500;600;700;800&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="css/style.css">
+<style>
+  body.course-page { display: block; padding: 0; }
+  .cnav { display: flex; align-items: center; justify-content: space-between; padding: 1.75rem 4rem; flex-wrap: wrap; gap: 1rem; position: relative; }
+  .cnav-links { display: flex; gap: 2.25rem; font: 600 .95rem var(--font-body); color: var(--text-soft); }
+  .cnav-links a { color: inherit; text-decoration: none; cursor: pointer; }
+  .cnav-links a:hover { color: var(--accent); }
+  .cnav button, .cta-band button { width: auto; margin-top: 0; }
+  .cnav-right { display: flex; align-items: center; gap: .75rem; }
+  .menu-toggle { display: none; background: none; border: 1px solid var(--border-strong); color: var(--text); font-size: 1.2rem; line-height: 1; padding: .5rem .75rem; border-radius: var(--radius-sm); cursor: pointer; }
+  .csection { padding: 5rem 4rem; }
+  .csection h2 { font-size: 2.1rem; text-align: center; margin-bottom: .6rem; }
+  .csection > p.lead { text-align: center; color: var(--text-soft); margin-bottom: 2.75rem; }
+
+  .partner-hero { max-width: 760px; margin: 0 auto 3rem; text-align: center; }
+  .partner-hero .badge { display: inline-flex; align-items: center; gap: .5rem; background: var(--info-bg); border: 1px solid rgba(0,181,254,.3); color: var(--info); font: 600 .8rem var(--font-body); padding: .5rem 1rem; border-radius: 999px; margin-bottom: 1.25rem; }
+  .partner-hero p { color: var(--text-soft); font-size: 1.05rem; line-height: 1.7; }
+
+  .partner-grid { display: grid; grid-template-columns: 1.1fr .9fr; gap: 2.5rem; max-width: 1100px; margin: 0 auto; align-items: start; }
+  .partner-points { display: flex; flex-direction: column; gap: 1.25rem; }
+  .partner-point { display: flex; gap: 1rem; background: var(--surface); border: 1px solid var(--border); border-radius: var(--radius); padding: 1.25rem 1.4rem; }
+  .partner-point .icon { font-size: 1.4rem; flex-shrink: 0; }
+  .partner-point h4 { font-size: 1rem; margin-bottom: .3rem; }
+  .partner-point p { color: var(--text-soft); font-size: .88rem; line-height: 1.6; }
+
+  .partner-form-card { background: var(--surface-alt); border: 1px solid var(--border); border-radius: var(--radius-lg); padding: 2rem; }
+  .partner-form-card h3 { font-size: 1.2rem; margin-bottom: .3rem; }
+  .partner-form-card > p { color: var(--text-muted); font-size: .85rem; margin-bottom: 1.4rem; line-height: 1.5; }
+  .partner-form-card label { display: block; font: 600 .8rem var(--font-body); color: var(--text-soft); margin: .9rem 0 .4rem; }
+  .partner-form-card label:first-of-type { margin-top: 0; }
+  .partner-form-card .optional-tag { color: var(--text-faint); font-weight: 500; }
+  .phone-row { display: flex; gap: .5rem; }
+  .phone-row input { flex: 1; margin: 0; }
+  .code-select-wrap { position: relative; flex: 0 0 auto; width: 88px; }
+  .code-select-display { display: flex; align-items: center; padding: .8rem .95rem; border-radius: var(--radius-sm); border: 1px solid var(--border-strong); background: var(--surface); color: var(--text); font-size: 1rem; white-space: nowrap; pointer-events: none; }
+  select#partnerCountry { position: absolute; inset: 0; width: 100%; height: 100%; opacity: 0; cursor: pointer; color-scheme: dark; }
+  .msg { margin-top: 1rem; font-size: .85rem; }
+
+  @media (max-width: 900px) {
+    .partner-grid { grid-template-columns: 1fr; }
+  }
+  @media (max-width: 760px) {
+    .cnav { padding: 1rem 1.25rem; }
+    .menu-toggle { display: block; }
+    .cnav-right button:not(.menu-toggle) { display: none; }
+    .cnav-links { display: none; width: 100%; order: 3; flex-direction: column; gap: 0; margin-top: 1rem; }
+    .cnav-links.open { display: flex; }
+    .cnav-links a { padding: .85rem 0; border-bottom: 1px solid var(--border); }
+    .cnav button { padding: .6rem 1.1rem; font-size: .85rem; }
+    .csection { padding: 3rem 1.25rem; }
+  }
+</style>
+</head>
+<body class="course-page">
+
+<nav class="cnav">
+  <span class="brand"><span class="a">A</span>mpplify Academy</span>
+  <div class="cnav-links">
+    <a href="course.html#curriculum">Curriculum</a>
+    <a href="services.html">Services</a>
+    <a href="tools.html">Tools</a>
+    <a href="portfolio.html">Portfolio</a>
+    <a href="success-stories.html">Success Stories</a>
+    <a href="partnership.html">Partnership</a>
+    <a href="course.html#pricing">Pricing</a>
+    <a href="course.html#faq">FAQ</a>
+  </div>
+  <div class="cnav-right">
+    <div class="nav-social" id="navSocial"></div>
+    <button class="menu-toggle" onclick="toggleMobileNav()" id="menuToggleBtn">☰ Menu</button>
+  </div>
+</nav>
+
+<section class="csection" style="padding-top:3.5rem;">
+  <div class="partner-hero">
+    <span class="badge">🤝 Zero upfront cost</span>
+    <h2>Partner With Us</h2>
+    <p>We become your Amazon service provider and build your business with you — account setup, product research, listings, PPC, and scaling. No upfront fee. Instead, we work on a <strong>20–50% profit-share</strong> once your business is live and earning.</p>
+  </div>
+
+  <div class="partner-grid">
+    <div class="partner-points">
+      <div class="partner-point">
+        <span class="icon">💰</span>
+        <div>
+          <h4>No upfront payment</h4>
+          <p>You don't pay us for our service work. We only earn when your business earns.</p>
+        </div>
+      </div>
+      <div class="partner-point">
+        <span class="icon">📊</span>
+        <div>
+          <h4>20–50% profit share</h4>
+          <p>The exact share depends on scope and your investment budget — we'll agree on this together after your call.</p>
+        </div>
+      </div>
+      <div class="partner-point">
+        <span class="icon">🛠️</span>
+        <div>
+          <h4>Full-service management</h4>
+          <p>Account setup, product research, listing optimization, PPC, and ongoing scaling — handled end to end.</p>
+        </div>
+      </div>
+      <div class="partner-point">
+        <span class="icon">📞</span>
+        <div>
+          <h4>We reach out after you apply</h4>
+          <p>Fill the form and we'll contact you on WhatsApp to discuss your budget, marketplace, and next steps.</p>
+        </div>
+      </div>
+    </div>
+
+    <div class="partner-form-card">
+      <h3>Apply for Partnership</h3>
+      <p>Tell us a bit about your plan — we'll reach out to discuss details.</p>
+
+      <label for="partnerName">Full name</label>
+      <input id="partnerName" placeholder="Your full name">
+
+      <label for="partnerEmail">Email</label>
+      <input id="partnerEmail" type="email" placeholder="you@example.com">
+
+      <label for="partnerNumber">WhatsApp number</label>
+      <div class="phone-row">
+        <div class="code-select-wrap">
+          <div class="code-select-display" id="partnerCodeDisplay"></div>
+          <select id="partnerCountry" aria-label="Country code"></select>
+        </div>
+        <input id="partnerNumber" placeholder="5xxxxxxxx">
+      </div>
+
+      <label for="partnerAmount">Investment budget</label>
+      <input id="partnerAmount" placeholder="e.g. 5000 SAR">
+
+      <label for="partnerMarketplace">Target Amazon marketplace</label>
+      <select id="partnerMarketplace">
+        <option value="">Select a marketplace</option>
+        <option>Amazon USA</option>
+        <option>Amazon UK</option>
+        <option>Amazon Saudi Arabia</option>
+        <option>Amazon UAE</option>
+        <option>Amazon Egypt</option>
+        <option>Amazon Germany</option>
+        <option>Amazon Canada</option>
+        <option>Amazon Australia</option>
+        <option>Other</option>
+      </select>
+
+      <label for="partnerCategory">Interested product category <span class="optional-tag">(optional)</span></label>
+      <input id="partnerCategory" placeholder="e.g. Kitchen, Pet Supplies">
+
+      <button onclick="submitPartnership()" style="margin-top:1.4rem;">Submit Application</button>
+      <p class="msg" id="partnerMsg"></p>
+    </div>
+  </div>
+</section>
+
+<script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-app-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-auth-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore-compat.js"></script>
+<script src="js/firebase-config.js"></script>
+<script src="js/site-content.js"></script>
+<script src="js/country-codes.js"></script>
+<script>
+function toggleMobileNav() {
+  document.querySelector('.cnav-links').classList.toggle('open');
+}
+
+const partnerCountrySelect = document.getElementById('partnerCountry');
+const partnerCodeDisplay = document.getElementById('partnerCodeDisplay');
+populateCountrySelect(partnerCountrySelect, 'SA');
+function syncPartnerCodeDisplay() { partnerCodeDisplay.textContent = '+' + partnerCountrySelect.value; }
+partnerCountrySelect.addEventListener('change', syncPartnerCodeDisplay);
+syncPartnerCodeDisplay();
+
+loadSiteContent().then(content => {
+  renderSocialNav(content.social, 'navSocial');
+});
+
+function submitPartnership() {
+  const name = document.getElementById('partnerName').value.trim();
+  const email = document.getElementById('partnerEmail').value.trim();
+  const numberRaw = document.getElementById('partnerNumber').value.trim().replace(/\D/g, '').replace(/^0+/, '');
+  const code = partnerCountrySelect.value;
+  const whatsapp = numberRaw ? '+' + code + ' ' + numberRaw : '';
+  const amount = document.getElementById('partnerAmount').value.trim();
+  const marketplace = document.getElementById('partnerMarketplace').value;
+  const category = document.getElementById('partnerCategory').value.trim();
+  const msg = document.getElementById('partnerMsg');
+
+  if (!name || !email || !numberRaw || !amount || !marketplace) {
+    msg.style.color = 'var(--danger)';
+    msg.textContent = 'Please fill in all required fields.';
+    return;
+  }
+
+  msg.style.color = 'var(--text-muted)';
+  msg.textContent = 'Submitting...';
+
+  db.collection('partnershipLeads').add({
+    name, email, whatsapp, amount, marketplace, category,
+    status: 'new',
+    createdAt: firebase.firestore.FieldValue.serverTimestamp()
+  }).then(() => {
+    msg.style.color = 'var(--success)';
+    msg.textContent = "Thanks! We'll reach out to you on WhatsApp soon.";
+    document.getElementById('partnerName').value = '';
+    document.getElementById('partnerEmail').value = '';
+    document.getElementById('partnerNumber').value = '';
+    document.getElementById('partnerAmount').value = '';
+    document.getElementById('partnerMarketplace').value = '';
+    document.getElementById('partnerCategory').value = '';
+  }).catch(err => {
+    msg.style.color = 'var(--danger)';
+    msg.textContent = err.message;
+  });
+}
+</script>
+</body>
+</html>

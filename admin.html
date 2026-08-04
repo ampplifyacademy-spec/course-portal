@@ -68,6 +68,7 @@
     <div class="nav-item" data-tab="resources" onclick="switchTab('resources')"><span>📄</span><span>Resources</span></div>
     <div class="nav-item" data-tab="payments" onclick="switchTab('payments')"><span>💳</span><span>Payments</span></div>
     <div class="nav-item" data-tab="feedback" onclick="switchTab('feedback')"><span>💬</span><span>Feedback</span></div>
+    <div class="nav-item" data-tab="partnership" onclick="switchTab('partnership')"><span>🤝</span><span>Partnership</span></div>
     <div class="nav-item" data-tab="site" onclick="switchTab('site')"><span>🎨</span><span>Site Content</span></div>
     <div class="sidebar-footer">
       <div class="avatar" id="adminAvatar">A</div>
@@ -162,6 +163,18 @@
         <table>
           <thead><tr><th>Type</th><th>Name</th><th>Rating</th><th>Feedback</th><th>Photo</th><th>Action</th></tr></thead>
           <tbody id="feedbackApprovedRows"></tbody>
+        </table>
+      </div>
+    </div>
+
+    <!-- PARTNERSHIP LEADS -->
+    <div class="tab-section" id="tab-partnership">
+      <div class="panel">
+        <h2 style="margin-bottom:.25rem;">Partnership Applications</h2>
+        <p style="color:var(--text-muted); font-size:.85rem; margin-bottom:1.1rem;">Leads from the Partnership page — people who want to work with us on a profit-share basis instead of paying upfront.</p>
+        <table>
+          <thead><tr><th>Name</th><th>Email</th><th>WhatsApp</th><th>Budget</th><th>Marketplace</th><th>Category</th><th>Status</th><th>Action</th></tr></thead>
+          <tbody id="partnershipRows"></tbody>
         </table>
       </div>
     </div>
@@ -446,6 +459,7 @@ const TAB_META = {
   resources: ['Resources', 'Share Google Sheets, Docs, and other reference files with students.'],
   payments: ['Payments', 'Track revenue and order history.'],
   feedback: ['Feedback', 'Approve public feedback submissions before they appear on the site.'],
+  partnership: ['Partnership', 'Leads from the Partnership page, ready for you to follow up on WhatsApp.'],
   site: ['Site Content', 'Edit colors, text, and pricing shown on the public site.']
 };
 
@@ -469,6 +483,7 @@ auth.onAuthStateChanged(user => {
   });
   loadResources();
   loadFeedback();
+  loadPartnershipLeads();
 });
 
 function loadFeedback() {
@@ -503,6 +518,40 @@ function renderFeedbackTable(tbodyId, list, isPending) {
 
 function setFeedbackStatus(id, status) {
   db.collection('feedback').doc(id).update({ status }).then(loadFeedback);
+}
+
+function loadPartnershipLeads() {
+  return db.collection('partnershipLeads').orderBy('createdAt', 'desc').get().then(snap => {
+    const all = snap.docs.map(d => ({ id: d.id, ...d.data() }));
+    const tbody = document.getElementById('partnershipRows');
+    if (!all.length) {
+      tbody.innerHTML = `<tr><td colspan="8" style="color:var(--text-faint);">No applications yet.</td></tr>`;
+      return;
+    }
+    tbody.innerHTML = all.map(p => `
+      <tr>
+        <td>${p.name || ''}</td>
+        <td>${p.email || ''}</td>
+        <td>${p.whatsapp ? `<a href="https://wa.me/${p.whatsapp.replace(/\D/g, '')}" target="_blank">${p.whatsapp}</a>` : '—'}</td>
+        <td>${p.amount || '—'}</td>
+        <td>${p.marketplace || '—'}</td>
+        <td>${p.category || '—'}</td>
+        <td><span class="status-${p.status === 'contacted' ? 'approved' : 'pending'}">${p.status}</span></td>
+        <td>
+          ${p.status !== 'contacted' ? `<button onclick="setPartnershipStatus('${p.id}','contacted')">Mark Contacted</button>` : ''}
+          <button class="danger" onclick="deletePartnershipLead('${p.id}')">Remove</button>
+        </td>
+      </tr>`).join('');
+  });
+}
+
+function setPartnershipStatus(id, status) {
+  db.collection('partnershipLeads').doc(id).update({ status }).then(loadPartnershipLeads);
+}
+
+function deletePartnershipLead(id) {
+  if (!confirm('Remove this partnership application?')) return;
+  db.collection('partnershipLeads').doc(id).delete().then(loadPartnershipLeads);
 }
 
 function deleteFeedback(id) {
