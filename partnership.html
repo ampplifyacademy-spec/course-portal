@@ -22,6 +22,8 @@
 
   .partner-hero { max-width: 760px; margin: 0 auto 3rem; text-align: center; }
   .partner-hero .badge { display: inline-flex; align-items: center; gap: .5rem; background: var(--info-bg); border: 1px solid rgba(0,181,254,.3); color: var(--info); font: 600 .8rem var(--font-body); padding: .5rem 1rem; border-radius: 999px; margin-bottom: 1.25rem; }
+  .terms-link { display: block; color: var(--accent-orange); font: 800 1.4rem var(--font-display); cursor: pointer; text-decoration: underline; margin-bottom: 1rem; }
+  .terms-link:hover { opacity: .85; }
   .partner-hero p { color: var(--text-soft); font-size: 1.05rem; line-height: 1.7; }
 
   .partner-grid { display: grid; grid-template-columns: 1.1fr .9fr; gap: 2.5rem; max-width: 1100px; margin: 0 auto; align-items: start; }
@@ -83,6 +85,7 @@
 <section class="csection" style="padding-top:3.5rem;">
   <div class="partner-hero">
     <span class="badge">🤝 Zero upfront cost</span>
+    <a class="terms-link" onclick="document.querySelector('.partner-points').scrollIntoView({behavior:'smooth'})">Terms &amp; Conditions</a>
     <h2>Partner With Us</h2>
     <p>We become your Amazon service provider and build your business with you — account setup, product research, listings, PPC, and scaling. No upfront fee. Instead, we work on a <strong>20–50% profit-share</strong> once your business is live and earning.</p>
   </div>
@@ -114,7 +117,7 @@
         <span class="icon">🧾</span>
         <div>
           <h4>One-time setup costs you'll cover</h4>
-          <p>Product photography, A+ listing content, trademark registration, and getting your EIN/UPC code are one-time costs paid separately by you — these aren't part of the profit-share.</p>
+          <p>Listing image design and A+ content, trademark registration, getting your EIN/UPC code, and product sourcing cost are one-time costs paid separately by you — these aren't part of the profit-share.</p>
         </div>
       </div>
       <div class="partner-point">
