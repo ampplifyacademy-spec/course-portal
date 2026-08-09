@@ -131,3 +131,14 @@ function renderSocialNav(social, elId) {
 function fbVideoEmbedUrl(videoUrl) {
   return 'https://www.facebook.com/plugins/video.php?href=' + encodeURIComponent(videoUrl) + '&show_text=false';
 }
+
+// Instant mobile push alerts via ntfy.sh (free, no backend). Install the ntfy
+// app (Android/iOS) and subscribe to this exact topic name to get notified.
+const ADMIN_ALERT_TOPIC = 'ampplify-academy-alerts-7f2q9k';
+function sendAdminAlert(title, message) {
+  fetch('https://ntfy.sh/' + ADMIN_ALERT_TOPIC, {
+    method: 'POST',
+    headers: { 'Title': title, 'Priority': 'high' },
+    body: message
+  }).catch(() => {});
+}

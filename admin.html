@@ -691,6 +691,7 @@ function loadSiteContentIntoForm() {
     renderPortfolioRows();
 
     portfolioFolderRows = (content.course.portfolioFolders || []).map(f => Object.assign({}, f, { items: (f.items || []).map(it => Object.assign({}, it)) }));
+    portfolioFolderRows.forEach((f, fi) => { portfolioFolderCollapsed[fi] = true; });
     renderPortfolioFolderRows();
 
     return db.collection('courseContent').doc('main').get();

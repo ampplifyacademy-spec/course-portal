@@ -223,6 +223,7 @@ function submitPartnership() {
   }).then(() => {
     msg.style.color = 'var(--success)';
     msg.textContent = "Thanks! We'll reach out to you on WhatsApp soon.";
+    sendAdminAlert('New partnership application', name + ' (' + email + ', ' + whatsapp + ')\nBudget: ' + amount + '\nMarketplace: ' + marketplace + (category ? '\nCategory: ' + category : ''));
     document.getElementById('partnerName').value = '';
     document.getElementById('partnerEmail').value = '';
     document.getElementById('partnerNumber').value = '';

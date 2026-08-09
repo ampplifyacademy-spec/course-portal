@@ -334,6 +334,14 @@ function doSignup() {
       sessionStorage.removeItem('selectedTool');
       msg.style.color = 'var(--success)';
       msg.textContent = "Signup successful! We'll notify you by email once your account is approved.";
+
+      let alertBody = name + ' (' + email + ', ' + whatsapp + ')';
+      if (selectedServices) {
+        alertBody += '\nServices: ' + selectedServices.names.join(', ') + ' — ' + selectedServices.total + ' ' + selectedServices.currency;
+        if (selectedServices.needsScheduling) alertBody += '\nPreferred call: ' + callDate + ' ' + callTime;
+      }
+      if (selectedTool) alertBody += '\nTool: ' + selectedTool.name;
+      sendAdminAlert('New signup - Ampplify Academy', alertBody);
     })
     .catch(err => { msg.style.color = 'var(--danger)'; msg.textContent = err.message; });
 }
