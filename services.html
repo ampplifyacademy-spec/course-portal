@@ -200,10 +200,12 @@ loadSiteContent().then(content => {
       const base = parseFloat(p.basePrice) || 0;
       const costsTotal = costs.reduce((sum, ct) => sum + (parseFloat(ct.amount) || 0), 0);
       const total = base + costsTotal;
+      const included = p.includedServices || [];
       return `
       <div class="plan-card">
         <h4>${p.title}</h4>
         ${p.desc ? `<p class="desc">${p.desc}</p>` : ''}
+        ${included.length ? `<ol class="points" style="margin:0 0 1.1rem; padding-left:1.2rem; color:var(--text-soft); font-size:.85rem; line-height:1.7;">${included.map(s => `<li>${s}</li>`).join('')}</ol>` : ''}
         <div class="plan-cost-row"><span>Service charge</span><span>${p.basePrice || 0} ${currency}</span></div>
         ${costs.map(ct => `<div class="plan-cost-row"><span>${ct.label}</span><span>${ct.amount || 0} ${currency}</span></div>`).join('')}
         <div class="plan-total-row"><span>Total</span><span>${total} ${currency}</span></div>
