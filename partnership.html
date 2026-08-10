@@ -33,9 +33,13 @@
   .partner-point h4 { font-size: 1rem; margin-bottom: .3rem; }
   .partner-point p { color: var(--text-soft); font-size: .88rem; line-height: 1.6; }
   .cost-list { list-style: none; margin-top: .3rem; }
-  .cost-list li { display: flex; justify-content: space-between; padding: .35rem 0; border-bottom: 1px solid var(--border); color: var(--text-soft); font-size: .88rem; }
-  .cost-list li:last-child { border-bottom: none; }
-  .cost-list li span:last-child { color: var(--accent-orange); font-weight: 700; }
+  .cost-list li { display: flex; justify-content: space-between; gap: 1rem; padding: .35rem 0; border-bottom: 1px solid var(--border); color: var(--text-soft); font-size: .88rem; }
+  .cost-list li:last-of-type { border-bottom: none; }
+  .cost-list li span:first-child { min-width: 0; }
+  .cost-list li span:last-child { color: var(--accent-orange); font-weight: 700; white-space: nowrap; flex-shrink: 0; }
+  .cost-list li.cost-total { border-top: 1.5px solid var(--border-strong); margin-top: .3rem; padding-top: .6rem; font-weight: 700; }
+  .cost-list li.cost-total span:first-child { color: var(--text); }
+  .cost-list li.cost-total span:last-child { font-size: 1.05rem; }
 
   .partner-form-card { background: var(--surface-alt); border: 1px solid var(--border); border-radius: var(--radius-lg); padding: 2rem; }
   .partner-form-card h3 { font-size: 1.2rem; margin-bottom: .3rem; }
@@ -203,10 +207,12 @@ loadSiteContent().then(content => {
   const costs = (content.course.partnershipCosts || []).filter(c => c.label && c.amount);
   if (costs.length) {
     const currency = content.course.currency || 'SAR';
+    const total = costs.reduce((sum, c) => sum + (parseFloat(c.amount) || 0), 0);
     document.getElementById('partnershipCostsFallback').style.display = 'none';
     const list = document.getElementById('partnershipCostsList');
     list.style.display = 'block';
-    list.innerHTML = costs.map(c => `<li><span>${c.label}</span><span>${c.amount} ${currency}</span></li>`).join('');
+    list.innerHTML = costs.map(c => `<li><span>${c.label}</span><span>${c.amount} ${currency}</span></li>`).join('')
+      + `<li class="cost-total"><span>Total one-time cost</span><span>${total} ${currency}</span></li>`;
   }
 });
 
