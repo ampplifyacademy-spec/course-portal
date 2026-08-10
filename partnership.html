@@ -32,6 +32,10 @@
   .partner-point .icon { font-size: 1.4rem; flex-shrink: 0; }
   .partner-point h4 { font-size: 1rem; margin-bottom: .3rem; }
   .partner-point p { color: var(--text-soft); font-size: .88rem; line-height: 1.6; }
+  .cost-list { list-style: none; margin-top: .3rem; }
+  .cost-list li { display: flex; justify-content: space-between; padding: .35rem 0; border-bottom: 1px solid var(--border); color: var(--text-soft); font-size: .88rem; }
+  .cost-list li:last-child { border-bottom: none; }
+  .cost-list li span:last-child { color: var(--accent-orange); font-weight: 700; }
 
   .partner-form-card { background: var(--surface-alt); border: 1px solid var(--border); border-radius: var(--radius-lg); padding: 2rem; }
   .partner-form-card h3 { font-size: 1.2rem; margin-bottom: .3rem; }
@@ -117,7 +121,8 @@
         <span class="icon">🧾</span>
         <div>
           <h4>One-time setup costs you'll cover</h4>
-          <p>Listing image design and A+ content, trademark registration, getting your EIN/UPC code, and product sourcing cost are one-time costs paid separately by you — these aren't part of the profit-share.</p>
+          <p id="partnershipCostsFallback">Listing image design and A+ content, trademark registration, getting your EIN/UPC code, and product sourcing cost are one-time costs paid separately by you — these aren't part of the profit-share.</p>
+          <ul class="cost-list" id="partnershipCostsList" style="display:none;"></ul>
         </div>
       </div>
       <div class="partner-point">
@@ -194,6 +199,15 @@ syncPartnerCodeDisplay();
 
 loadSiteContent().then(content => {
   renderSocialNav(content.social, 'navSocial');
+
+  const costs = (content.course.partnershipCosts || []).filter(c => c.label && c.amount);
+  if (costs.length) {
+    const currency = content.course.currency || 'SAR';
+    document.getElementById('partnershipCostsFallback').style.display = 'none';
+    const list = document.getElementById('partnershipCostsList');
+    list.style.display = 'block';
+    list.innerHTML = costs.map(c => `<li><span>${c.label}</span><span>${c.amount} ${currency}</span></li>`).join('');
+  }
 });
 
 function submitPartnership() {

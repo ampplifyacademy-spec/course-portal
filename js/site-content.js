@@ -62,6 +62,12 @@ const SITE_CONTENT_DEFAULTS = {
       { title: 'Private Label (PL)', desc: 'Full-service management for your own private-label brand.', basePrice: '', includedServices: [], oneTimeCosts: [] },
       { title: 'Micro Private Label (MPL)', desc: 'Full-service management on a smaller, lower-cost private-label setup.', basePrice: '', includedServices: [], oneTimeCosts: [] }
     ],
+    partnershipCosts: [
+      { label: 'Listing image design & A+ content', amount: '' },
+      { label: 'Trademark registration', amount: '' },
+      { label: 'EIN/UPC code', amount: '' },
+      { label: 'Product sourcing cost', amount: '' }
+    ],
     portfolio: [],
     portfolioFolders: []
   }

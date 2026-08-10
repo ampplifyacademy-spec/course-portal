@@ -356,6 +356,24 @@
       <details class="panel acc-panel" style="margin-top:1rem;">
         <summary>
           <div>
+            <h2>Partnership One-Time Costs (partnership.html)</h2>
+            <p style="color:var(--text-muted); font-size:.82rem; margin-top:.3rem;">Itemized one-time costs shown on the Partnership page (e.g. Trademark Registration — 350 SAR) so applicants see exact pricing instead of a generic description.</p>
+          </div>
+          <span class="acc-chevron">▾</span>
+        </summary>
+        <div class="acc-body">
+          <div style="display:flex; justify-content:flex-end; margin-bottom:1rem;">
+            <button onclick="addPartnershipCostRow()" style="width:auto; margin:0;">+ Add Cost</button>
+          </div>
+          <div id="partnershipCostEditor"></div>
+          <button onclick="savePartnershipCosts()" style="margin-top:.5rem;">Save Partnership Costs</button>
+          <p class="msg" id="partnershipCostMsg"></p>
+        </div>
+      </details>
+
+      <details class="panel acc-panel" style="margin-top:1rem;">
+        <summary>
+          <div>
             <h2>Success Stories (success-stories.html)</h2>
             <p style="color:var(--text-muted); font-size:.82rem; margin-top:.3rem;">Case studies of past students/clients, with photo. Image field takes any public image URL (e.g. a public Google Drive/Imgur link).</p>
           </div>
@@ -700,6 +718,9 @@ function loadSiteContentIntoForm() {
     planRows = (content.course.plans || []).map(p => Object.assign({}, p, { oneTimeCosts: (p.oneTimeCosts || []).map(c => Object.assign({}, c)) }));
     renderPlanRows();
 
+    partnershipCostRows = (content.course.partnershipCosts || []).map(c => Object.assign({}, c));
+    renderPartnershipCostRows();
+
     successStoryRows = (content.course.successStories || []).map(s => Object.assign({}, s));
     renderSuccessStoryRows();
 
@@ -1026,6 +1047,40 @@ function savePlans() {
   db.collection('siteContent').doc('main').update({ 'course.plans': plans }).then(() => {
     msg.style.color = 'var(--success)';
     msg.textContent = 'Plans saved. Changes are live immediately.';
+  }).catch(err => {
+    msg.style.color = 'var(--danger)';
+    msg.textContent = err.message;
+  });
+}
+
+let partnershipCostRows = [];
+
+function renderPartnershipCostRows() {
+  const container = document.getElementById('partnershipCostEditor');
+  container.innerHTML = partnershipCostRows.map((c, i) => `
+    <div style="display:flex; gap:.5rem; margin-bottom:.4rem;">
+      <input placeholder="e.g. Trademark Registration" value="${(c.label || '').replace(/"/g, '&quot;')}" oninput="partnershipCostRows[${i}].label = this.value" style="margin:0; flex:2;">
+      <input placeholder="Amount" value="${(c.amount || '').replace(/"/g, '&quot;')}" oninput="partnershipCostRows[${i}].amount = this.value" style="margin:0; flex:1;">
+      <button class="danger" onclick="removePartnershipCostRow(${i})" style="width:auto; margin:0;">Remove</button>
+    </div>`).join('');
+}
+
+function addPartnershipCostRow() {
+  partnershipCostRows.push({ label: '', amount: '' });
+  renderPartnershipCostRows();
+}
+
+function removePartnershipCostRow(i) {
+  partnershipCostRows.splice(i, 1);
+  renderPartnershipCostRows();
+}
+
+function savePartnershipCosts() {
+  const msg = document.getElementById('partnershipCostMsg');
+  const costs = partnershipCostRows.filter(c => c.label.trim());
+  db.collection('siteContent').doc('main').update({ 'course.partnershipCosts': costs }).then(() => {
+    msg.style.color = 'var(--success)';
+    msg.textContent = 'Partnership costs saved. Changes are live immediately.';
   }).catch(err => {
     msg.style.color = 'var(--danger)';
     msg.textContent = err.message;
