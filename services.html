@@ -33,6 +33,17 @@
   .service-price-row { display: flex; align-items: baseline; gap: .6rem; margin: .9rem 0 0; }
   .service-price { color: var(--accent-orange); font: 800 1.3rem var(--font-display); }
   .service-price-old { text-decoration: line-through; text-decoration-color: var(--danger); color: var(--text); font-size: .95rem; font-weight: 700; }
+
+  .plan-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(300px, 1fr)); gap: 1.5rem; max-width: 900px; margin: 0 auto; }
+  .plan-card { background: var(--surface-alt); border: 1.5px solid rgba(255,153,0,.35); border-radius: var(--radius-lg); padding: 1.75rem; display: flex; flex-direction: column; }
+  .plan-card h4 { font-size: 1.2rem; margin-bottom: .4rem; }
+  .plan-card .desc { color: var(--text-soft); font-size: .9rem; line-height: 1.6; margin-bottom: 1.1rem; }
+  .plan-cost-row { display: flex; justify-content: space-between; padding: .4rem 0; border-bottom: 1px solid var(--border); font-size: .88rem; color: var(--text-soft); }
+  .plan-cost-row:last-of-type { border-bottom: none; }
+  .plan-total-row { display: flex; justify-content: space-between; align-items: baseline; margin: 1rem 0 1.25rem; padding-top: 1rem; border-top: 1.5px solid var(--border-strong); }
+  .plan-total-row span:first-child { font-weight: 700; }
+  .plan-total-row span:last-child { color: var(--accent-orange); font: 800 1.4rem var(--font-display); }
+  .plan-card button { margin-top: auto; }
   .cta-band { background: linear-gradient(135deg, rgba(0,181,254,.13), rgba(253,125,1,.13)); padding: 3.5rem 4rem; text-align: center; }
   .cta-band h3 { font-size: 1.9rem; margin-bottom: .75rem; }
   .cta-band button { width: auto; margin: 0 auto; padding: 1rem 2.25rem; }
@@ -101,7 +112,13 @@
   </div>
 </nav>
 
-<section class="csection" style="padding-top:3.5rem;">
+<section class="csection" style="padding-top:3.5rem;" id="plansSection">
+  <h2>Full-Service Plans</h2>
+  <p class="lead">Want us to handle everything? Pick a plan below — base charge plus any one-time costs, total shown upfront.</p>
+  <div class="plan-grid" id="planGrid"></div>
+</section>
+
+<section class="csection">
   <h2>Our Services</h2>
   <p class="lead">Click one or more services to see your total, then pay below.</p>
   <div class="service-grid" id="serviceGrid"></div>
@@ -163,6 +180,7 @@ function toggleMobileNav() {
 }
 
 let allServices = [];
+let allPlans = [];
 let currency = 'SAR';
 const selected = new Set();
 
@@ -170,6 +188,29 @@ loadSiteContent().then(content => {
   const c = content.course;
   currency = c.currency || 'SAR';
   allServices = c.services || [];
+  allPlans = c.plans || [];
+
+  const plansSection = document.getElementById('plansSection');
+  if (!allPlans.length) {
+    plansSection.style.display = 'none';
+  } else {
+    plansSection.style.display = '';
+    document.getElementById('planGrid').innerHTML = allPlans.map((p, i) => {
+      const costs = p.oneTimeCosts || [];
+      const base = parseFloat(p.basePrice) || 0;
+      const costsTotal = costs.reduce((sum, ct) => sum + (parseFloat(ct.amount) || 0), 0);
+      const total = base + costsTotal;
+      return `
+      <div class="plan-card">
+        <h4>${p.title}</h4>
+        ${p.desc ? `<p class="desc">${p.desc}</p>` : ''}
+        <div class="plan-cost-row"><span>Service charge</span><span>${p.basePrice || 0} ${currency}</span></div>
+        ${costs.map(ct => `<div class="plan-cost-row"><span>${ct.label}</span><span>${ct.amount || 0} ${currency}</span></div>`).join('')}
+        <div class="plan-total-row"><span>Total</span><span>${total} ${currency}</span></div>
+        <button onclick="choosePlan(${i})">Choose This Plan</button>
+      </div>`;
+    }).join('');
+  }
 
   document.getElementById('serviceGrid').innerHTML = allServices.length
     ? allServices.map((s, i) => `
@@ -255,6 +296,16 @@ function showPaymentPanel() {
   document.getElementById('selectedSummary').textContent = names.join(', ') + ' — Total: ' + total + ' ' + currency;
   document.getElementById('paymentPanel').classList.add('show');
   document.getElementById('paymentPanel').scrollIntoView({ behavior: 'smooth', block: 'center' });
+}
+
+function choosePlan(i) {
+  const p = allPlans[i];
+  const base = parseFloat(p.basePrice) || 0;
+  const costsTotal = (p.oneTimeCosts || []).reduce((sum, ct) => sum + (parseFloat(ct.amount) || 0), 0);
+  sessionStorage.setItem('selectedServices', JSON.stringify({
+    names: [p.title], total: base + costsTotal, currency, docFolders: [], needsScheduling: false
+  }));
+  location.href = 'signup.html';
 }
 
 function goToSignup() {

@@ -338,6 +338,24 @@
       <details class="panel acc-panel" style="margin-top:1rem;">
         <summary>
           <div>
+            <h2>Full-Service Plans (services.html)</h2>
+            <p style="color:var(--text-muted); font-size:.82rem; margin-top:.3rem;">Bundled full-service packages (e.g. Private Label, Micro Private Label) — a base charge plus any number of one-time costs. The total is calculated and shown automatically.</p>
+          </div>
+          <span class="acc-chevron">▾</span>
+        </summary>
+        <div class="acc-body">
+          <div style="display:flex; justify-content:flex-end; margin-bottom:1rem;">
+            <button onclick="addPlanRow()" style="width:auto; margin:0;">+ Add Plan</button>
+          </div>
+          <div id="planEditor"></div>
+          <button onclick="savePlans()" style="margin-top:.5rem;">Save Plans</button>
+          <p class="msg" id="planMsg"></p>
+        </div>
+      </details>
+
+      <details class="panel acc-panel" style="margin-top:1rem;">
+        <summary>
+          <div>
             <h2>Success Stories (success-stories.html)</h2>
             <p style="color:var(--text-muted); font-size:.82rem; margin-top:.3rem;">Case studies of past students/clients, with photo. Image field takes any public image URL (e.g. a public Google Drive/Imgur link).</p>
           </div>
@@ -679,6 +697,9 @@ function loadSiteContentIntoForm() {
     serviceRows = (content.course.services || []).map(s => Object.assign({}, s));
     renderServiceRows();
 
+    planRows = (content.course.plans || []).map(p => Object.assign({}, p, { oneTimeCosts: (p.oneTimeCosts || []).map(c => Object.assign({}, c)) }));
+    renderPlanRows();
+
     successStoryRows = (content.course.successStories || []).map(s => Object.assign({}, s));
     renderSuccessStoryRows();
 
@@ -903,6 +924,77 @@ function saveServices() {
   db.collection('siteContent').doc('main').update({ 'course.services': services }).then(() => {
     msg.style.color = 'var(--success)';
     msg.textContent = 'Services saved. Changes are live immediately.';
+  }).catch(err => {
+    msg.style.color = 'var(--danger)';
+    msg.textContent = err.message;
+  });
+}
+
+let planRows = [];
+
+function renderPlanRows() {
+  const container = document.getElementById('planEditor');
+  container.innerHTML = planRows.map((p, i) => {
+    const costs = p.oneTimeCosts || [];
+    const base = parseFloat(p.basePrice) || 0;
+    const costsTotal = costs.reduce((sum, c) => sum + (parseFloat(c.amount) || 0), 0);
+    const costsHtml = costs.map((c, ci) => `
+      <div style="display:flex; gap:.5rem; margin-bottom:.4rem;">
+        <input placeholder="Cost label (e.g. Trademark Registration)" value="${(c.label || '').replace(/"/g, '&quot;')}" oninput="planRows[${i}].oneTimeCosts[${ci}].label = this.value" style="margin:0; flex:2;">
+        <input placeholder="Amount" value="${(c.amount || '').replace(/"/g, '&quot;')}" oninput="planRows[${i}].oneTimeCosts[${ci}].amount = this.value; renderPlanRows();" style="margin:0; flex:1;">
+        <button class="danger" onclick="removePlanCost(${i},${ci})" style="width:auto; margin:0;">Remove</button>
+      </div>`).join('');
+    return `
+    <div class="module-edit-card">
+      <div class="row-top">
+        <span>Plan ${i + 1}</span>
+        <button class="danger" onclick="removePlanRow(${i})">Remove</button>
+      </div>
+      <input placeholder="Plan title (e.g. Private Label (PL))" value="${(p.title || '').replace(/"/g, '&quot;')}" oninput="planRows[${i}].title = this.value">
+      <input placeholder="Description" value="${(p.desc || '').replace(/"/g, '&quot;')}" oninput="planRows[${i}].desc = this.value">
+      <input placeholder="Base service charge (e.g. 500)" value="${(p.basePrice || '').replace(/"/g, '&quot;')}" oninput="planRows[${i}].basePrice = this.value; renderPlanRows();" style="margin-top:.5rem;">
+
+      <label style="display:block; margin:.75rem 0 .4rem; font-size:.8rem; color:var(--text-muted);">One-time costs (added on top of the base charge)</label>
+      ${costsHtml}
+      <button onclick="addPlanCost(${i})" style="width:auto; margin:0 0 .75rem;">+ Add One-Time Cost</button>
+
+      <div style="background:var(--bg); border:1px solid var(--border); border-radius:var(--radius-sm); padding:.75rem 1rem; font-weight:700; display:flex; justify-content:space-between;">
+        <span>Total client sees</span>
+        <span>${(base + costsTotal) || 0}</span>
+      </div>
+    </div>`;
+  }).join('');
+}
+
+function addPlanRow() {
+  planRows.push({ title: '', desc: '', basePrice: '', oneTimeCosts: [] });
+  renderPlanRows();
+}
+
+function removePlanRow(i) {
+  planRows.splice(i, 1);
+  renderPlanRows();
+}
+
+function addPlanCost(i) {
+  if (!planRows[i].oneTimeCosts) planRows[i].oneTimeCosts = [];
+  planRows[i].oneTimeCosts.push({ label: '', amount: '' });
+  renderPlanRows();
+}
+
+function removePlanCost(i, ci) {
+  planRows[i].oneTimeCosts.splice(ci, 1);
+  renderPlanRows();
+}
+
+function savePlans() {
+  const msg = document.getElementById('planMsg');
+  const plans = planRows.filter(p => p.title.trim()).map(p => Object.assign({}, p, {
+    oneTimeCosts: (p.oneTimeCosts || []).filter(c => c.label.trim())
+  }));
+  db.collection('siteContent').doc('main').update({ 'course.plans': plans }).then(() => {
+    msg.style.color = 'var(--success)';
+    msg.textContent = 'Plans saved. Changes are live immediately.';
   }).catch(err => {
     msg.style.color = 'var(--danger)';
     msg.textContent = err.message;
