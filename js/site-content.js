@@ -59,8 +59,8 @@ const SITE_CONTENT_DEFAULTS = {
     ],
     tools: [],
     plans: [
-      { title: 'Private Label (PL)', desc: 'Full-service management for your own private-label brand.', basePrice: '', oneTimeCosts: [] },
-      { title: 'Micro Private Label (MPL)', desc: 'Full-service management on a smaller, lower-cost private-label setup.', basePrice: '', oneTimeCosts: [] }
+      { title: 'Private Label (PL)', desc: 'Full-service management for your own private-label brand.', basePrice: '', oneTimeCosts: [], includedServices: [] },
+      { title: 'Micro Private Label (MPL)', desc: 'Full-service management on a smaller, lower-cost private-label setup.', basePrice: '', oneTimeCosts: [], includedServices: [] }
     ],
     portfolio: [],
     portfolioFolders: []

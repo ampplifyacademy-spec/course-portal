@@ -38,6 +38,9 @@
   .plan-card { background: var(--surface-alt); border: 1.5px solid rgba(255,153,0,.35); border-radius: var(--radius-lg); padding: 1.75rem; display: flex; flex-direction: column; }
   .plan-card h4 { font-size: 1.2rem; margin-bottom: .4rem; }
   .plan-card .desc { color: var(--text-soft); font-size: .9rem; line-height: 1.6; margin-bottom: 1.1rem; }
+  .plan-services { list-style: none; padding: 0; margin: 0 0 1.1rem; font-size: .88rem; color: var(--text-soft); }
+  .plan-services li { padding: .25rem 0 .25rem 1.3rem; position: relative; line-height: 1.5; }
+  .plan-services li::before { content: "✓"; position: absolute; left: 0; color: var(--accent-orange); font-weight: 700; }
   .plan-cost-row { display: flex; justify-content: space-between; padding: .4rem 0; border-bottom: 1px solid var(--border); font-size: .88rem; color: var(--text-soft); }
   .plan-cost-row:last-of-type { border-bottom: none; }
   .plan-total-row { display: flex; justify-content: space-between; align-items: baseline; margin: 1rem 0 1.25rem; padding-top: 1rem; border-top: 1.5px solid var(--border-strong); }
@@ -204,6 +207,7 @@ loadSiteContent().then(content => {
       <div class="plan-card">
         <h4>${p.title}</h4>
         ${p.desc ? `<p class="desc">${p.desc}</p>` : ''}
+        ${(p.includedServices && p.includedServices.length) ? `<ul class="plan-services">${p.includedServices.map(sv => `<li>${sv}</li>`).join('')}</ul>` : ''}
         <div class="plan-cost-row"><span>Service charge</span><span>${p.basePrice || 0} ${currency}</span></div>
         ${costs.map(ct => `<div class="plan-cost-row"><span>${ct.label}</span><span>${ct.amount || 0} ${currency}</span></div>`).join('')}
         <div class="plan-total-row"><span>Total</span><span>${total} ${currency}</span></div>
