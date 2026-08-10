@@ -207,7 +207,7 @@ loadSiteContent().then(content => {
   const costs = (content.course.partnershipCosts || []).filter(c => c.label && c.amount);
   if (costs.length) {
     const currency = content.course.currency || 'SAR';
-    const total = costs.reduce((sum, c) => sum + (parseFloat(c.amount) || 0), 0);
+    const total = costs.reduce((sum, c) => sum + toNum(c.amount), 0);
     document.getElementById('partnershipCostsFallback').style.display = 'none';
     const list = document.getElementById('partnershipCostsList');
     list.style.display = 'block';

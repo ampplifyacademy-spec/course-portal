@@ -954,8 +954,8 @@ function saveServices() {
 let planRows = [];
 
 function planTotal(p) {
-  const base = parseFloat(p.basePrice) || 0;
-  const costsTotal = (p.oneTimeCosts || []).reduce((sum, c) => sum + (parseFloat(c.amount) || 0), 0);
+  const base = toNum(p.basePrice);
+  const costsTotal = (p.oneTimeCosts || []).reduce((sum, c) => sum + toNum(c.amount), 0);
   return base + costsTotal;
 }
 

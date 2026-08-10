@@ -200,8 +200,8 @@ loadSiteContent().then(content => {
     plansSection.style.display = '';
     document.getElementById('planGrid').innerHTML = allPlans.map((p, i) => {
       const costs = p.oneTimeCosts || [];
-      const base = parseFloat(p.basePrice) || 0;
-      const costsTotal = costs.reduce((sum, ct) => sum + (parseFloat(ct.amount) || 0), 0);
+      const base = toNum(p.basePrice);
+      const costsTotal = costs.reduce((sum, ct) => sum + toNum(ct.amount), 0);
       const total = base + costsTotal;
       const included = p.includedServices || [];
       return `
@@ -288,7 +288,7 @@ function toggleService(i) {
 
 function updateTotal() {
   const bar = document.getElementById('totalBar');
-  const total = [...selected].reduce((sum, i) => sum + (parseFloat(allServices[i].price) || 0), 0);
+  const total = [...selected].reduce((sum, i) => sum + toNum(allServices[i].price), 0);
   document.getElementById('totalCount').textContent = selected.size;
   document.getElementById('totalAmount').textContent = total + ' ' + currency;
   bar.classList.toggle('show', selected.size > 0);
@@ -297,7 +297,7 @@ function updateTotal() {
 
 function showPaymentPanel() {
   const names = [...selected].map(i => allServices[i].title);
-  const total = [...selected].reduce((sum, i) => sum + (parseFloat(allServices[i].price) || 0), 0);
+  const total = [...selected].reduce((sum, i) => sum + toNum(allServices[i].price), 0);
   document.getElementById('selectedSummary').textContent = names.join(', ') + ' — Total: ' + total + ' ' + currency;
   document.getElementById('paymentPanel').classList.add('show');
   document.getElementById('paymentPanel').scrollIntoView({ behavior: 'smooth', block: 'center' });
@@ -305,8 +305,8 @@ function showPaymentPanel() {
 
 function choosePlan(i) {
   const p = allPlans[i];
-  const base = parseFloat(p.basePrice) || 0;
-  const costsTotal = (p.oneTimeCosts || []).reduce((sum, ct) => sum + (parseFloat(ct.amount) || 0), 0);
+  const base = toNum(p.basePrice);
+  const costsTotal = (p.oneTimeCosts || []).reduce((sum, ct) => sum + toNum(ct.amount), 0);
   sessionStorage.setItem('selectedServices', JSON.stringify({
     names: [p.title], total: base + costsTotal, currency, docFolders: [], needsScheduling: false
   }));
@@ -315,7 +315,7 @@ function choosePlan(i) {
 
 function goToSignup() {
   const names = [...selected].map(i => allServices[i].title);
-  const total = [...selected].reduce((sum, i) => sum + (parseFloat(allServices[i].price) || 0), 0);
+  const total = [...selected].reduce((sum, i) => sum + toNum(allServices[i].price), 0);
   const docFolders = [...new Set([...selected].flatMap(i => allServices[i].docFolders || []))];
   const needsScheduling = [...selected].some(i => allServices[i].needsScheduling);
   sessionStorage.setItem('selectedServices', JSON.stringify({ names, total, currency, docFolders, needsScheduling }));
