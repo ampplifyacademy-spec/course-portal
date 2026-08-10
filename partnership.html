@@ -47,6 +47,10 @@
   .partner-form-card label { display: block; font: 600 .8rem var(--font-body); color: var(--text-soft); margin: .9rem 0 .4rem; }
   .partner-form-card label:first-of-type { margin-top: 0; }
   .partner-form-card .optional-tag { color: var(--text-faint); font-weight: 500; }
+  .agree-row { display: flex; align-items: flex-start; gap: .6rem; margin-top: 1.1rem; cursor: pointer; }
+  .agree-row input[type="checkbox"] { width: auto; margin: .2rem 0 0; flex-shrink: 0; }
+  .agree-row span { font-size: .85rem; color: var(--text-soft); line-height: 1.4; }
+  .agree-row a { color: var(--accent-orange); font-weight: 600; }
   .phone-row { display: flex; gap: .5rem; }
   .phone-row input { flex: 1; margin: 0; }
   .code-select-wrap { position: relative; flex: 0 0 auto; width: 88px; }
@@ -177,7 +181,12 @@
       <label for="partnerCategory">Interested product category <span class="optional-tag">(optional)</span></label>
       <input id="partnerCategory" placeholder="e.g. Kitchen, Pet Supplies">
 
-      <button onclick="submitPartnership()" style="margin-top:1.4rem;">Submit Application</button>
+      <label class="agree-row">
+        <input type="checkbox" id="partnerAgreeTerms">
+        <span>I have read and agree to the <a onclick="event.preventDefault(); document.querySelector('.partner-points').scrollIntoView({behavior:'smooth'})" href="#">Terms &amp; Conditions</a></span>
+      </label>
+
+      <button onclick="submitPartnership()" style="margin-top:.75rem;">Submit Application</button>
       <p class="msg" id="partnerMsg"></p>
     </div>
   </div>
@@ -230,6 +239,11 @@ function submitPartnership() {
   if (!name || !email || !numberRaw || !amount || !marketplace) {
     msg.style.color = 'var(--danger)';
     msg.textContent = 'Please fill in all required fields.';
+    return;
+  }
+  if (!document.getElementById('partnerAgreeTerms').checked) {
+    msg.style.color = 'var(--danger)';
+    msg.textContent = 'Please agree to the Terms & Conditions to continue.';
     return;
   }
 

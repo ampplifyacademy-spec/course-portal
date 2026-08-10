@@ -37,6 +37,9 @@
   .slot-btn:hover { border-color: var(--accent); color: var(--text); }
   .slot-btn.selected { background: var(--accent); border-color: var(--accent); color: #fff; }
   .booking-hint { font-size: .78rem; color: var(--text-muted); margin-top: .5rem; line-height: 1.4; }
+  .agree-row { display: flex; align-items: flex-start; gap: .6rem; margin: 1.1rem 0 .5rem; cursor: pointer; }
+  .agree-row input[type="checkbox"] { width: auto; margin: .2rem 0 0; flex-shrink: 0; }
+  .agree-row span { font-size: .85rem; color: var(--text-soft); line-height: 1.4; }
 </style>
 </head>
 <body>
@@ -84,6 +87,11 @@
       <div class="booking-hint">Times shown are approximate — we'll confirm the exact slot with you over WhatsApp.</div>
     </div>
   </div>
+
+  <label class="agree-row">
+    <input type="checkbox" id="agreeTerms">
+    <span>I have read and agree to the Terms &amp; Conditions</span>
+  </label>
 
   <button onclick="doSignup()">Sign Up</button>
   <p class="msg" id="msg"></p>
@@ -277,6 +285,10 @@ function doSignup() {
 
   if (!name || !email || !whatsappNumber || !password || !invoiceFile) {
     msg.textContent = "Please fill in all fields (including WhatsApp number) and choose your payment receipt";
+    return;
+  }
+  if (!document.getElementById('agreeTerms').checked) {
+    msg.textContent = "Please agree to the Terms & Conditions to continue";
     return;
   }
   const callDate = document.getElementById('callDate').value;
