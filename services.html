@@ -39,6 +39,9 @@
   .plan-card h4 { font-size: 1.2rem; margin-bottom: .4rem; }
   .plan-card .desc { color: var(--text-soft); font-size: .9rem; line-height: 1.6; margin-bottom: 1.1rem; }
   .plan-cost-row { display: flex; justify-content: space-between; padding: .4rem 0; border-bottom: 1px solid var(--border); font-size: .88rem; color: var(--text-soft); }
+  .plan-included-list { list-style: none; margin: .75rem 0 1.1rem; }
+  .plan-included-list li { display: flex; align-items: flex-start; gap: .55rem; padding: .3rem 0; color: var(--text-soft); font-size: .88rem; line-height: 1.5; }
+  .plan-included-list .check-mark { color: var(--success); font-weight: 700; flex-shrink: 0; }
   .plan-cost-row:last-of-type { border-bottom: none; }
   .plan-total-row { display: flex; justify-content: space-between; align-items: baseline; margin: 1rem 0 1.25rem; padding-top: 1rem; border-top: 1.5px solid var(--border-strong); }
   .plan-total-row span:first-child { font-weight: 700; }
@@ -205,8 +208,8 @@ loadSiteContent().then(content => {
       <div class="plan-card">
         <h4>${p.title}</h4>
         ${p.desc ? `<p class="desc">${p.desc}</p>` : ''}
-        ${included.length ? `<ol class="points" style="margin:0 0 1.1rem; padding-left:1.2rem; color:var(--text-soft); font-size:.85rem; line-height:1.7;">${included.map(s => `<li>${s}</li>`).join('')}</ol>` : ''}
         <div class="plan-cost-row"><span>Service charge</span><span>${p.basePrice || 0} ${currency}</span></div>
+        ${included.length ? `<ul class="plan-included-list">${included.map(s => `<li><span class="check-mark">✓</span>${s}</li>`).join('')}</ul>` : ''}
         ${costs.map(ct => `<div class="plan-cost-row"><span>${ct.label}</span><span>${ct.amount || 0} ${currency}</span></div>`).join('')}
         <div class="plan-total-row"><span>Total</span><span>${total} ${currency}</span></div>
         <button onclick="choosePlan(${i})">Choose This Plan</button>

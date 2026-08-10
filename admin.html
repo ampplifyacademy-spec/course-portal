@@ -967,12 +967,7 @@ function updatePlanTotal(i) {
 function renderPlanRows() {
   const container = document.getElementById('planEditor');
   container.innerHTML = planRows.map((p, i) => {
-    const included = p.includedServices || [];
-    const includedHtml = included.map((s, si) => `
-      <div style="display:flex; gap:.5rem; margin-bottom:.4rem;">
-        <input placeholder="e.g. PPC Management" value="${(s || '').replace(/"/g, '&quot;')}" oninput="planRows[${i}].includedServices[${si}] = this.value" style="margin:0;">
-        <button class="danger" onclick="removePlanIncludedService(${i},${si})" style="width:auto; margin:0;">Remove</button>
-      </div>`).join('');
+    const includedText = (p.includedServices || []).join('\n');
     const costs = p.oneTimeCosts || [];
     const costsHtml = costs.map((c, ci) => `
       <div style="display:flex; gap:.5rem; margin-bottom:.4rem;">
@@ -990,9 +985,8 @@ function renderPlanRows() {
       <input placeholder="Description" value="${(p.desc || '').replace(/"/g, '&quot;')}" oninput="planRows[${i}].desc = this.value">
       <input placeholder="Base service charge (e.g. 500)" value="${(p.basePrice || '').replace(/"/g, '&quot;')}" oninput="planRows[${i}].basePrice = this.value; updatePlanTotal(${i});" style="margin-top:.5rem;">
 
-      <label style="display:block; margin:.75rem 0 .4rem; font-size:.8rem; color:var(--text-muted);">Services included (what we're charging for)</label>
-      ${includedHtml}
-      <button onclick="addPlanIncludedService(${i})" style="width:auto; margin:0 0 .75rem;">+ Add Included Service</button>
+      <label style="display:block; margin:.75rem 0 .4rem; font-size:.8rem; color:var(--text-muted);">Services included (one per line, no price needed — shown as a checklist)</label>
+      <textarea placeholder="e.g.&#10;Product Research&#10;Listing Optimization&#10;PPC Management" rows="5" oninput="planRows[${i}].includedServices = this.value.split('\\n')" style="margin-bottom:.75rem;">${includedText}</textarea>
 
       <label style="display:block; margin:.75rem 0 .4rem; font-size:.8rem; color:var(--text-muted);">One-time costs (added on top of the base charge)</label>
       ${costsHtml}
@@ -1016,17 +1010,6 @@ function removePlanRow(i) {
   renderPlanRows();
 }
 
-function addPlanIncludedService(i) {
-  if (!planRows[i].includedServices) planRows[i].includedServices = [];
-  planRows[i].includedServices.push('');
-  renderPlanRows();
-}
-
-function removePlanIncludedService(i, si) {
-  planRows[i].includedServices.splice(si, 1);
-  renderPlanRows();
-}
-
 function addPlanCost(i) {
   if (!planRows[i].oneTimeCosts) planRows[i].oneTimeCosts = [];
   planRows[i].oneTimeCosts.push({ label: '', amount: '' });
@@ -1041,7 +1024,7 @@ function removePlanCost(i, ci) {
 function savePlans() {
   const msg = document.getElementById('planMsg');
   const plans = planRows.filter(p => p.title.trim()).map(p => Object.assign({}, p, {
-    includedServices: (p.includedServices || []).filter(s => s.trim()),
+    includedServices: (p.includedServices || []).map(s => s.trim()).filter(Boolean),
     oneTimeCosts: (p.oneTimeCosts || []).filter(c => c.label.trim())
   }));
   db.collection('siteContent').doc('main').update({ 'course.plans': plans }).then(() => {
