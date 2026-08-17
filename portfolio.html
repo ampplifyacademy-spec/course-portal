@@ -124,11 +124,8 @@ let activeLightboxItems = [];
 function itemCard(p, i) {
   return `
     <div class="portfolio-card" onclick="openLightbox(${i})">
-      ${p.imageUrl ? `<div class="img-wrap"><img src="${driveImgUrl(p.imageUrl)}" alt="${p.title}">${p.videoUrl ? '<span class="video-badge">▶ Video</span>' : ''}</div>` : (p.videoUrl ? `<div class="img-wrap"><div style="position:absolute; inset:0; display:flex; align-items:center; justify-content:center; font-size:2.5rem; background:var(--surface-alt);">▶</div></div>` : '')}
-      <div class="body">
-        <h4>${p.title}</h4>
-        <p>${p.desc || ''}</p>
-      </div>
+      ${p.imageUrl ? `<div class="img-wrap"><img src="${driveImgUrl(p.imageUrl)}" alt="${p.title || 'Portfolio image'}">${p.videoUrl ? '<span class="video-badge">▶ Video</span>' : ''}</div>` : (p.videoUrl ? `<div class="img-wrap"><div style="position:absolute; inset:0; display:flex; align-items:center; justify-content:center; font-size:2.5rem; background:var(--surface-alt);">▶</div></div>` : '')}
+      ${(p.title || p.desc) ? `<div class="body">${p.title ? `<h4>${p.title}</h4>` : ''}${p.desc ? `<p>${p.desc}</p>` : ''}</div>` : ''}
     </div>`;
 }
 

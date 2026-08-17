@@ -1394,17 +1394,14 @@ function renderPortfolioFolderRows() {
   container.innerHTML = portfolioFolderRows.map((f, fi) => {
     const items = f.items || [];
     const collapsed = !!portfolioFolderCollapsed[fi];
-    const itemsHtml = items.map((it, ii) => `
-      <div class="module-edit-card" style="margin-left:1rem;">
-        <div class="row-top"><span>Image ${ii + 1}</span><button class="danger" onclick="removePortfolioFolderItem(${fi},${ii})">Remove</button></div>
-        <input placeholder="Title" value="${(it.title || '').replace(/"/g, '&quot;')}" oninput="portfolioFolderRows[${fi}].items[${ii}].title = this.value">
-        <input placeholder="Description" value="${(it.desc || '').replace(/"/g, '&quot;')}" oninput="portfolioFolderRows[${fi}].items[${ii}].desc = this.value">
-        <input placeholder="Facebook video link (optional)" value="${(it.videoUrl || '').replace(/"/g, '&quot;')}" oninput="portfolioFolderRows[${fi}].items[${ii}].videoUrl = this.value">
-        ${it.imageUrl ? `<div style="margin:.6rem 0;"><img src="${driveImgUrl(it.imageUrl)}" style="max-width:160px; border-radius:8px; display:block;"></div>` : ''}
-        <input type="file" id="pfFolderFile${fi}_${ii}" accept="image/*" style="display:none;" onchange="uploadPortfolioFolderImage(${fi},${ii},this.files[0])">
-        <label class="upload-btn" for="pfFolderFile${fi}_${ii}" style="display:block; text-align:center; padding:.7rem; border-radius:var(--radius-sm); border:1px dashed var(--border-strong); background:var(--surface); color:var(--text-soft); font-size:.85rem; cursor:pointer; margin:.4rem 0;">${it.imageUrl ? 'Replace photo' : 'Upload photo'}</label>
-        <p class="msg" id="pfFolderMsg${fi}_${ii}" style="margin:0;"></p>
-      </div>`).join('');
+    const itemsHtml = items.length ? `
+      <div style="display:grid; grid-template-columns:repeat(auto-fill,minmax(90px,1fr)); gap:.6rem; margin:.75rem 0;">
+        ${items.map((it, ii) => `
+        <div style="position:relative; aspect-ratio:1; border-radius:8px; overflow:hidden; background:var(--surface);">
+          ${it.imageUrl ? `<img src="${driveImgUrl(it.imageUrl)}" style="width:100%; height:100%; object-fit:cover; display:block;">` : `<div style="width:100%; height:100%; display:flex; align-items:center; justify-content:center; color:var(--text-faint); font-size:.7rem; text-align:center; padding:.3rem;">Upload failed</div>`}
+          <button class="danger" onclick="removePortfolioFolderItem(${fi},${ii})" title="Remove" style="position:absolute; top:4px; right:4px; width:22px; height:22px; padding:0; margin:0; border-radius:50%; font-size:.85rem; line-height:1;">×</button>
+        </div>`).join('')}
+      </div>` : '';
     return `
       <div class="module-edit-card">
         <div class="row-top" style="cursor:pointer;" onclick="togglePortfolioFolderCollapse(${fi})">
@@ -1420,7 +1417,6 @@ function renderPortfolioFolderRows() {
           <input type="file" id="pfFolderMulti${fi}" accept="image/*" multiple style="display:none;" onchange="uploadMultipleToFolder(${fi}, this.files)">
           <label class="upload-btn" for="pfFolderMulti${fi}" style="display:block; text-align:center; padding:.85rem; border-radius:var(--radius-sm); border:1px dashed var(--border-strong); background:var(--surface); color:var(--text-soft); font-size:.88rem; cursor:pointer; margin:.75rem 0 0;">+ Upload Multiple Images to This Folder</label>
           <p class="msg" id="pfFolderMultiMsg${fi}" style="margin:.4rem 0 0;"></p>
-          <button onclick="addPortfolioFolderItem(${fi})" style="width:auto; margin:.6rem 0 0;">+ Add Empty Item (text only)</button>
         </div>
       </div>`;
   }).join('');
@@ -1446,7 +1442,7 @@ function uploadMultipleToFolder(fi, fileList) {
       done++;
       msg.textContent = `Uploading ${done}/${files.length}...`;
       if (!portfolioFolderRows[fi].items) portfolioFolderRows[fi].items = [];
-      portfolioFolderRows[fi].items.push({ title, desc: '', imageUrl: url });
+      portfolioFolderRows[fi].items.push({ imageUrl: url });
     });
   })).then(() => {
     msg.style.color = 'var(--success)';
@@ -1468,44 +1464,16 @@ function removePortfolioFolder(fi) {
   renderPortfolioFolderRows();
 }
 
-function addPortfolioFolderItem(fi) {
-  if (!portfolioFolderRows[fi].items) portfolioFolderRows[fi].items = [];
-  portfolioFolderRows[fi].items.push({ title: '', desc: '', imageUrl: '', videoUrl: '' });
-  renderPortfolioFolderRows();
-}
-
 function removePortfolioFolderItem(fi, ii) {
   portfolioFolderRows[fi].items.splice(ii, 1);
   renderPortfolioFolderRows();
-}
-
-function uploadPortfolioFolderImage(fi, ii, file) {
-  if (!file) return;
-  const msg = document.getElementById('pfFolderMsg' + fi + '_' + ii);
-  if (!portfolioUploadUrl) {
-    msg.style.color = 'var(--danger)';
-    msg.textContent = 'Set the Google Apps Script upload URL in Bank Details first.';
-    return;
-  }
-  msg.style.color = 'var(--text-muted)';
-  msg.textContent = 'Uploading...';
-  const folderId = parseFolderId(document.getElementById('portfolioFolderId').value.trim());
-  fbUploadImage(file, portfolioUploadUrl, portfolioFolderRows[fi].items[ii].title || 'portfolio', folderId).then(url => {
-    portfolioFolderRows[fi].items[ii].imageUrl = url;
-    msg.style.color = 'var(--success)';
-    msg.textContent = 'Uploaded.';
-    renderPortfolioFolderRows();
-  }).catch(err => {
-    msg.style.color = 'var(--danger)';
-    msg.textContent = err.message;
-  });
 }
 
 function savePortfolioFolders() {
   const msg = document.getElementById('portfolioFolderMsg');
   const folders = portfolioFolderRows
     .filter(f => f.name.trim())
-    .map(f => Object.assign({}, f, { items: (f.items || []).filter(it => it.title.trim() || it.imageUrl) }));
+    .map(f => Object.assign({}, f, { items: (f.items || []).filter(it => it.imageUrl) }));
   db.collection('siteContent').doc('main').update({ 'course.portfolioFolders': folders }).then(() => {
     msg.style.color = 'var(--success)';
     msg.textContent = 'Portfolio folders saved. Changes are live immediately.';
