@@ -46,6 +46,7 @@
   .plan-total-row { display: flex; justify-content: space-between; align-items: baseline; margin: 1rem 0 1.25rem; padding-top: 1rem; border-top: 1.5px solid var(--border-strong); }
   .plan-total-row span:first-child { font-weight: 700; }
   .plan-total-row span:last-child { color: var(--accent-orange); font: 800 1.4rem var(--font-display); }
+  .plan-note { color: var(--text-muted); font-size: .78rem; line-height: 1.4; margin: 0 0 1rem; font-style: italic; }
   .plan-card button { margin-top: auto; }
   .cta-band { background: linear-gradient(135deg, rgba(0,181,254,.13), rgba(253,125,1,.13)); padding: 3.5rem 4rem; text-align: center; }
   .cta-band h3 { font-size: 1.9rem; margin-bottom: .75rem; }
@@ -212,6 +213,7 @@ loadSiteContent().then(content => {
         ${included.length ? `<ul class="plan-included-list">${included.map(s => `<li><span class="check-mark">✓</span>${s}</li>`).join('')}</ul>` : ''}
         ${costs.map(ct => `<div class="plan-cost-row"><span>${ct.label}</span><span>${ct.amount || 0} ${currency}</span></div>`).join('')}
         <div class="plan-total-row"><span>Total</span><span>${total} ${currency}</span></div>
+        <p class="plan-note">Note: If you don't already have an Amazon Seller Account, a one-time charge of 200 SAR applies to set one up.</p>
         <button onclick="choosePlan(${i})">Choose This Plan</button>
       </div>`;
     }).join('');
