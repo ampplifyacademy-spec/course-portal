@@ -2,6 +2,10 @@ function toNum(val) {
   return parseFloat(String(val || '').replace(/,/g, '')) || 0;
 }
 
+function formatMoney(val) {
+  return toNum(val).toLocaleString('en-US');
+}
+
 function driveImgUrl(url) {
   if (!url) return url;
   const m = url.match(/drive\.google\.com\/file\/d\/([^/]+)/) || url.match(/[?&]id=([^&]+)/);

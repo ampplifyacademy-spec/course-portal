@@ -212,7 +212,7 @@ loadSiteContent().then(content => {
         <div class="plan-cost-row"><span>Service charge</span><span>${p.basePrice || 0} ${currency}</span></div>
         ${included.length ? `<ul class="plan-included-list">${included.map(s => `<li><span class="check-mark">✓</span>${s}</li>`).join('')}</ul>` : ''}
         ${costs.map(ct => `<div class="plan-cost-row"><span>${ct.label}</span><span>${ct.amount || 0} ${currency}</span></div>`).join('')}
-        <div class="plan-total-row"><span>Total</span><span>${total} ${currency}</span></div>
+        <div class="plan-total-row"><span>Total</span><span>${formatMoney(total)} ${currency}</span></div>
         <p class="plan-note">Note: If you don't already have an Amazon Seller Account, a one-time charge of 200 SAR applies to set one up.</p>
         <button onclick="choosePlan(${i})">Choose This Plan</button>
       </div>`;
@@ -292,7 +292,7 @@ function updateTotal() {
   const bar = document.getElementById('totalBar');
   const total = [...selected].reduce((sum, i) => sum + toNum(allServices[i].price), 0);
   document.getElementById('totalCount').textContent = selected.size;
-  document.getElementById('totalAmount').textContent = total + ' ' + currency;
+  document.getElementById('totalAmount').textContent = formatMoney(total) + ' ' + currency;
   bar.classList.toggle('show', selected.size > 0);
   if (!selected.size) document.getElementById('paymentPanel').classList.remove('show');
 }
@@ -300,7 +300,7 @@ function updateTotal() {
 function showPaymentPanel() {
   const names = [...selected].map(i => allServices[i].title);
   const total = [...selected].reduce((sum, i) => sum + toNum(allServices[i].price), 0);
-  document.getElementById('selectedSummary').textContent = names.join(', ') + ' — Total: ' + total + ' ' + currency;
+  document.getElementById('selectedSummary').textContent = names.join(', ') + ' — Total: ' + formatMoney(total) + ' ' + currency;
   document.getElementById('paymentPanel').classList.add('show');
   document.getElementById('paymentPanel').scrollIntoView({ behavior: 'smooth', block: 'center' });
 }

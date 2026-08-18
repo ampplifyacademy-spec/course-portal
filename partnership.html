@@ -223,7 +223,7 @@ loadSiteContent().then(content => {
     const list = document.getElementById('partnershipCostsList');
     list.style.display = 'block';
     list.innerHTML = costs.map(c => `<li><span>${c.label}</span><span>${c.amount} ${currency}</span></li>`).join('')
-      + `<li class="cost-total"><span>Total one-time cost</span><span>${total} ${currency}</span></li>`;
+      + `<li class="cost-total"><span>Total one-time cost</span><span>${formatMoney(total)} ${currency}</span></li>`;
   }
 });
 

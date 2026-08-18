@@ -157,7 +157,7 @@ try {
     const box = document.getElementById('selectedServicesBox');
     box.style.display = 'block';
     box.innerHTML = `<div class="row"><span>Selected services</span><span>${selectedServices.names.join(', ')}</span></div>
-      <div class="row"><span>Total</span><span>${selectedServices.total} ${selectedServices.currency}</span></div>
+      <div class="row"><span>Total</span><span>${formatMoney(selectedServices.total)} ${selectedServices.currency}</span></div>
       <button type="button" class="secondary" onclick="cancelSelectedServices()" style="margin-top:.8rem;">Cancel these services</button>`;
     renderServiceDocsSection();
     document.getElementById('schedulingSection').style.display = selectedServices.needsScheduling ? 'block' : 'none';
