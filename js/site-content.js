@@ -172,6 +172,11 @@ function renderSiteFooter(footer, social) {
   renderSocialNav(social, 'footerSocial');
 }
 
+function toggleFooterContact() {
+  const box = document.getElementById('footerContactDetails');
+  if (box) box.style.display = box.style.display === 'none' ? 'block' : 'none';
+}
+
 function fbVideoEmbedUrl(videoUrl) {
   return 'https://www.facebook.com/plugins/video.php?href=' + encodeURIComponent(videoUrl) + '&show_text=false';
 }
