@@ -249,7 +249,10 @@
             <div><label>Currency</label><input id="currency"></div>
           </div>
           <label>Offer ends at (leave empty to hide the countdown)</label>
-          <input type="datetime-local" id="offerEndsAt">
+          <div style="display:grid; grid-template-columns:1fr 1fr; gap:1rem;">
+            <div><label style="font-size:.75rem; color:var(--text-muted); margin:0 0 .3rem;">Date</label><input type="date" id="offerEndDate"></div>
+            <div><label style="font-size:.75rem; color:var(--text-muted); margin:0 0 .3rem;">Time</label><input type="time" id="offerEndTime"></div>
+          </div>
 
           <label>Mentor name</label>
           <input id="mentorName">
@@ -706,7 +709,14 @@ function loadSiteContentIntoForm() {
     document.getElementById('courseSubtitle').value = content.course.heroSubtitle;
     document.getElementById('priceOld').value = content.course.priceOld;
     document.getElementById('priceNew').value = content.course.priceNew;
-    document.getElementById('offerEndsAt').value = content.course.offerEndsAt ? toLocalDatetimeInput(content.course.offerEndsAt) : '';
+    if (content.course.offerEndsAt) {
+      const parts = toLocalDatetimeInput(content.course.offerEndsAt).split('T');
+      document.getElementById('offerEndDate').value = parts[0];
+      document.getElementById('offerEndTime').value = parts[1];
+    } else {
+      document.getElementById('offerEndDate').value = '';
+      document.getElementById('offerEndTime').value = '';
+    }
     document.getElementById('currency').value = content.course.currency;
     document.getElementById('mentorName').value = content.course.mentorName;
     courseHeroImageUrl = content.course.heroImageUrl || '';
@@ -1642,7 +1652,9 @@ function saveSiteContent() {
     'course.priceOld': document.getElementById('priceOld').value,
     'course.priceNew': document.getElementById('priceNew').value,
     'course.currency': document.getElementById('currency').value,
-    'course.offerEndsAt': document.getElementById('offerEndsAt').value ? new Date(document.getElementById('offerEndsAt').value).toISOString() : '',
+    'course.offerEndsAt': document.getElementById('offerEndDate').value
+      ? new Date(document.getElementById('offerEndDate').value + 'T' + (document.getElementById('offerEndTime').value || '23:59')).toISOString()
+      : '',
     'course.mentorName': document.getElementById('mentorName').value,
     'course.mentorBio': document.getElementById('mentorBio').value,
     'course.heroImageUrl': courseHeroImageUrl,
