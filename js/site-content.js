@@ -34,6 +34,10 @@ const SITE_CONTENT_DEFAULTS = {
     priceOld: '1200',
     priceNew: '320',
     offerEndsAt: '',
+    priceFeatures: [
+      '6 in-depth video modules', 'Product research spreadsheet templates', 'Private student community access',
+      'Listing & PPC swipe files', 'Lifetime updates to all content', '14-day money-back guarantee'
+    ],
     currency: 'SAR',
     mentorName: 'Yasin Arafat',
     mentorBio: "I've spent the last 6 years selling on Amazon full-time. This course is everything I wish someone had handed me on day one — no fluff, just what actually works.",

@@ -68,8 +68,11 @@
   .payment-panel .row span:first-child { color: var(--text-muted); }
   .payment-panel .row span:last-child { font-weight: 700; }
   .payment-panel .note { color: var(--text-muted); font-size: .8rem; margin-top: .9rem; line-height: 1.4; }
-  .testimonial-row { display: flex; gap: 1.4rem; max-width: 1200px; margin: 0 auto; overflow-x: auto; scroll-snap-type: x proximity; -webkit-overflow-scrolling: touch; padding-bottom: .5rem; }
-  .testimonial-card { flex: 1; min-width: 300px; background: var(--surface); border: 1px solid var(--border); border-radius: var(--radius); padding: 1.75rem; scroll-snap-align: start; }
+  .testimonial-row { max-width: 1200px; margin: 0 auto; overflow: hidden; -webkit-mask-image: linear-gradient(90deg, transparent, #000 5%, #000 95%, transparent); mask-image: linear-gradient(90deg, transparent, #000 5%, #000 95%, transparent); }
+  .testimonial-track { display: flex; gap: 1.4rem; width: max-content; animation: testimonial-marquee 40s linear infinite; }
+  .testimonial-row:hover .testimonial-track { animation-play-state: paused; }
+  @keyframes testimonial-marquee { from { transform: translateX(0); } to { transform: translateX(-50%); } }
+  .testimonial-card { flex: 0 0 auto; width: 320px; background: var(--surface); border: 1px solid var(--border); border-radius: var(--radius); padding: 1.75rem; }
   .testimonial-card .stars { color: var(--accent-orange); margin-bottom: .75rem; }
   .testimonial-card p { font-size: .92rem; line-height: 1.7; color: #d4d9e6; margin-bottom: 1.1rem; }
   .testimonial-card .tname { font: 700 .95rem var(--font-display); }
@@ -138,7 +141,7 @@
 <section class="csection" style="background:#0d1120;">
   <h2>Customer Feedback</h2>
   <p class="lead">What clients say about our services.</p>
-  <div class="testimonial-row" id="serviceFeedbackRow"></div>
+  <div class="testimonial-row"><div class="testimonial-track" id="serviceFeedbackRow"></div></div>
 
   <div class="feedback-form-wrap">
     <h3>Share Your Feedback</h3>
@@ -253,9 +256,12 @@ loadSiteContent().then(content => {
   bankBox.innerHTML += (content.bankDetails.instructions ? `<div class="note">${content.bankDetails.instructions}</div>` : '');
 
   fbLoadApproved('service').then(list => {
-    document.getElementById('serviceFeedbackRow').innerHTML = list.length
-      ? list.map(fbCard).join('')
-      : '<p style="text-align:center; color:var(--text-muted); flex:1;">No feedback yet — be the first to share.</p>';
+    if (list.length) {
+      const cardsHtml = list.map(fbCard).join('');
+      document.getElementById('serviceFeedbackRow').innerHTML = cardsHtml + cardsHtml;
+    } else {
+      document.getElementById('serviceFeedbackRow').innerHTML = '<p style="text-align:center; color:var(--text-muted); flex:1;">No feedback yet — be the first to share.</p>';
+    }
   });
 
   fbInitForm('serviceFb', 'service', content.bankDetails.uploadScriptUrl);

@@ -273,7 +273,7 @@
               <div id="offerCalendarPopover" class="picker-popover" style="display:none;"></div>
             </div>
             <div>
-              <label style="font-size:.75rem; color:var(--text-muted); margin:0 0 .3rem;">Time (24h, Saudi)</label>
+              <label style="font-size:.75rem; color:var(--text-muted); margin:0 0 .3rem;">Time (Saudi)</label>
               <button type="button" id="offerTimeTrigger" onclick="toggleOfferClock()" style="text-align:left; display:flex; justify-content:space-between; align-items:center; margin:0; cursor:pointer;">
                 <span id="offerTimeDisplay">Not set</span><span>🕐</span>
               </button>
@@ -281,6 +281,9 @@
             </div>
             <button type="button" onclick="clearOfferDateTime()" class="secondary" style="width:auto; grid-column:1/-1; margin-top:.4rem; padding:.4rem .8rem; font-size:.78rem;">Clear date/time</button>
           </div>
+
+          <label>Pricing checklist (one per line, shown with a green checkmark)</label>
+          <textarea id="priceFeatures" rows="6" placeholder="e.g.&#10;6 in-depth video modules&#10;Lifetime updates to all content"></textarea>
 
           <label>Mentor name</label>
           <input id="mentorName">
@@ -908,6 +911,7 @@ function loadSiteContentIntoForm() {
     offerTimeValue = offerParts ? offerParts.time : '';
     updateOfferDisplays();
     document.getElementById('currency').value = content.course.currency;
+    document.getElementById('priceFeatures').value = (content.course.priceFeatures || []).join('\n');
     document.getElementById('mentorName').value = content.course.mentorName;
     courseHeroImageUrl = content.course.heroImageUrl || '';
     courseSiteLogoUrl = content.course.siteLogoUrl || '';
@@ -1843,6 +1847,7 @@ function saveSiteContent() {
     'course.priceNew': document.getElementById('priceNew').value,
     'course.currency': document.getElementById('currency').value,
     'course.offerEndsAt': fromSaudiParts(offerDateValue, offerTimeValue) || '',
+    'course.priceFeatures': document.getElementById('priceFeatures').value.split('\n').map(s => s.trim()).filter(Boolean),
     'course.mentorName': document.getElementById('mentorName').value,
     'course.mentorBio': document.getElementById('mentorBio').value,
     'course.heroImageUrl': courseHeroImageUrl,
