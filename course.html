@@ -244,6 +244,15 @@ function closeMobileNav() {
   document.querySelector('.cnav-links').classList.remove('open');
 }
 
+function toggleModuleShowMore() {
+  const hidden = document.querySelectorAll('.module-hidden');
+  const btn = document.getElementById('moduleShowMoreBtn');
+  if (!hidden.length || !btn) return;
+  const isHidden = hidden[0].style.display === 'none';
+  hidden.forEach(el => { el.style.display = isHidden ? '' : 'none'; });
+  btn.textContent = isHidden ? 'Show Less ▴' : `Show ${hidden.length} More Modules ▾`;
+}
+
 let offerCountdownTimer = null;
 function startOfferCountdown(offerEndsAt) {
   const box = document.getElementById('offerCountdown');
@@ -295,8 +304,9 @@ loadSiteContent().then(content => {
   document.getElementById('priceFeatures').innerHTML = (c.priceFeatures || []).map(f => `<div><span>✓</span>${f}</div>`).join('');
 
   document.getElementById('moduleCountLead').textContent = c.curriculumTopics.length + ' modules. Lifetime access. Real templates and tools included.';
-  document.getElementById('moduleGrid').innerHTML = c.curriculumTopics.map((m, i) => `
-    <details class="module-card">
+  const VISIBLE_MODULE_COUNT = 4;
+  const cardsHtml = c.curriculumTopics.map((m, i) => `
+    <details class="module-card${i >= VISIBLE_MODULE_COUNT ? ' module-hidden' : ''}"${i >= VISIBLE_MODULE_COUNT ? ' style="display:none;"' : ''}>
       <summary>
         <div class="module-num">${String(i + 1).padStart(2, '0')}</div>
         <div class="module-head">
@@ -307,6 +317,11 @@ loadSiteContent().then(content => {
       </summary>
       <div class="module-body"><p>${m.desc}</p></div>
     </details>`).join('');
+  const extraCount = c.curriculumTopics.length - VISIBLE_MODULE_COUNT;
+  const showMoreBtn = extraCount > 0
+    ? `<button type="button" class="secondary" id="moduleShowMoreBtn" onclick="toggleModuleShowMore()" style="width:auto; margin:.5rem auto 0; display:block;">Show ${extraCount} More Modules ▾</button>`
+    : '';
+  document.getElementById('moduleGrid').innerHTML = cardsHtml + showMoreBtn;
 
   const manualCards = c.testimonials.map(t => `
     <div class="testimonial-card">
