@@ -15,6 +15,7 @@ function driveImgUrl(url) {
 const SITE_CONTENT_DEFAULTS = {
   theme: { accent: '#00b5fe', accentOrange: '#fd7d01', bg: '#0b0e1a' },
   social: { facebook: '', instagram: '', whatsapp: '' },
+  footer: { tagline: '', email: '', phone: '', address: '' },
   bankDetails: {
     accounts: [
       { bankName: '', accountName: '', accountNumber: '', iban: '' }
@@ -104,6 +105,7 @@ function loadSiteContent() {
       const merged = {
         theme: Object.assign({}, SITE_CONTENT_DEFAULTS.theme, data.theme || {}),
         social: Object.assign({}, SITE_CONTENT_DEFAULTS.social, data.social || {}),
+        footer: Object.assign({}, SITE_CONTENT_DEFAULTS.footer, data.footer || {}),
         bankDetails: Object.assign({}, SITE_CONTENT_DEFAULTS.bankDetails, data.bankDetails || {}),
         landing: Object.assign({}, SITE_CONTENT_DEFAULTS.landing, data.landing || {}),
         course: Object.assign({}, SITE_CONTENT_DEFAULTS.course, data.course || {})
@@ -149,6 +151,25 @@ function renderSocialNav(social, elId) {
   if (social && social.instagram) links.push(`<a href="${social.instagram}" target="_blank" aria-label="Instagram">${SOCIAL_ICONS.instagram}</a>`);
   if (social && social.whatsapp) links.push(`<a href="${social.whatsapp}" target="_blank" aria-label="WhatsApp">${SOCIAL_ICONS.whatsapp}</a>`);
   el.innerHTML = links.join('');
+}
+
+function renderSiteFooter(footer, social) {
+  const el = document.getElementById('siteFooter');
+  if (!el) return;
+  const f = footer || {};
+  const setLine = (id, value, prefix) => {
+    const line = document.getElementById(id);
+    if (!line) return;
+    if (value) { line.textContent = prefix ? prefix + value : value; line.style.display = ''; }
+    else { line.style.display = 'none'; }
+  };
+  setLine('footerTagline', f.tagline);
+  setLine('footerEmail', f.email, '✉️ ');
+  setLine('footerPhone', f.phone, '📞 ');
+  setLine('footerAddress', f.address, '📍 ');
+  const copyright = document.getElementById('footerCopyright');
+  if (copyright) copyright.textContent = `© ${new Date().getFullYear()} Ampplify Academy. All rights reserved.`;
+  renderSocialNav(social, 'footerSocial');
 }
 
 function fbVideoEmbedUrl(videoUrl) {

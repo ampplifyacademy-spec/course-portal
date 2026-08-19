@@ -222,6 +222,28 @@
       </details>
 
       <details class="panel acc-panel" style="margin-bottom:1rem;">
+        <summary>
+          <div>
+            <h2>Site Footer</h2>
+            <p style="color:var(--text-muted); font-size:.82rem; margin-top:.3rem;">Shown at the bottom of every public page. Leave any field empty to hide that line — quick links, social icons, and the copyright line are automatic.</p>
+          </div>
+          <span class="acc-chevron">▾</span>
+        </summary>
+        <div class="acc-body">
+          <label>Tagline (short line under the logo)</label>
+          <input id="footerTagline" placeholder="e.g. Helping Amazon sellers build real businesses.">
+          <label>Contact email</label>
+          <input id="footerEmail" placeholder="hello@ampplifyacademy.com">
+          <label>Contact phone / WhatsApp (displayed text)</label>
+          <input id="footerPhone" placeholder="e.g. +966 5xxxxxxxx">
+          <label>Address</label>
+          <input id="footerAddress" placeholder="e.g. Riyadh, Saudi Arabia">
+          <button onclick="saveFooter()" style="margin-top:.75rem;">Save Footer</button>
+          <p class="msg" id="footerMsg"></p>
+        </div>
+      </details>
+
+      <details class="panel acc-panel" style="margin-bottom:1rem;">
         <summary><h2>Bank Details (shown on Sign Up page)</h2><span class="acc-chevron">▾</span></summary>
         <div class="acc-body">
           <div style="display:flex; justify-content:flex-end; margin-bottom:1rem;">
@@ -891,6 +913,11 @@ function loadSiteContentIntoForm() {
     document.getElementById('socialFacebook').value = content.social.facebook || '';
     document.getElementById('socialInstagram').value = content.social.instagram || '';
     document.getElementById('socialWhatsapp').value = content.social.whatsapp || '';
+
+    document.getElementById('footerTagline').value = content.footer.tagline || '';
+    document.getElementById('footerEmail').value = content.footer.email || '';
+    document.getElementById('footerPhone').value = content.footer.phone || '';
+    document.getElementById('footerAddress').value = content.footer.address || '';
 
     bankAccountRows = content.bankDetails.accounts.map(a => Object.assign({}, a));
     renderBankAccountRows();
@@ -1809,6 +1836,23 @@ function saveSocialLinks() {
   db.collection('siteContent').doc('main').set({ social }, { merge: true }).then(() => {
     msg.style.color = 'var(--success)';
     msg.textContent = 'Social links saved. Changes are live immediately.';
+  }).catch(err => {
+    msg.style.color = 'var(--danger)';
+    msg.textContent = err.message;
+  });
+}
+
+function saveFooter() {
+  const msg = document.getElementById('footerMsg');
+  const footer = {
+    tagline: document.getElementById('footerTagline').value.trim(),
+    email: document.getElementById('footerEmail').value.trim(),
+    phone: document.getElementById('footerPhone').value.trim(),
+    address: document.getElementById('footerAddress').value.trim()
+  };
+  db.collection('siteContent').doc('main').set({ footer }, { merge: true }).then(() => {
+    msg.style.color = 'var(--success)';
+    msg.textContent = 'Footer saved. Changes are live immediately.';
   }).catch(err => {
     msg.style.color = 'var(--danger)';
     msg.textContent = err.message;

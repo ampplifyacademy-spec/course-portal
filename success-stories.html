@@ -74,6 +74,34 @@
   <button onclick="location.href='signup.html'">Enroll Now</button>
 </div>
 
+<footer class="site-footer" id="siteFooter">
+  <div class="footer-grid">
+    <div class="footer-col footer-brand">
+      <span class="footer-logo"><span class="a">A</span>mpplify Academy</span>
+      <p class="footer-tagline" id="footerTagline" style="display:none;"></p>
+      <div class="nav-social" id="footerSocial"></div>
+    </div>
+    <div class="footer-col">
+      <h4>Quick Links</h4>
+      <a href="course.html">Home</a>
+      <a href="services.html">Services</a>
+      <a href="tools.html">Tools</a>
+      <a href="portfolio.html">Portfolio</a>
+      <a href="success-stories.html">Success Stories</a>
+      <a href="partnership.html">Partnership</a>
+    </div>
+    <div class="footer-col">
+      <h4>Contact</h4>
+      <p id="footerEmail" style="display:none;"></p>
+      <p id="footerPhone" style="display:none;"></p>
+      <p id="footerAddress" style="display:none;"></p>
+    </div>
+  </div>
+  <div class="footer-bottom">
+    <p id="footerCopyright"></p>
+  </div>
+</footer>
+
 <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-app-compat.js"></script>
 <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-auth-compat.js"></script>
 <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore-compat.js"></script>
@@ -105,6 +133,7 @@ loadSiteContent().then(content => {
   }
 
   renderSocialNav(content.social, 'navSocial');
+  renderSiteFooter(content.footer, content.social);
 });
 </script>
 </body>
