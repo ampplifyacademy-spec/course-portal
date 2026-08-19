@@ -81,6 +81,7 @@
     <div class="nav-item" data-tab="batches" onclick="switchTab('batches')"><span>🗂️</span><span>Batches</span></div>
     <div class="nav-item" data-tab="modules" onclick="switchTab('modules')"><span>🎓</span><span>Modules</span></div>
     <div class="nav-item" data-tab="resources" onclick="switchTab('resources')"><span>📄</span><span>Resources</span></div>
+    <div class="nav-item" data-tab="resourceLinks" onclick="switchTab('resourceLinks')"><span>🔗</span><span>Resource Link</span></div>
     <div class="nav-item" data-tab="payments" onclick="switchTab('payments')"><span>💳</span><span>Payments</span></div>
     <div class="nav-item" data-tab="feedback" onclick="switchTab('feedback')"><span>💬</span><span>Feedback</span></div>
     <div class="nav-item" data-tab="partnership" onclick="switchTab('partnership')"><span>🤝</span><span>Partnership</span></div>
@@ -531,6 +532,21 @@
         <ul class="course-list" id="resourceList"></ul>
       </div>
     </div>
+
+    <!-- RESOURCE LINKS -->
+    <div class="tab-section" id="tab-resourceLinks">
+      <div class="panel" style="margin-bottom:1.5rem;">
+        <h2 style="margin-bottom:1rem;">Add Resource Link</h2>
+        <input id="resourceLinkTitle" placeholder="Link title (e.g. Helium 10)">
+        <input id="resourceLinkUrl" placeholder="https://...">
+        <button onclick="addResourceLink()">Add Link</button>
+        <p class="msg" id="resourceLinkMsg"></p>
+      </div>
+      <div class="panel">
+        <h2 style="margin-bottom:1rem;">Current Resource Links</h2>
+        <ul class="course-list" id="resourceLinkListUI"></ul>
+      </div>
+    </div>
   </div>
 </div>
 
@@ -725,6 +741,7 @@ const TAB_META = {
   batches: ['Batches', 'Organize students into cohorts.'],
   modules: ['Courses & Modules', 'Manage private student lessons and Drive links (not shown on the public landing page).'],
   resources: ['Resources', 'Share Google Sheets, Docs, and other reference files with students.'],
+  resourceLinks: ['Resource Link', 'Share external links students can click to visit specific websites.'],
   payments: ['Payments', 'Track revenue and order history.'],
   feedback: ['Feedback', 'Approve public feedback submissions before they appear on the site.'],
   partnership: ['Partnership', 'Leads from the Partnership page, ready for you to follow up on WhatsApp.'],
@@ -750,6 +767,7 @@ auth.onAuthStateChanged(user => {
     loadSiteContentIntoForm();
   });
   loadResources();
+  loadResourceLinks();
   loadFeedback();
   loadPartnershipLeads();
 });
@@ -861,6 +879,42 @@ function deleteResource(i) {
     resources.splice(i, 1);
     return db.collection('courseContent').doc('main').set({ resources }, { merge: true });
   }).then(loadResources);
+}
+
+function loadResourceLinks() {
+  return db.collection('courseContent').doc('main').get().then(doc => {
+    const resourceLinks = (doc.exists && doc.data().resourceLinks) || [];
+    const list = document.getElementById('resourceLinkListUI');
+    list.innerHTML = resourceLinks.length
+      ? resourceLinks.map((r, i) => `<li><span>${r.title}</span><button class="danger" onclick="deleteResourceLink(${i})">Delete</button></li>`).join('')
+      : '<li>No links yet.</li>';
+  });
+}
+
+function addResourceLink() {
+  const title = document.getElementById('resourceLinkTitle').value.trim();
+  const link = document.getElementById('resourceLinkUrl').value.trim();
+  const msg = document.getElementById('resourceLinkMsg');
+  if (!title || !link) { msg.textContent = 'Please enter both title and link'; return; }
+  db.collection('courseContent').doc('main').get().then(doc => {
+    const resourceLinks = (doc.exists && doc.data().resourceLinks) || [];
+    resourceLinks.push({ title, link });
+    return db.collection('courseContent').doc('main').set({ resourceLinks }, { merge: true });
+  }).then(() => {
+    document.getElementById('resourceLinkTitle').value = '';
+    document.getElementById('resourceLinkUrl').value = '';
+    msg.style.color = 'var(--success)';
+    msg.textContent = 'Link added';
+    loadResourceLinks();
+  });
+}
+
+function deleteResourceLink(i) {
+  db.collection('courseContent').doc('main').get().then(doc => {
+    const resourceLinks = (doc.exists && doc.data().resourceLinks) || [];
+    resourceLinks.splice(i, 1);
+    return db.collection('courseContent').doc('main').set({ resourceLinks }, { merge: true });
+  }).then(loadResourceLinks);
 }
 
 function loadModulesForAccess() {
