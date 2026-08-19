@@ -250,8 +250,8 @@
           </div>
           <label>Offer ends at — Saudi Arabia time (leave empty to hide the countdown)</label>
           <div style="display:grid; grid-template-columns:1fr 1fr; gap:1rem;">
-            <div><label style="font-size:.75rem; color:var(--text-muted); margin:0 0 .3rem;">Date (DD-MM-YYYY)</label><input type="text" id="offerEndDate" placeholder="e.g. 25-08-2026" maxlength="10"></div>
-            <div><label style="font-size:.75rem; color:var(--text-muted); margin:0 0 .3rem;">Time (24h, Saudi)</label><input type="time" id="offerEndTime"></div>
+            <div><label style="font-size:.75rem; color:var(--text-muted); margin:0 0 .3rem;">Date</label><input type="date" id="offerEndDate"></div>
+            <div><label style="font-size:.75rem; color:var(--text-muted); margin:0 0 .3rem;">Time (Saudi)</label><input type="time" id="offerEndTime"></div>
           </div>
 
           <label>Mentor name</label>
@@ -495,15 +495,15 @@ function toSaudiParts(isoString) {
   if (isNaN(d)) return null;
   const pad = n => String(n).padStart(2, '0');
   return {
-    date: `${pad(d.getUTCDate())}-${pad(d.getUTCMonth() + 1)}-${d.getUTCFullYear()}`,
+    date: `${d.getUTCFullYear()}-${pad(d.getUTCMonth() + 1)}-${pad(d.getUTCDate())}`,
     time: `${pad(d.getUTCHours())}:${pad(d.getUTCMinutes())}`
   };
 }
 
 function fromSaudiParts(dateStr, timeStr) {
-  const m = (dateStr || '').match(/^(\d{2})-(\d{2})-(\d{4})$/);
+  const m = (dateStr || '').match(/^(\d{4})-(\d{2})-(\d{2})$/);
   if (!m) return null;
-  const [, dd, mm, yyyy] = m;
+  const [, yyyy, mm, dd] = m;
   const [hh, min] = (timeStr || '23:59').split(':').map(Number);
   const utcMs = Date.UTC(Number(yyyy), Number(mm) - 1, Number(dd), hh, min) - SAUDI_OFFSET_MS;
   const d = new Date(utcMs);
