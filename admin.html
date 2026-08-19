@@ -8,6 +8,21 @@
 <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@500;600;700;800&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
 <link rel="stylesheet" href="css/style.css">
 <style>
+  .picker-popover { position: absolute; z-index: 50; top: 100%; left: 0; right: 0; margin-top: .3rem; background: var(--surface-alt); border: 1px solid var(--border-strong); border-radius: var(--radius); box-shadow: 0 20px 40px rgba(0,0,0,.5); padding: .85rem; }
+  .cal-header { display: flex; align-items: center; justify-content: space-between; margin-bottom: .6rem; }
+  .cal-header button { width: auto; margin: 0; padding: .3rem .6rem; font-size: .85rem; }
+  .cal-header span { font: 700 .85rem var(--font-display); }
+  .cal-grid { display: grid; grid-template-columns: repeat(7, 1fr); gap: .2rem; }
+  .cal-grid .dow { text-align: center; font-size: .68rem; color: var(--text-muted); padding: .3rem 0; }
+  .cal-grid .day { text-align: center; padding: .45rem 0; border-radius: 6px; cursor: pointer; font-size: .82rem; background: none; border: none; color: var(--text); }
+  .cal-grid .day:hover { background: var(--info-bg); }
+  .cal-grid .day.selected { background: var(--accent); color: #fff; font-weight: 700; }
+  .cal-grid .day.empty { visibility: hidden; cursor: default; }
+  .clock-cols { display: flex; gap: .6rem; }
+  .clock-col { flex: 1; max-height: 180px; overflow-y: auto; border: 1px solid var(--border); border-radius: 6px; }
+  .clock-col .opt { text-align: center; padding: .4rem 0; cursor: pointer; font-size: .85rem; }
+  .clock-col .opt:hover { background: var(--info-bg); }
+  .clock-col .opt.selected { background: var(--accent); color: #fff; font-weight: 700; }
   .module-manage-card { background: var(--bg); border: 1px solid var(--border); border-radius: var(--radius); padding: 1.1rem 1.3rem; margin-bottom: .85rem; display: flex; align-items: center; gap: 1.25rem; }
   .module-manage-card .mm-num { width: 40px; height: 40px; border-radius: var(--radius-sm); background: var(--info-bg); color: var(--accent); display: flex; align-items: center; justify-content: center; font: 800 .95rem var(--font-display); flex-shrink: 0; }
   .module-manage-card .mm-body { flex: 1; }
@@ -249,9 +264,22 @@
             <div><label>Currency</label><input id="currency"></div>
           </div>
           <label>Offer ends at — Saudi Arabia time (leave empty to hide the countdown)</label>
-          <div style="display:grid; grid-template-columns:1fr 1fr; gap:1rem;">
-            <div><label style="font-size:.75rem; color:var(--text-muted); margin:0 0 .3rem;">Date</label><input type="date" id="offerEndDate"></div>
-            <div><label style="font-size:.75rem; color:var(--text-muted); margin:0 0 .3rem;">Time (Saudi)</label><input type="time" id="offerEndTime"></div>
+          <div style="display:grid; grid-template-columns:1fr 1fr; gap:1rem; position:relative;">
+            <div>
+              <label style="font-size:.75rem; color:var(--text-muted); margin:0 0 .3rem;">Date (DD-MM-YYYY)</label>
+              <button type="button" id="offerDateTrigger" onclick="toggleOfferCalendar()" style="text-align:left; display:flex; justify-content:space-between; align-items:center; margin:0; cursor:pointer;">
+                <span id="offerDateDisplay">Not set</span><span>📅</span>
+              </button>
+              <div id="offerCalendarPopover" class="picker-popover" style="display:none;"></div>
+            </div>
+            <div>
+              <label style="font-size:.75rem; color:var(--text-muted); margin:0 0 .3rem;">Time (24h, Saudi)</label>
+              <button type="button" id="offerTimeTrigger" onclick="toggleOfferClock()" style="text-align:left; display:flex; justify-content:space-between; align-items:center; margin:0; cursor:pointer;">
+                <span id="offerTimeDisplay">Not set</span><span>🕐</span>
+              </button>
+              <div id="offerClockPopover" class="picker-popover" style="display:none;"></div>
+            </div>
+            <button type="button" onclick="clearOfferDateTime()" class="secondary" style="width:auto; grid-column:1/-1; margin-top:.4rem; padding:.4rem .8rem; font-size:.78rem;">Clear date/time</button>
           </div>
 
           <label>Mentor name</label>
@@ -510,6 +538,114 @@ function fromSaudiParts(dateStr, timeStr) {
   return isNaN(d) ? null : d.toISOString();
 }
 
+// ---- Custom calendar + clock pickers for the offer deadline (click-only, no typing) ----
+let offerDateValue = '';
+let offerTimeValue = '';
+let calViewYear = new Date().getFullYear();
+let calViewMonth = new Date().getMonth();
+const MONTH_NAMES = ['January','February','March','April','May','June','July','August','September','October','November','December'];
+
+function updateOfferDisplays() {
+  document.getElementById('offerDateDisplay').textContent = offerDateValue
+    ? offerDateValue.split('-').reverse().join('-') : 'Not set';
+  document.getElementById('offerTimeDisplay').textContent = offerTimeValue || 'Not set';
+}
+
+function toggleOfferCalendar() {
+  document.getElementById('offerClockPopover').style.display = 'none';
+  const pop = document.getElementById('offerCalendarPopover');
+  const opening = pop.style.display === 'none';
+  pop.style.display = opening ? 'block' : 'none';
+  if (opening) {
+    if (offerDateValue) {
+      const [y, m] = offerDateValue.split('-').map(Number);
+      calViewYear = y; calViewMonth = m - 1;
+    }
+    renderOfferCalendar();
+  }
+}
+
+function toggleOfferClock() {
+  document.getElementById('offerCalendarPopover').style.display = 'none';
+  const pop = document.getElementById('offerClockPopover');
+  const opening = pop.style.display === 'none';
+  pop.style.display = opening ? 'block' : 'none';
+  if (opening) renderOfferClock();
+}
+
+function changeCalMonth(delta) {
+  calViewMonth += delta;
+  if (calViewMonth < 0) { calViewMonth = 11; calViewYear--; }
+  if (calViewMonth > 11) { calViewMonth = 0; calViewYear++; }
+  renderOfferCalendar();
+}
+
+function renderOfferCalendar() {
+  const pop = document.getElementById('offerCalendarPopover');
+  const firstDow = new Date(calViewYear, calViewMonth, 1).getDay();
+  const daysInMonth = new Date(calViewYear, calViewMonth + 1, 0).getDate();
+  const selected = offerDateValue ? offerDateValue.split('-').map(Number) : null;
+  let cells = '';
+  for (let i = 0; i < firstDow; i++) cells += `<div class="day empty">·</div>`;
+  for (let d = 1; d <= daysInMonth; d++) {
+    const isSel = selected && selected[0] === calViewYear && selected[1] === calViewMonth + 1 && selected[2] === d;
+    cells += `<div class="day${isSel ? ' selected' : ''}" onclick="pickOfferDate(${calViewYear},${calViewMonth + 1},${d})">${d}</div>`;
+  }
+  pop.innerHTML = `
+    <div class="cal-header">
+      <button type="button" onclick="changeCalMonth(-1)">‹</button>
+      <span>${MONTH_NAMES[calViewMonth]} ${calViewYear}</span>
+      <button type="button" onclick="changeCalMonth(1)">›</button>
+    </div>
+    <div class="cal-grid">
+      ${['Su','Mo','Tu','We','Th','Fr','Sa'].map(d => `<div class="dow">${d}</div>`).join('')}
+      ${cells}
+    </div>`;
+}
+
+function pickOfferDate(y, m, d) {
+  const pad = n => String(n).padStart(2, '0');
+  offerDateValue = `${y}-${pad(m)}-${pad(d)}`;
+  updateOfferDisplays();
+  document.getElementById('offerCalendarPopover').style.display = 'none';
+}
+
+function renderOfferClock() {
+  const pop = document.getElementById('offerClockPopover');
+  const [selH, selM] = offerTimeValue ? offerTimeValue.split(':').map(Number) : [null, null];
+  const hours = Array.from({ length: 24 }, (_, h) => h);
+  const mins = Array.from({ length: 60 }, (_, m) => m);
+  pop.innerHTML = `
+    <div class="clock-cols">
+      <div class="clock-col" id="offerHourCol">${hours.map(h => `<div class="opt${h === selH ? ' selected' : ''}" onclick="pickOfferTime(${h}, ${selM === null ? 0 : selM})">${String(h).padStart(2, '0')}</div>`).join('')}</div>
+      <div class="clock-col" id="offerMinCol">${mins.map(m => `<div class="opt${m === selM ? ' selected' : ''}" onclick="pickOfferTime(${selH === null ? 0 : selH}, ${m})">${String(m).padStart(2, '0')}</div>`).join('')}</div>
+    </div>`;
+}
+
+function pickOfferTime(h, m) {
+  const pad = n => String(n).padStart(2, '0');
+  offerTimeValue = `${pad(h)}:${pad(m)}`;
+  updateOfferDisplays();
+  renderOfferClock();
+}
+
+function clearOfferDateTime() {
+  offerDateValue = '';
+  offerTimeValue = '';
+  updateOfferDisplays();
+  document.getElementById('offerCalendarPopover').style.display = 'none';
+  document.getElementById('offerClockPopover').style.display = 'none';
+}
+
+document.addEventListener('click', e => {
+  if (!e.target.closest('#offerDateTrigger') && !e.target.closest('#offerCalendarPopover')) {
+    document.getElementById('offerCalendarPopover').style.display = 'none';
+  }
+  if (!e.target.closest('#offerTimeTrigger') && !e.target.closest('#offerClockPopover')) {
+    document.getElementById('offerClockPopover').style.display = 'none';
+  }
+});
+
 let allCourses = [];
 let allUsers = [];
 let allBatches = [];
@@ -725,8 +861,9 @@ function loadSiteContentIntoForm() {
     document.getElementById('priceOld').value = content.course.priceOld;
     document.getElementById('priceNew').value = content.course.priceNew;
     const offerParts = content.course.offerEndsAt ? toSaudiParts(content.course.offerEndsAt) : null;
-    document.getElementById('offerEndDate').value = offerParts ? offerParts.date : '';
-    document.getElementById('offerEndTime').value = offerParts ? offerParts.time : '';
+    offerDateValue = offerParts ? offerParts.date : '';
+    offerTimeValue = offerParts ? offerParts.time : '';
+    updateOfferDisplays();
     document.getElementById('currency').value = content.course.currency;
     document.getElementById('mentorName').value = content.course.mentorName;
     courseHeroImageUrl = content.course.heroImageUrl || '';
@@ -1662,7 +1799,7 @@ function saveSiteContent() {
     'course.priceOld': document.getElementById('priceOld').value,
     'course.priceNew': document.getElementById('priceNew').value,
     'course.currency': document.getElementById('currency').value,
-    'course.offerEndsAt': fromSaudiParts(document.getElementById('offerEndDate').value, document.getElementById('offerEndTime').value) || '',
+    'course.offerEndsAt': fromSaudiParts(offerDateValue, offerTimeValue) || '',
     'course.mentorName': document.getElementById('mentorName').value,
     'course.mentorBio': document.getElementById('mentorBio').value,
     'course.heroImageUrl': courseHeroImageUrl,
