@@ -548,7 +548,13 @@ const MONTH_NAMES = ['January','February','March','April','May','June','July','A
 function updateOfferDisplays() {
   document.getElementById('offerDateDisplay').textContent = offerDateValue
     ? offerDateValue.split('-').reverse().join('-') : 'Not set';
-  document.getElementById('offerTimeDisplay').textContent = offerTimeValue || 'Not set';
+  if (offerTimeValue) {
+    const [h24, m] = offerTimeValue.split(':').map(Number);
+    const { h12, ampm } = to12Hour(h24);
+    document.getElementById('offerTimeDisplay').textContent = `${String(h12).padStart(2, '0')}:${String(m).padStart(2, '0')} ${ampm}`;
+  } else {
+    document.getElementById('offerTimeDisplay').textContent = 'Not set';
+  }
 }
 
 function toggleOfferCalendar() {
@@ -610,23 +616,60 @@ function pickOfferDate(y, m, d) {
   document.getElementById('offerCalendarPopover').style.display = 'none';
 }
 
+function to12Hour(h24) {
+  const h12 = h24 % 12 === 0 ? 12 : h24 % 12;
+  return { h12, ampm: h24 < 12 ? 'AM' : 'PM' };
+}
+
+function to24Hour(h12, ampm) {
+  if (ampm === 'AM') return h12 === 12 ? 0 : h12;
+  return h12 === 12 ? 12 : h12 + 12;
+}
+
 function renderOfferClock() {
   const pop = document.getElementById('offerClockPopover');
-  const [selH, selM] = offerTimeValue ? offerTimeValue.split(':').map(Number) : [null, null];
-  const hours = Array.from({ length: 24 }, (_, h) => h);
+  const [h24, selM] = offerTimeValue ? offerTimeValue.split(':').map(Number) : [null, null];
+  const current = h24 === null ? { h12: null, ampm: null } : to12Hour(h24);
+  const hours12 = Array.from({ length: 12 }, (_, i) => i + 1);
   const mins = Array.from({ length: 60 }, (_, m) => m);
   pop.innerHTML = `
     <div class="clock-cols">
-      <div class="clock-col" id="offerHourCol">${hours.map(h => `<div class="opt${h === selH ? ' selected' : ''}" onclick="pickOfferTime(${h}, ${selM === null ? 0 : selM})">${String(h).padStart(2, '0')}</div>`).join('')}</div>
-      <div class="clock-col" id="offerMinCol">${mins.map(m => `<div class="opt${m === selM ? ' selected' : ''}" onclick="pickOfferTime(${selH === null ? 0 : selH}, ${m})">${String(m).padStart(2, '0')}</div>`).join('')}</div>
+      <div class="clock-col" id="offerHourCol">${hours12.map(h => `<div class="opt${h === current.h12 ? ' selected' : ''}" onclick="pickOfferHour(${h})">${String(h).padStart(2, '0')}</div>`).join('')}</div>
+      <div class="clock-col" id="offerMinCol">${mins.map(m => `<div class="opt${m === selM ? ' selected' : ''}" onclick="pickOfferMinute(${m})">${String(m).padStart(2, '0')}</div>`).join('')}</div>
+      <div class="clock-col" id="offerAmPmCol" style="flex:.7; max-height:none;">
+        <div class="opt${current.ampm === 'AM' ? ' selected' : ''}" onclick="pickOfferAmPm('AM')">AM</div>
+        <div class="opt${current.ampm === 'PM' ? ' selected' : ''}" onclick="pickOfferAmPm('PM')">PM</div>
+      </div>
     </div>`;
 }
 
-function pickOfferTime(h, m) {
+function currentTimeParts() {
+  if (!offerTimeValue) return { h12: 12, m: 0, ampm: 'AM' };
+  const [h24, m] = offerTimeValue.split(':').map(Number);
+  const { h12, ampm } = to12Hour(h24);
+  return { h12, m, ampm };
+}
+
+function setOfferTime(h12, m, ampm) {
   const pad = n => String(n).padStart(2, '0');
-  offerTimeValue = `${pad(h)}:${pad(m)}`;
+  offerTimeValue = `${pad(to24Hour(h12, ampm))}:${pad(m)}`;
   updateOfferDisplays();
   renderOfferClock();
+}
+
+function pickOfferHour(h12) {
+  const p = currentTimeParts();
+  setOfferTime(h12, p.m, p.ampm);
+}
+
+function pickOfferMinute(m) {
+  const p = currentTimeParts();
+  setOfferTime(p.h12, m, p.ampm);
+}
+
+function pickOfferAmPm(ampm) {
+  const p = currentTimeParts();
+  setOfferTime(p.h12, p.m, ampm);
 }
 
 function clearOfferDateTime() {
