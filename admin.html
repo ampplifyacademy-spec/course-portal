@@ -248,10 +248,10 @@
             <div><label>New price</label><input id="priceNew"></div>
             <div><label>Currency</label><input id="currency"></div>
           </div>
-          <label>Offer ends at (leave empty to hide the countdown)</label>
+          <label>Offer ends at — Saudi Arabia time (leave empty to hide the countdown)</label>
           <div style="display:grid; grid-template-columns:1fr 1fr; gap:1rem;">
-            <div><label style="font-size:.75rem; color:var(--text-muted); margin:0 0 .3rem;">Date</label><input type="date" id="offerEndDate"></div>
-            <div><label style="font-size:.75rem; color:var(--text-muted); margin:0 0 .3rem;">Time</label><input type="time" id="offerEndTime"></div>
+            <div><label style="font-size:.75rem; color:var(--text-muted); margin:0 0 .3rem;">Date (DD-MM-YYYY)</label><input type="text" id="offerEndDate" placeholder="e.g. 25-08-2026" maxlength="10"></div>
+            <div><label style="font-size:.75rem; color:var(--text-muted); margin:0 0 .3rem;">Time (24h, Saudi)</label><input type="time" id="offerEndTime"></div>
           </div>
 
           <label>Mentor name</label>
@@ -488,11 +488,26 @@
 <script src="js/site-content.js"></script>
 <script src="js/feedback.js"></script>
 <script>
-function toLocalDatetimeInput(isoString) {
-  const d = new Date(isoString);
-  if (isNaN(d)) return '';
+const SAUDI_OFFSET_MS = 3 * 3600000;
+
+function toSaudiParts(isoString) {
+  const d = new Date(new Date(isoString).getTime() + SAUDI_OFFSET_MS);
+  if (isNaN(d)) return null;
   const pad = n => String(n).padStart(2, '0');
-  return `${d.getFullYear()}-${pad(d.getMonth() + 1)}-${pad(d.getDate())}T${pad(d.getHours())}:${pad(d.getMinutes())}`;
+  return {
+    date: `${pad(d.getUTCDate())}-${pad(d.getUTCMonth() + 1)}-${d.getUTCFullYear()}`,
+    time: `${pad(d.getUTCHours())}:${pad(d.getUTCMinutes())}`
+  };
+}
+
+function fromSaudiParts(dateStr, timeStr) {
+  const m = (dateStr || '').match(/^(\d{2})-(\d{2})-(\d{4})$/);
+  if (!m) return null;
+  const [, dd, mm, yyyy] = m;
+  const [hh, min] = (timeStr || '23:59').split(':').map(Number);
+  const utcMs = Date.UTC(Number(yyyy), Number(mm) - 1, Number(dd), hh, min) - SAUDI_OFFSET_MS;
+  const d = new Date(utcMs);
+  return isNaN(d) ? null : d.toISOString();
 }
 
 let allCourses = [];
@@ -709,14 +724,9 @@ function loadSiteContentIntoForm() {
     document.getElementById('courseSubtitle').value = content.course.heroSubtitle;
     document.getElementById('priceOld').value = content.course.priceOld;
     document.getElementById('priceNew').value = content.course.priceNew;
-    if (content.course.offerEndsAt) {
-      const parts = toLocalDatetimeInput(content.course.offerEndsAt).split('T');
-      document.getElementById('offerEndDate').value = parts[0];
-      document.getElementById('offerEndTime').value = parts[1];
-    } else {
-      document.getElementById('offerEndDate').value = '';
-      document.getElementById('offerEndTime').value = '';
-    }
+    const offerParts = content.course.offerEndsAt ? toSaudiParts(content.course.offerEndsAt) : null;
+    document.getElementById('offerEndDate').value = offerParts ? offerParts.date : '';
+    document.getElementById('offerEndTime').value = offerParts ? offerParts.time : '';
     document.getElementById('currency').value = content.course.currency;
     document.getElementById('mentorName').value = content.course.mentorName;
     courseHeroImageUrl = content.course.heroImageUrl || '';
@@ -1652,9 +1662,7 @@ function saveSiteContent() {
     'course.priceOld': document.getElementById('priceOld').value,
     'course.priceNew': document.getElementById('priceNew').value,
     'course.currency': document.getElementById('currency').value,
-    'course.offerEndsAt': document.getElementById('offerEndDate').value
-      ? new Date(document.getElementById('offerEndDate').value + 'T' + (document.getElementById('offerEndTime').value || '23:59')).toISOString()
-      : '',
+    'course.offerEndsAt': fromSaudiParts(document.getElementById('offerEndDate').value, document.getElementById('offerEndTime').value) || '',
     'course.mentorName': document.getElementById('mentorName').value,
     'course.mentorBio': document.getElementById('mentorBio').value,
     'course.heroImageUrl': courseHeroImageUrl,
