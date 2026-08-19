@@ -146,7 +146,7 @@
 
 <section class="csection" id="curriculum">
   <h2>What You'll Learn</h2>
-  <p class="lead">6 modules. Lifetime access. Real templates and tools included.</p>
+  <p class="lead" id="moduleCountLead">Lifetime access. Real templates and tools included.</p>
   <div class="module-grid" id="moduleGrid"></div>
 </section>
 
@@ -294,6 +294,7 @@ loadSiteContent().then(content => {
   document.getElementById('heroEnrollBtn').textContent = 'Enroll Now — ' + c.priceNew + ' ' + c.currency;
   document.getElementById('priceFeatures').innerHTML = (c.priceFeatures || []).map(f => `<div><span>✓</span>${f}</div>`).join('');
 
+  document.getElementById('moduleCountLead').textContent = c.curriculumTopics.length + ' modules. Lifetime access. Real templates and tools included.';
   document.getElementById('moduleGrid').innerHTML = c.curriculumTopics.map((m, i) => `
     <details class="module-card">
       <summary>
