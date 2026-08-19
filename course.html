@@ -198,11 +198,6 @@
   <div class="faq-wrap" id="faqWrap"></div>
 </section>
 
-<div class="cta-band">
-  <h3>Ready to start selling on Amazon?</h3>
-  <button onclick="location.href='signup.html'" id="bandEnrollBtn">Enroll Now — 320 SAR</button>
-</div>
-
 <footer class="site-footer" id="siteFooter">
   <div class="footer-grid">
     <div class="footer-col footer-brand">
@@ -297,7 +292,6 @@ loadSiteContent().then(content => {
   document.getElementById('priceNew').textContent = c.priceNew + ' ' + c.currency;
   startOfferCountdown(c.offerEndsAt);
   document.getElementById('heroEnrollBtn').textContent = 'Enroll Now — ' + c.priceNew + ' ' + c.currency;
-  document.getElementById('bandEnrollBtn').textContent = 'Enroll Now — ' + c.priceNew + ' ' + c.currency;
   document.getElementById('priceFeatures').innerHTML = (c.priceFeatures || []).map(f => `<div><span>✓</span>${f}</div>`).join('');
 
   document.getElementById('moduleGrid').innerHTML = c.curriculumTopics.map((m, i) => `
