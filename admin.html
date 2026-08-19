@@ -248,6 +248,9 @@
             <div><label>New price</label><input id="priceNew"></div>
             <div><label>Currency</label><input id="currency"></div>
           </div>
+          <label>Offer ends at (leave empty to hide the countdown)</label>
+          <input type="datetime-local" id="offerEndsAt">
+
           <label>Mentor name</label>
           <input id="mentorName">
           <label>Mentor bio</label>
@@ -482,6 +485,13 @@
 <script src="js/site-content.js"></script>
 <script src="js/feedback.js"></script>
 <script>
+function toLocalDatetimeInput(isoString) {
+  const d = new Date(isoString);
+  if (isNaN(d)) return '';
+  const pad = n => String(n).padStart(2, '0');
+  return `${d.getFullYear()}-${pad(d.getMonth() + 1)}-${pad(d.getDate())}T${pad(d.getHours())}:${pad(d.getMinutes())}`;
+}
+
 let allCourses = [];
 let allUsers = [];
 let allBatches = [];
@@ -696,6 +706,7 @@ function loadSiteContentIntoForm() {
     document.getElementById('courseSubtitle').value = content.course.heroSubtitle;
     document.getElementById('priceOld').value = content.course.priceOld;
     document.getElementById('priceNew').value = content.course.priceNew;
+    document.getElementById('offerEndsAt').value = content.course.offerEndsAt ? toLocalDatetimeInput(content.course.offerEndsAt) : '';
     document.getElementById('currency').value = content.course.currency;
     document.getElementById('mentorName').value = content.course.mentorName;
     courseHeroImageUrl = content.course.heroImageUrl || '';
@@ -1631,6 +1642,7 @@ function saveSiteContent() {
     'course.priceOld': document.getElementById('priceOld').value,
     'course.priceNew': document.getElementById('priceNew').value,
     'course.currency': document.getElementById('currency').value,
+    'course.offerEndsAt': document.getElementById('offerEndsAt').value ? new Date(document.getElementById('offerEndsAt').value).toISOString() : '',
     'course.mentorName': document.getElementById('mentorName').value,
     'course.mentorBio': document.getElementById('mentorBio').value,
     'course.heroImageUrl': courseHeroImageUrl,

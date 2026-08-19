@@ -33,6 +33,7 @@ const SITE_CONTENT_DEFAULTS = {
     heroSubtitle: "A step-by-step Amazon Selling Course that takes you from zero to your first profitable product — sourcing, listings, ads, and scaling, all in one place.",
     priceOld: '1200',
     priceNew: '320',
+    offerEndsAt: '',
     currency: 'SAR',
     mentorName: 'Yasin Arafat',
     mentorBio: "I've spent the last 6 years selling on Amazon full-time. This course is everything I wish someone had handed me on day one — no fluff, just what actually works.",
