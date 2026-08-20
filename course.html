@@ -69,6 +69,7 @@
   .offer-countdown-clock .unit { background: var(--bg); border: 1px solid var(--border-strong); border-radius: var(--radius-sm); padding: .5rem .4rem; min-width: 54px; }
   .offer-countdown-clock .unit b { display: block; font: 800 1.3rem var(--font-display); color: var(--text); }
   .offer-countdown-clock .unit span { display: block; font-size: .65rem; color: var(--text-muted); text-transform: uppercase; letter-spacing: .03em; }
+  .offer-end-date { margin-top: .5rem; font-size: .78rem; color: var(--text-muted); }
   .price-features { text-align: left; display: flex; flex-direction: column; gap: .75rem; margin-bottom: 1.75rem; }
   .price-features div { display: flex; gap: .6rem; align-items: flex-start; font-size: .92rem; color: #d4d9e6; }
   .price-features span { color: var(--accent); }
@@ -185,6 +186,7 @@
     <div class="offer-countdown" id="offerCountdown" style="display:none;">
       <span class="offer-countdown-label">Offer ends in</span>
       <div class="offer-countdown-clock" id="offerCountdownClock"></div>
+      <div class="offer-end-date" id="offerEndDateLabel"></div>
     </div>
     <div class="note">one-time payment, no subscriptions</div>
     <div class="price-features" id="priceFeatures"></div>
@@ -254,13 +256,25 @@ function toggleModuleShowMore() {
 }
 
 let offerCountdownTimer = null;
+function formatSaudiEndDate(isoString) {
+  const MONTH_NAMES = ['January','February','March','April','May','June','July','August','September','October','November','December'];
+  const d = new Date(new Date(isoString).getTime() + 3 * 3600000);
+  let h = d.getUTCHours();
+  const ampm = h < 12 ? 'AM' : 'PM';
+  h = h % 12 === 0 ? 12 : h % 12;
+  const mins = String(d.getUTCMinutes()).padStart(2, '0');
+  return `Ends ${d.getUTCDate()} ${MONTH_NAMES[d.getUTCMonth()]} ${d.getUTCFullYear()}, ${h}:${mins} ${ampm} (Saudi time)`;
+}
+
 function startOfferCountdown(offerEndsAt) {
   const box = document.getElementById('offerCountdown');
   const clock = document.getElementById('offerCountdownClock');
+  const endDateLabel = document.getElementById('offerEndDateLabel');
   if (offerCountdownTimer) clearInterval(offerCountdownTimer);
   if (!offerEndsAt) { box.style.display = 'none'; return; }
   const endTime = new Date(offerEndsAt).getTime();
   if (isNaN(endTime)) { box.style.display = 'none'; return; }
+  endDateLabel.textContent = formatSaudiEndDate(offerEndsAt);
 
   function tick() {
     const diff = endTime - Date.now();
