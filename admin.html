@@ -1392,15 +1392,19 @@ let partnershipCostRows = [];
 function renderPartnershipCostRows() {
   const container = document.getElementById('partnershipCostEditor');
   container.innerHTML = partnershipCostRows.map((c, i) => `
-    <div style="display:flex; gap:.5rem; margin-bottom:.4rem;">
+    <div style="display:flex; align-items:center; gap:.5rem; margin-bottom:.4rem;">
       <input placeholder="e.g. Trademark Registration" value="${(c.label || '').replace(/"/g, '&quot;')}" oninput="partnershipCostRows[${i}].label = this.value" style="margin:0; flex:2;">
       <input placeholder="Amount" value="${(c.amount || '').replace(/"/g, '&quot;')}" oninput="partnershipCostRows[${i}].amount = this.value" style="margin:0; flex:1;">
+      <label style="display:flex; align-items:center; gap:.35rem; flex:0 0 auto; font-size:.72rem; color:var(--text-muted); white-space:nowrap;">
+        <input type="checkbox" style="width:auto; margin:0;" ${c.showForMpl ? 'checked' : ''} onchange="partnershipCostRows[${i}].showForMpl = this.checked">
+        Show for MPL too
+      </label>
       <button class="danger" onclick="removePartnershipCostRow(${i})" style="width:auto; margin:0;">Remove</button>
     </div>`).join('');
 }
 
 function addPartnershipCostRow() {
-  partnershipCostRows.push({ label: '', amount: '' });
+  partnershipCostRows.push({ label: '', amount: '', showForMpl: false });
   renderPartnershipCostRows();
 }
 

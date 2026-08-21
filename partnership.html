@@ -41,6 +41,10 @@
   .cost-list li.cost-total { border-top: 1.5px solid var(--border-strong); margin-top: .3rem; padding-top: .6rem; font-weight: 700; }
   .cost-list li.cost-total span:first-child { color: var(--text); }
   .cost-list li.cost-total span:last-child { font-size: 1.05rem; }
+  .plan-toggle { display: flex; gap: .5rem; margin: .5rem 0 .7rem; flex-wrap: wrap; }
+  .plan-toggle-btn { border: 1.5px solid var(--border-strong); background: transparent; color: var(--text-soft); padding: .4rem .85rem; border-radius: 999px; font-size: .82rem; font-weight: 600; cursor: pointer; transition: all .15s ease; }
+  .plan-toggle-btn:hover { border-color: var(--accent-orange); color: var(--text); }
+  .plan-toggle-btn.active { background: var(--accent-orange); border-color: var(--accent-orange); color: #fff; }
 
   .partner-form-card { background: var(--surface-alt); border: 1px solid var(--border); border-radius: var(--radius-lg); padding: 2rem; }
   .partner-form-card h3 { font-size: 1.2rem; margin-bottom: .3rem; }
@@ -130,6 +134,10 @@
         <span class="icon">🧾</span>
         <div>
           <h4>One-time setup costs you'll cover</h4>
+          <div class="plan-toggle" id="partnershipPlanToggle" style="display:none;">
+            <button type="button" class="plan-toggle-btn active" data-plan="pl" onclick="setPartnershipPlanView('pl')">Private Label (PL)</button>
+            <button type="button" class="plan-toggle-btn" data-plan="mpl" onclick="setPartnershipPlanView('mpl')">Micro Private Label (MPL)</button>
+          </div>
           <p id="partnershipCostsFallback">Listing image design and A+ content, trademark registration, getting your EIN/UPC code, and product sourcing cost are one-time costs paid separately by you — these aren't part of the profit-share.</p>
           <ul class="cost-list" id="partnershipCostsList" style="display:none;"></ul>
           <p class="cost-note">Note: If you don't already have an Amazon Seller Account, a one-time charge of 200 SAR applies to set one up.</p>
@@ -248,15 +256,34 @@ loadSiteContent().then(content => {
   renderSocialNav(content.social, 'navSocial');
   renderSiteFooter(content.footer, content.social);
 
-  const costs = (content.course.partnershipCosts || []).filter(c => c.label && c.amount);
-  if (costs.length) {
+  const allCosts = (content.course.partnershipCosts || []).filter(c => c.label && c.amount);
+  if (allCosts.length) {
     const currency = content.course.currency || 'SAR';
-    const total = costs.reduce((sum, c) => sum + toNum(c.amount), 0);
     document.getElementById('partnershipCostsFallback').style.display = 'none';
-    const list = document.getElementById('partnershipCostsList');
-    list.style.display = 'block';
-    list.innerHTML = costs.map(c => `<li><span>${c.label}</span><span>${c.amount} ${currency}</span></li>`).join('')
-      + `<li class="cost-total"><span>Total one-time cost</span><span>${formatMoney(total)} ${currency}</span></li>`;
+    document.getElementById('partnershipPlanToggle').style.display = 'flex';
+    window.renderPartnershipCosts = function(plan) {
+      const costs = plan === 'mpl' ? allCosts.filter(c => c.showForMpl) : allCosts;
+      const list = document.getElementById('partnershipCostsList');
+      const fallback = document.getElementById('partnershipCostsFallback');
+      if (!costs.length) {
+        list.style.display = 'none';
+        fallback.style.display = 'block';
+        fallback.textContent = 'No one-time setup costs listed for this plan yet.';
+        return;
+      }
+      fallback.style.display = 'none';
+      list.style.display = 'block';
+      const total = costs.reduce((sum, c) => sum + toNum(c.amount), 0);
+      list.innerHTML = costs.map(c => `<li><span>${c.label}</span><span>${c.amount} ${currency}</span></li>`).join('')
+        + `<li class="cost-total"><span>Total one-time cost</span><span>${formatMoney(total)} ${currency}</span></li>`;
+    };
+    window.setPartnershipPlanView = function(plan) {
+      document.querySelectorAll('#partnershipPlanToggle .plan-toggle-btn').forEach(btn => {
+        btn.classList.toggle('active', btn.dataset.plan === plan);
+      });
+      renderPartnershipCosts(plan);
+    };
+    renderPartnershipCosts('pl');
   }
 });
 
