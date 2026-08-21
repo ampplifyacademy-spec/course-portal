@@ -54,10 +54,12 @@
   .testimonial-card { flex: 0 0 auto; width: 320px; background: var(--surface); border: 1px solid var(--border); border-radius: var(--radius); padding: 1.75rem; }
   .testimonial-card .stars { color: var(--accent-orange); margin-bottom: .75rem; }
   .testimonial-card p { font-size: .92rem; line-height: 1.7; color: #d4d9e6; margin-bottom: 1.1rem; }
-  .video-review-row { max-width: 1200px; margin: 0 auto; overflow: hidden; -webkit-mask-image: linear-gradient(90deg, transparent, #000 5%, #000 95%, transparent); mask-image: linear-gradient(90deg, transparent, #000 5%, #000 95%, transparent); }
-  .video-review-track { display: flex; gap: 1.4rem; width: max-content; animation: video-review-marquee 40s linear infinite; }
-  .video-review-row:hover .video-review-track { animation-play-state: paused; }
-  @keyframes video-review-marquee { from { transform: translateX(0); } to { transform: translateX(-50%); } }
+  .video-review-wrap { max-width: 1200px; margin: 0 auto; position: relative; display: flex; align-items: center; gap: .75rem; }
+  .video-review-row { overflow-x: auto; scroll-behavior: smooth; scrollbar-width: none; }
+  .video-review-row::-webkit-scrollbar { display: none; }
+  .video-review-track { display: flex; gap: 1.4rem; width: max-content; }
+  .video-review-arrow { flex: 0 0 auto; width: 44px; height: 44px; border-radius: 50%; background: var(--surface); border: 1px solid var(--border-strong); color: var(--text); font-size: 1.1rem; cursor: pointer; display: flex; align-items: center; justify-content: center; }
+  .video-review-arrow:hover { border-color: var(--accent-orange); color: var(--accent-orange); }
   .video-review-card { flex: 0 0 auto; width: 220px; background: var(--surface); border: 1px solid var(--border); border-radius: var(--radius); overflow: hidden; }
   .video-review-frame { width: 100%; aspect-ratio: 9/16; background: #000; }
   .video-review-frame iframe { width: 100%; height: 100%; border: none; }
@@ -168,7 +170,11 @@
 <section class="csection" id="videoReviews" style="display:none; background:#0d1120;">
   <h2>Video Reviews</h2>
   <p class="lead">Hear directly from our students, in their own words.</p>
-  <div class="video-review-row"><div class="video-review-track" id="videoReviewGrid"></div></div>
+  <div class="video-review-wrap">
+    <button class="video-review-arrow" onclick="scrollVideoReviews(-1)" aria-label="Previous">&#8249;</button>
+    <div class="video-review-row"><div class="video-review-track" id="videoReviewGrid"></div></div>
+    <button class="video-review-arrow" onclick="scrollVideoReviews(1)" aria-label="Next">&#8250;</button>
+  </div>
 </section>
 
 <section class="csection" style="background:#0d1120;">
@@ -260,6 +266,13 @@ function toggleMobileNav() {
 }
 function closeMobileNav() {
   document.querySelector('.cnav-links').classList.remove('open');
+}
+
+function scrollVideoReviews(dir) {
+  const row = document.querySelector('.video-review-row');
+  const card = row.querySelector('.video-review-card');
+  const step = card ? card.offsetWidth + 22 : 240;
+  row.scrollBy({ left: dir * step, behavior: 'smooth' });
 }
 
 function toggleModuleShowMore() {
@@ -364,12 +377,11 @@ loadSiteContent().then(content => {
   const videoReviews = c.videoReviews || [];
   if (videoReviews.length) {
     document.getElementById('videoReviews').style.display = '';
-    const videoCardsHtml = videoReviews.map(v => `
+    document.getElementById('videoReviewGrid').innerHTML = videoReviews.map(v => `
       <div class="video-review-card">
         <div class="video-review-frame"><iframe src="${fbVideoEmbedUrl(v.videoUrl)}" scrolling="no" allowfullscreen allow="autoplay; clipboard-write; encrypted-media; picture-in-picture; web-share"></iframe></div>
         ${v.name ? `<div class="video-review-name">${v.name}</div>` : ''}
       </div>`).join('');
-    document.getElementById('videoReviewGrid').innerHTML = videoCardsHtml + videoCardsHtml;
   }
 
   fbLoadApproved('course').then(list => {
