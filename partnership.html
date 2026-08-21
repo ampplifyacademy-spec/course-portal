@@ -171,6 +171,12 @@
         <input id="partnerNumber" placeholder="5xxxxxxxx">
       </div>
 
+      <label for="partnerPlanType">Which plan do you want to partner for?</label>
+      <select id="partnerPlanType">
+        <option value="PL">Private Label (PL)</option>
+        <option value="MPL">Micro Private Label (MPL)</option>
+      </select>
+
       <label for="partnerAmount">Investment budget</label>
       <input id="partnerAmount" placeholder="e.g. 5000 SAR">
 
@@ -282,6 +288,7 @@ loadSiteContent().then(content => {
         btn.classList.toggle('active', btn.dataset.plan === plan);
       });
       renderPartnershipCosts(plan);
+      document.getElementById('partnerPlanType').value = plan.toUpperCase();
     };
     renderPartnershipCosts('pl');
   }
@@ -296,6 +303,7 @@ function submitPartnership() {
   const amount = document.getElementById('partnerAmount').value.trim();
   const marketplace = document.getElementById('partnerMarketplace').value;
   const category = document.getElementById('partnerCategory').value.trim();
+  const planType = document.getElementById('partnerPlanType').value;
   const msg = document.getElementById('partnerMsg');
 
   if (!name || !email || !numberRaw || !amount || !marketplace) {
@@ -313,19 +321,20 @@ function submitPartnership() {
   msg.textContent = 'Submitting...';
 
   db.collection('partnershipLeads').add({
-    name, email, whatsapp, amount, marketplace, category,
+    name, email, whatsapp, amount, marketplace, category, planType,
     status: 'new',
     createdAt: firebase.firestore.FieldValue.serverTimestamp()
   }).then(() => {
     msg.style.color = 'var(--success)';
     msg.textContent = "Thanks! We'll reach out to you on WhatsApp soon.";
-    sendAdminAlert('New partnership application', name + ' (' + email + ', ' + whatsapp + ')\nBudget: ' + amount + '\nMarketplace: ' + marketplace + (category ? '\nCategory: ' + category : ''));
+    sendAdminAlert('New partnership application', name + ' (' + email + ', ' + whatsapp + ')\nPlan: ' + planType + '\nBudget: ' + amount + '\nMarketplace: ' + marketplace + (category ? '\nCategory: ' + category : ''));
     document.getElementById('partnerName').value = '';
     document.getElementById('partnerEmail').value = '';
     document.getElementById('partnerNumber').value = '';
     document.getElementById('partnerAmount').value = '';
     document.getElementById('partnerMarketplace').value = '';
     document.getElementById('partnerCategory').value = '';
+    document.getElementById('partnerPlanType').value = 'PL';
   }).catch(err => {
     msg.style.color = 'var(--danger)';
     msg.textContent = err.message;

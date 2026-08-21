@@ -189,7 +189,7 @@
         <h2 style="margin-bottom:.25rem;">Partnership Applications</h2>
         <p style="color:var(--text-muted); font-size:.85rem; margin-bottom:1.1rem;">Leads from the Partnership page — people who want to work with us on a profit-share basis instead of paying upfront.</p>
         <table>
-          <thead><tr><th>Name</th><th>Email</th><th>WhatsApp</th><th>Budget</th><th>Marketplace</th><th>Category</th><th>Status</th><th>Action</th></tr></thead>
+          <thead><tr><th>Name</th><th>Email</th><th>WhatsApp</th><th>Plan</th><th>Budget</th><th>Marketplace</th><th>Category</th><th>Status</th><th>Action</th></tr></thead>
           <tbody id="partnershipRows"></tbody>
         </table>
       </div>
@@ -829,7 +829,7 @@ function loadPartnershipLeads() {
     const all = snap.docs.map(d => ({ id: d.id, ...d.data() }));
     const tbody = document.getElementById('partnershipRows');
     if (!all.length) {
-      tbody.innerHTML = `<tr><td colspan="8" style="color:var(--text-faint);">No applications yet.</td></tr>`;
+      tbody.innerHTML = `<tr><td colspan="9" style="color:var(--text-faint);">No applications yet.</td></tr>`;
       return;
     }
     tbody.innerHTML = all.map(p => `
@@ -837,6 +837,7 @@ function loadPartnershipLeads() {
         <td>${p.name || ''}</td>
         <td>${p.email || ''}</td>
         <td>${p.whatsapp ? `<a href="https://wa.me/${p.whatsapp.replace(/\D/g, '')}" target="_blank">${p.whatsapp}</a>` : '—'}</td>
+        <td>${p.planType || '—'}</td>
         <td>${p.amount || '—'}</td>
         <td>${p.marketplace || '—'}</td>
         <td>${p.category || '—'}</td>
