@@ -180,13 +180,20 @@ function toggleFooterContact() {
 
 function fbVideoEmbedUrl(videoUrl) {
   const raw = (videoUrl || '').trim();
-  // Pasted a full <iframe> embed snippet (from Facebook's "Embed Video" option) — pull the real src out of it.
+  // Pasted a full <iframe> embed snippet (from Facebook's "Embed Video"/"Embed Post" option) — pull the real src out of it.
   const iframeMatch = raw.match(/src=["']([^"']+)["']/i);
-  if (iframeMatch) return iframeMatch[1].replace(/&amp;/g, '&');
-  // Already a plugins/video.php (or plugins/post.php) embed URL — use as-is.
-  if (/facebook\.com\/plugins\//i.test(raw)) return raw;
+  let src = iframeMatch ? iframeMatch[1].replace(/&amp;/g, '&') : raw;
+  // Already a Facebook plugin embed URL (video.php or post.php) — post.php always shows the
+  // caption/header no matter what, so pull the original permalink back out of its href param
+  // and force it through video.php with show_text=false to strip the caption.
+  if (/facebook\.com\/plugins\//i.test(src)) {
+    try {
+      const href = new URL(src).searchParams.get('href');
+      if (href) src = href;
+    } catch (e) {}
+  }
   // Plain permalink (post, video, or reel) — wrap it. Facebook's video plugin also renders Reels links.
-  return 'https://www.facebook.com/plugins/video.php?href=' + encodeURIComponent(raw) + '&show_text=false';
+  return 'https://www.facebook.com/plugins/video.php?href=' + encodeURIComponent(src) + '&show_text=false';
 }
 
 // Instant mobile push alerts via ntfy.sh (free, no backend). Install the ntfy
