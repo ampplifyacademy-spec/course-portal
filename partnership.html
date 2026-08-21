@@ -262,7 +262,7 @@ loadSiteContent().then(content => {
     document.getElementById('partnershipCostsFallback').style.display = 'none';
     document.getElementById('partnershipPlanToggle').style.display = 'flex';
     window.renderPartnershipCosts = function(plan) {
-      const costs = plan === 'mpl' ? allCosts.filter(c => c.showForMpl) : allCosts;
+      const costs = plan === 'mpl' ? allCosts.filter(c => c.showForMpl) : allCosts.filter(c => !c.hideFromPl);
       const list = document.getElementById('partnershipCostsList');
       const fallback = document.getElementById('partnershipCostsFallback');
       if (!costs.length) {

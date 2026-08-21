@@ -1399,12 +1399,16 @@ function renderPartnershipCostRows() {
         <input type="checkbox" style="width:auto; margin:0;" ${c.showForMpl ? 'checked' : ''} onchange="partnershipCostRows[${i}].showForMpl = this.checked">
         Show for MPL too
       </label>
+      <label style="display:flex; align-items:center; gap:.35rem; flex:0 0 auto; font-size:.72rem; color:var(--text-muted); white-space:nowrap;">
+        <input type="checkbox" style="width:auto; margin:0;" ${c.hideFromPl ? 'checked' : ''} onchange="partnershipCostRows[${i}].hideFromPl = this.checked">
+        Hide from PL
+      </label>
       <button class="danger" onclick="removePartnershipCostRow(${i})" style="width:auto; margin:0;">Remove</button>
     </div>`).join('');
 }
 
 function addPartnershipCostRow() {
-  partnershipCostRows.push({ label: '', amount: '', showForMpl: false });
+  partnershipCostRows.push({ label: '', amount: '', showForMpl: false, hideFromPl: false });
   renderPartnershipCostRows();
 }
 
