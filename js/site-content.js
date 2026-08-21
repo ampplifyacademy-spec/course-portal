@@ -182,18 +182,22 @@ function fbVideoEmbedUrl(videoUrl) {
   const raw = (videoUrl || '').trim();
   // Pasted a full <iframe> embed snippet (from Facebook's "Embed Video"/"Embed Post" option) — pull the real src out of it.
   const iframeMatch = raw.match(/src=["']([^"']+)["']/i);
-  let src = iframeMatch ? iframeMatch[1].replace(/&amp;/g, '&') : raw;
-  // Already a Facebook plugin embed URL (video.php or post.php) — post.php always shows the
-  // caption/header no matter what, so pull the original permalink back out of its href param
-  // and force it through video.php with show_text=false to strip the caption.
-  if (/facebook\.com\/plugins\//i.test(src)) {
+  let href = iframeMatch ? iframeMatch[1].replace(/&amp;/g, '&') : raw;
+  // Already a Facebook plugin embed URL (video.php or post.php) — pull the original permalink
+  // back out of its href param so we can re-normalize it below.
+  if (/facebook\.com\/plugins\//i.test(href)) {
     try {
-      const href = new URL(src).searchParams.get('href');
-      if (href) src = href;
+      const inner = new URL(href).searchParams.get('href');
+      if (inner) href = inner;
     } catch (e) {}
   }
-  // Plain permalink (post, video, or reel) — wrap it. Facebook's video plugin also renders Reels links.
-  return 'https://www.facebook.com/plugins/video.php?href=' + encodeURIComponent(src) + '&show_text=false';
+  // A true video/reel permalink has its own player with no caption — video.php renders it clean.
+  // A /posts/ permalink (video shared as part of a normal post, no standalone video URL) only
+  // works through post.php, which always shows the poster's name/caption/hashtags — Facebook
+  // gives no way to suppress that for post.php, so this is a platform limitation, not a bug.
+  const isDirectVideo = /facebook\.com\/(?:[^/]+\/videos\/|watch\/?\?|reel\/)/i.test(href);
+  const plugin = isDirectVideo ? 'video.php' : 'post.php';
+  return 'https://www.facebook.com/plugins/' + plugin + '?href=' + encodeURIComponent(href) + '&show_text=false';
 }
 
 // Instant mobile push alerts via ntfy.sh (free, no backend). Install the ntfy
