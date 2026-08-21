@@ -366,6 +366,24 @@
       </details>
 
       <details class="panel acc-panel" style="margin-top:1rem;">
+        <summary>
+          <div>
+            <h2>Video Reviews (public landing page)</h2>
+            <p style="color:var(--text-muted); font-size:.82rem; margin-top:.3rem;">Facebook video reviews from students/clients — paste the public video link (not a Reel/Story link).</p>
+          </div>
+          <span class="acc-chevron">▾</span>
+        </summary>
+        <div class="acc-body">
+          <div style="display:flex; justify-content:flex-end; margin-bottom:1rem;">
+            <button onclick="addVideoReviewRow()" style="width:auto; margin:0;">+ Add Video Review</button>
+          </div>
+          <div id="videoReviewEditor"></div>
+          <button onclick="saveVideoReviews()" style="margin-top:.5rem;">Save Video Reviews</button>
+          <p class="msg" id="videoReviewMsg"></p>
+        </div>
+      </details>
+
+      <details class="panel acc-panel" style="margin-top:1rem;">
         <summary><h2>FAQ (public landing page)</h2><span class="acc-chevron">▾</span></summary>
         <div class="acc-body">
           <div style="display:flex; justify-content:flex-end; margin-bottom:1rem;">
@@ -1005,6 +1023,9 @@ function loadSiteContentIntoForm() {
     testimonialRows = content.course.testimonials.map(t => Object.assign({}, t));
     renderTestimonialRows();
 
+    videoReviewRows = (content.course.videoReviews || []).map(v => Object.assign({}, v));
+    renderVideoReviewRows();
+
     faqRows = content.course.faqs.map(f => Object.assign({}, f));
     renderFaqRows();
 
@@ -1097,6 +1118,40 @@ function addTestimonialRow() {
 function removeTestimonialRow(i) {
   testimonialRows.splice(i, 1);
   renderTestimonialRows();
+}
+
+let videoReviewRows = [];
+
+function renderVideoReviewRows() {
+  const container = document.getElementById('videoReviewEditor');
+  container.innerHTML = videoReviewRows.map((v, i) => `
+    <div class="module-edit-card">
+      <div class="row-top"><span>Video Review ${i + 1}</span><button class="danger" onclick="removeVideoReviewRow(${i})">Remove</button></div>
+      <input placeholder="Student name" value="${(v.name || '').replace(/"/g, '&quot;')}" oninput="videoReviewRows[${i}].name = this.value">
+      <input placeholder="Facebook video link" value="${(v.videoUrl || '').replace(/"/g, '&quot;')}" oninput="videoReviewRows[${i}].videoUrl = this.value">
+    </div>`).join('');
+}
+
+function addVideoReviewRow() {
+  videoReviewRows.push({ name: '', videoUrl: '' });
+  renderVideoReviewRows();
+}
+
+function removeVideoReviewRow(i) {
+  videoReviewRows.splice(i, 1);
+  renderVideoReviewRows();
+}
+
+function saveVideoReviews() {
+  const msg = document.getElementById('videoReviewMsg');
+  const videoReviews = videoReviewRows.filter(v => v.videoUrl.trim());
+  db.collection('siteContent').doc('main').update({ 'course.videoReviews': videoReviews }).then(() => {
+    msg.style.color = 'var(--success)';
+    msg.textContent = 'Video reviews saved. Changes are live immediately.';
+  }).catch(err => {
+    msg.style.color = 'var(--danger)';
+    msg.textContent = err.message;
+  });
 }
 
 function saveTestimonials() {

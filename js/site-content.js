@@ -71,6 +71,7 @@ const SITE_CONTENT_DEFAULTS = {
     successStories: [
       { name: 'Tanvir Ahmed', text: 'Launched his first product in 3 weeks and hit consistent monthly sales within 2 months.', imageUrl: '' }
     ],
+    videoReviews: [],
     tools: [],
     plans: [
       { title: 'Private Label (PL)', desc: 'Full-service management for your own private-label brand.', basePrice: '', includedServices: [], oneTimeCosts: [] },
