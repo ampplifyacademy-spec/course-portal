@@ -1128,7 +1128,7 @@ function renderVideoReviewRows() {
     <div class="module-edit-card">
       <div class="row-top"><span>Video Review ${i + 1}</span><button class="danger" onclick="removeVideoReviewRow(${i})">Remove</button></div>
       <input placeholder="Student name" value="${(v.name || '').replace(/"/g, '&quot;')}" oninput="videoReviewRows[${i}].name = this.value">
-      <input placeholder="Facebook video link" value="${(v.videoUrl || '').replace(/"/g, '&quot;')}" oninput="videoReviewRows[${i}].videoUrl = this.value">
+      <input placeholder="Facebook video/Reel link, or paste the embed code" value="${(v.videoUrl || '').replace(/"/g, '&quot;')}" oninput="videoReviewRows[${i}].videoUrl = this.value">
     </div>`).join('');
 }
 

@@ -179,7 +179,14 @@ function toggleFooterContact() {
 }
 
 function fbVideoEmbedUrl(videoUrl) {
-  return 'https://www.facebook.com/plugins/video.php?href=' + encodeURIComponent(videoUrl) + '&show_text=false';
+  const raw = (videoUrl || '').trim();
+  // Pasted a full <iframe> embed snippet (from Facebook's "Embed Video" option) — pull the real src out of it.
+  const iframeMatch = raw.match(/src=["']([^"']+)["']/i);
+  if (iframeMatch) return iframeMatch[1].replace(/&amp;/g, '&');
+  // Already a plugins/video.php (or plugins/post.php) embed URL — use as-is.
+  if (/facebook\.com\/plugins\//i.test(raw)) return raw;
+  // Plain permalink (post, video, or reel) — wrap it. Facebook's video plugin also renders Reels links.
+  return 'https://www.facebook.com/plugins/video.php?href=' + encodeURIComponent(raw) + '&show_text=false';
 }
 
 // Instant mobile push alerts via ntfy.sh (free, no backend). Install the ntfy
