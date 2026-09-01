@@ -169,7 +169,11 @@ function renderSiteFooter(footer, social) {
   setLine('footerPhone', f.phone, '📞 ');
   setLine('footerAddress', f.address, '📍 ');
   const copyright = document.getElementById('footerCopyright');
-  if (copyright) copyright.textContent = `© ${new Date().getFullYear()} Ampplify Academy. All rights reserved.`;
+  // The registered company name belongs in the footer, not only in the privacy
+  // policy. Amazon's Solution Provider review checks the organisation name on
+  // the profile against the website, and "Ampplify Academy" alone gives a
+  // reviewer nothing to match "Rakiza Company LTD" to.
+  if (copyright) copyright.textContent = `© ${new Date().getFullYear()} Ampplify Academy — a trading name of Rakiza Company LTD (United Kingdom). All rights reserved.`;
   renderSocialNav(social, 'footerSocial');
 }
 
