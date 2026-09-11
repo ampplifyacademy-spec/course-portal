@@ -742,11 +742,20 @@ function clearOfferDateTime() {
 }
 
 document.addEventListener('click', e => {
-  if (!e.target.closest('#offerDateTrigger') && !e.target.closest('#offerCalendarPopover')) {
-    document.getElementById('offerCalendarPopover').style.display = 'none';
+  // Use composedPath() instead of e.target.closest(): clicking an arrow/option inside these
+  // popovers re-renders their innerHTML, detaching e.target from the document before this
+  // bubbles up, which made closest() always report "outside" and instantly close the popover.
+  // composedPath() is captured at dispatch time, before any of that DOM mutation happens.
+  const path = e.composedPath();
+  const dateTrigger = document.getElementById('offerDateTrigger');
+  const calendarPop = document.getElementById('offerCalendarPopover');
+  const timeTrigger = document.getElementById('offerTimeTrigger');
+  const clockPop = document.getElementById('offerClockPopover');
+  if (!path.includes(dateTrigger) && !path.includes(calendarPop)) {
+    calendarPop.style.display = 'none';
   }
-  if (!e.target.closest('#offerTimeTrigger') && !e.target.closest('#offerClockPopover')) {
-    document.getElementById('offerClockPopover').style.display = 'none';
+  if (!path.includes(timeTrigger) && !path.includes(clockPop)) {
+    clockPop.style.display = 'none';
   }
 });
 
