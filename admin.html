@@ -541,7 +541,9 @@
       <div class="panel" style="margin-bottom:1.5rem;">
         <h2 style="margin-bottom:1rem;">Add Resource</h2>
         <input id="resourceTitle" placeholder="Resource title (e.g. Product Research Sheet)">
-        <input id="resourceLink" placeholder="Google Sheets / Docs / Drive link">
+        <input id="resourceLink" placeholder="Google Sheets / Docs / Drive link (or upload a file below instead)">
+        <label style="display:block; font-size:.8rem; color:var(--text-muted); margin:.5rem 0 .3rem;">Or upload a file directly (skill file, template, etc.) — students will download it from their panel</label>
+        <input type="file" id="resourceFile">
         <button onclick="addResource()">Add Resource</button>
         <p class="msg" id="resourceMsg"></p>
       </div>
@@ -877,18 +879,30 @@ function loadResources() {
 function addResource() {
   const title = document.getElementById('resourceTitle').value.trim();
   const link = document.getElementById('resourceLink').value.trim();
+  const file = document.getElementById('resourceFile').files[0];
   const msg = document.getElementById('resourceMsg');
-  if (!title || !link) { msg.textContent = 'Please enter both title and link'; return; }
-  db.collection('courseContent').doc('main').get().then(doc => {
-    const resources = (doc.exists && doc.data().resources) || [];
-    resources.push({ title, link });
-    return db.collection('courseContent').doc('main').set({ resources }, { merge: true });
+  if (!title || (!link && !file)) { msg.textContent = 'Please enter a title, and either a link or a file to upload'; return; }
+  if (file && !portfolioUploadUrl) { msg.style.color = 'var(--danger)'; msg.textContent = 'Upload script URL not set — configure it in Bank Details first.'; return; }
+
+  msg.style.color = 'var(--text-muted)';
+  msg.textContent = file ? 'Uploading file...' : 'Saving...';
+
+  (file ? fbUploadImage(file, portfolioUploadUrl, title) : Promise.resolve(link)).then(finalLink => {
+    return db.collection('courseContent').doc('main').get().then(doc => {
+      const resources = (doc.exists && doc.data().resources) || [];
+      resources.push({ title, link: finalLink });
+      return db.collection('courseContent').doc('main').set({ resources }, { merge: true });
+    });
   }).then(() => {
     document.getElementById('resourceTitle').value = '';
     document.getElementById('resourceLink').value = '';
+    document.getElementById('resourceFile').value = '';
     msg.style.color = 'var(--success)';
     msg.textContent = 'Resource added';
     loadResources();
+  }).catch(err => {
+    msg.style.color = 'var(--danger)';
+    msg.textContent = err.message;
   });
 }
 
