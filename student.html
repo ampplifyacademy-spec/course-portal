@@ -11,20 +11,20 @@
   .progress-badge { background: var(--surface); border: 1px solid var(--border); border-radius: var(--radius-sm); padding: .9rem 1.25rem; text-align: right; }
   .progress-badge .label { color: var(--text-muted); font-size: .78rem; margin-bottom: .25rem; }
   .progress-badge .value { font: 800 1.4rem var(--font-display); color: var(--accent); }
-  .batch-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(240px, 1fr)); gap: 1.1rem; margin-bottom: 1.5rem; }
-  .batch-card { background: var(--surface); border: 1px solid var(--border); border-radius: var(--radius); padding: 1.5rem; cursor: pointer; transition: border-color .15s ease, transform .15s ease, box-shadow .15s ease; }
+  .batch-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(190px, 210px)); gap: 1.25rem; margin-bottom: 1.5rem; }
+  .batch-card { background: var(--surface); border: 1px solid var(--border); border-radius: var(--radius); padding: 1.75rem 1.25rem; cursor: pointer; display: flex; flex-direction: column; align-items: center; text-align: center; gap: .7rem; aspect-ratio: 1 / 1; justify-content: center; transition: border-color .15s ease, transform .15s ease, box-shadow .15s ease; }
   .batch-card:hover { border-color: var(--accent); transform: translateY(-2px); }
-  .batch-card.active { border-color: var(--accent); box-shadow: 0 0 0 1px var(--accent); }
-  .batch-card-top { display: flex; align-items: center; gap: 1rem; margin-bottom: 1.1rem; }
-  .batch-num { width: 46px; height: 46px; border-radius: var(--radius-sm); background: var(--info-bg); color: var(--accent); display: flex; align-items: center; justify-content: center; font: 800 1rem var(--font-display); flex-shrink: 0; }
-  .batch-card h3 { font-size: 1.05rem; margin-bottom: .2rem; }
-  .batch-card-top p { color: var(--text-muted); font-size: .8rem; }
-  .batch-progress { display: flex; align-items: center; gap: .7rem; }
+  .batch-num { width: 56px; height: 56px; border-radius: var(--radius-sm); background: var(--info-bg); color: var(--accent); display: flex; align-items: center; justify-content: center; font: 800 1.15rem var(--font-display); flex-shrink: 0; }
+  .batch-card h3 { font-size: 1.05rem; margin-bottom: .15rem; }
+  .batch-card-top p { color: var(--text-muted); font-size: .78rem; }
+  .batch-progress { display: flex; align-items: center; gap: .6rem; width: 100%; }
   .batch-progress .bar { flex: 1; height: 6px; background: rgba(255,255,255,.1); border-radius: 999px; overflow: hidden; }
   .batch-progress .bar .fill { height: 100%; background: linear-gradient(90deg, var(--accent), var(--accent-orange)); }
   .batch-progress span { color: var(--text-muted); font-size: .78rem; white-space: nowrap; font-weight: 600; }
   .batch-panel { background: var(--surface); border: 1px solid var(--border); border-radius: var(--radius); overflow: hidden; }
-  .batch-panel-head { padding: 1.1rem 1.6rem; border-bottom: 1px solid var(--border); font-weight: 700; font-size: 1rem; }
+  .batch-panel-head { display: flex; align-items: center; gap: .9rem; padding: 1.1rem 1.6rem; border-bottom: 1px solid var(--border); font-weight: 700; font-size: 1rem; }
+  .batch-panel-back { background: none; border: 1px solid var(--border-strong); color: var(--text-muted); width: auto; margin: 0; padding: .4rem .8rem; font-size: .8rem; border-radius: var(--radius-sm); cursor: pointer; }
+  .batch-panel-back:hover { border-color: var(--accent); color: var(--accent); }
   .class-row { display: flex; align-items: center; gap: 1rem; padding: 1rem 1.6rem; border-bottom: 1px solid rgba(255,255,255,.05); cursor: pointer; }
   .class-row:last-child { border-bottom: none; }
   .class-icon { width: 28px; height: 28px; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: .85rem; flex-shrink: 0; }
@@ -206,29 +206,30 @@ function renderBatches(batchGroups) {
   const completedAll = allClasses.filter(c => completedClasses.includes(c.id)).length;
   document.getElementById('overallProgress').textContent = totalAll ? Math.round((completedAll / totalAll) * 100) + '%' : '0%';
 
+  if (activeBatchKey && batchGroups.some(g => g.key === activeBatchKey)) {
+    renderBatchPanel();
+  } else {
+    activeBatchKey = null;
+    renderBatchGrid();
+  }
+}
+
+function renderBatchGrid() {
   const wrap = document.getElementById('batchWrap');
-  if (!batchGroups.length) {
+  if (!currentBatchGroups.length) {
     wrap.innerHTML = '<p style="color:var(--text-faint); font-size:.9rem;">No classes available yet.</p>';
     return;
   }
 
-  if (!activeBatchKey || !batchGroups.some(g => g.key === activeBatchKey)) {
-    activeBatchKey = batchGroups[0].key;
-  }
-
-  const grid = batchGroups.map(g => {
+  const grid = currentBatchGroups.map(g => {
     const total = g.classes.length;
     const completedCount = g.classes.filter(c => completedClasses.includes(c.id)).length;
     const pct = total ? Math.round((completedCount / total) * 100) : 0;
     return `
-    <div class="batch-card${g.key === activeBatchKey ? ' active' : ''}" onclick="selectBatch('${g.key}')">
-      <div class="batch-card-top">
-        <div class="batch-num">${g.name.replace(/[^A-Z0-9]/gi, '').slice(0, 2).toUpperCase() || 'GN'}</div>
-        <div>
-          <h3>${g.name}</h3>
-          <p>${total} class${total === 1 ? '' : 'es'} · ${completedCount} completed</p>
-        </div>
-      </div>
+    <div class="batch-card" onclick="selectBatch('${g.key}')">
+      <div class="batch-num">${g.name.replace(/[^A-Z0-9]/gi, '').slice(0, 2).toUpperCase() || 'GN'}</div>
+      <h3>${g.name}</h3>
+      <div class="batch-card-top"><p>${total} class${total === 1 ? '' : 'es'} · ${completedCount} completed</p></div>
       <div class="batch-progress">
         <div class="bar"><div class="fill" style="width:${pct}%;"></div></div>
         <span>${pct}%</span>
@@ -236,17 +237,19 @@ function renderBatches(batchGroups) {
     </div>`;
   }).join('');
 
-  wrap.innerHTML = `<div class="batch-grid">${grid}</div><div id="batchPanel"></div>`;
-  renderBatchPanel();
+  wrap.innerHTML = `<div class="batch-grid">${grid}</div>`;
 }
 
 function renderBatchPanel() {
   const g = currentBatchGroups.find(x => x.key === activeBatchKey);
-  const panel = document.getElementById('batchPanel');
-  if (!g) { panel.innerHTML = ''; return; }
-  panel.innerHTML = `
+  const wrap = document.getElementById('batchWrap');
+  if (!g) { renderBatchGrid(); return; }
+  wrap.innerHTML = `
     <div class="batch-panel">
-      <div class="batch-panel-head">${g.name}</div>
+      <div class="batch-panel-head">
+        <button class="batch-panel-back" onclick="backToBatchGrid()">← Back</button>
+        <span>${g.name}</span>
+      </div>
       ${g.classes.length === 0 ? '<p style="padding:1.25rem 1.6rem; color:var(--text-faint); font-size:.9rem;">No classes available yet.</p>' : g.classes.map(c => {
         const done = completedClasses.includes(c.id);
         return `
@@ -265,7 +268,12 @@ function renderBatchPanel() {
 
 function selectBatch(key) {
   activeBatchKey = key;
-  renderBatches(currentBatchGroups);
+  renderBatchPanel();
+}
+
+function backToBatchGrid() {
+  activeBatchKey = null;
+  renderBatchGrid();
 }
 
 function toggleClassComplete(id) {
