@@ -11,18 +11,20 @@
   .progress-badge { background: var(--surface); border: 1px solid var(--border); border-radius: var(--radius-sm); padding: .9rem 1.25rem; text-align: right; }
   .progress-badge .label { color: var(--text-muted); font-size: .78rem; margin-bottom: .25rem; }
   .progress-badge .value { font: 800 1.4rem var(--font-display); color: var(--accent); }
-  .batch-card { background: var(--surface); border: 1px solid var(--border); border-radius: var(--radius); overflow: hidden; margin-bottom: 1.25rem; }
-  .batch-head { display: flex; justify-content: space-between; align-items: center; padding: 1.4rem 1.6rem; border-bottom: 1px solid var(--border); cursor: pointer; }
-  .batch-head-left { display: flex; align-items: center; gap: 1rem; }
+  .batch-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(240px, 1fr)); gap: 1.1rem; margin-bottom: 1.5rem; }
+  .batch-card { background: var(--surface); border: 1px solid var(--border); border-radius: var(--radius); padding: 1.5rem; cursor: pointer; transition: border-color .15s ease, transform .15s ease, box-shadow .15s ease; }
+  .batch-card:hover { border-color: var(--accent); transform: translateY(-2px); }
+  .batch-card.active { border-color: var(--accent); box-shadow: 0 0 0 1px var(--accent); }
+  .batch-card-top { display: flex; align-items: center; gap: 1rem; margin-bottom: 1.1rem; }
   .batch-num { width: 46px; height: 46px; border-radius: var(--radius-sm); background: var(--info-bg); color: var(--accent); display: flex; align-items: center; justify-content: center; font: 800 1rem var(--font-display); flex-shrink: 0; }
-  .batch-head h3 { font-size: 1.1rem; margin-bottom: .2rem; }
-  .batch-head p { color: var(--text-muted); font-size: .82rem; }
-  .batch-progress { display: flex; align-items: center; gap: .7rem; width: 160px; }
+  .batch-card h3 { font-size: 1.05rem; margin-bottom: .2rem; }
+  .batch-card-top p { color: var(--text-muted); font-size: .8rem; }
+  .batch-progress { display: flex; align-items: center; gap: .7rem; }
   .batch-progress .bar { flex: 1; height: 6px; background: rgba(255,255,255,.1); border-radius: 999px; overflow: hidden; }
   .batch-progress .bar .fill { height: 100%; background: linear-gradient(90deg, var(--accent), var(--accent-orange)); }
-  .batch-progress span { color: var(--text-muted); font-size: .78rem; white-space: nowrap; }
-  .batch-head-right { display: flex; align-items: center; gap: 1.25rem; }
-  .batch-arrow { color: var(--info); font-size: 1.1rem; transition: transform .2s; }
+  .batch-progress span { color: var(--text-muted); font-size: .78rem; white-space: nowrap; font-weight: 600; }
+  .batch-panel { background: var(--surface); border: 1px solid var(--border); border-radius: var(--radius); overflow: hidden; }
+  .batch-panel-head { padding: 1.1rem 1.6rem; border-bottom: 1px solid var(--border); font-weight: 700; font-size: 1rem; }
   .class-row { display: flex; align-items: center; gap: 1rem; padding: 1rem 1.6rem; border-bottom: 1px solid rgba(255,255,255,.05); cursor: pointer; }
   .class-row:last-child { border-bottom: none; }
   .class-icon { width: 28px; height: 28px; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: .85rem; flex-shrink: 0; }
@@ -173,8 +175,6 @@ auth.onAuthStateChanged(user => {
   });
 });
 
-let expandedGroups = {};
-
 function loadAllBatches(blockedCourses) {
   db.collection('courseContent').doc('main').get().then(contentDoc => {
     const allModules = contentDoc.exists ? (contentDoc.data().modules || []) : [];
@@ -196,7 +196,11 @@ function loadAllBatches(blockedCourses) {
   });
 }
 
+let currentBatchGroups = [];
+let activeBatchKey = null;
+
 function renderBatches(batchGroups) {
+  currentBatchGroups = batchGroups;
   const allClasses = batchGroups.flatMap(g => g.classes);
   const totalAll = allClasses.length;
   const completedAll = allClasses.filter(c => completedClasses.includes(c.id)).length;
@@ -208,56 +212,60 @@ function renderBatches(batchGroups) {
     return;
   }
 
-  wrap.innerHTML = batchGroups.map(g => {
+  if (!activeBatchKey || !batchGroups.some(g => g.key === activeBatchKey)) {
+    activeBatchKey = batchGroups[0].key;
+  }
+
+  const grid = batchGroups.map(g => {
     const total = g.classes.length;
     const completedCount = g.classes.filter(c => completedClasses.includes(c.id)).length;
     const pct = total ? Math.round((completedCount / total) * 100) : 0;
-    if (!(g.key in expandedGroups)) expandedGroups[g.key] = true;
-    const expanded = expandedGroups[g.key];
-    const rowsId = 'rows-' + g.key;
-    const arrowId = 'arrow-' + g.key;
-
     return `
-    <div class="batch-card">
-      <div class="batch-head" onclick="toggleGroup('${g.key}')">
-        <div class="batch-head-left">
-          <div class="batch-num">${g.name.replace(/[^A-Z0-9]/gi, '').slice(0, 2).toUpperCase() || 'GN'}</div>
-          <div>
-            <h3>${g.name}</h3>
-            <p>${total} class${total === 1 ? '' : 'es'} · ${completedCount} completed</p>
-          </div>
-        </div>
-        <div class="batch-head-right">
-          <div class="batch-progress">
-            <div class="bar"><div class="fill" style="width:${pct}%;"></div></div>
-            <span>${pct}%</span>
-          </div>
-          <span class="batch-arrow" id="${arrowId}" style="transform:rotate(${expanded ? 180 : 0}deg);">▾</span>
+    <div class="batch-card${g.key === activeBatchKey ? ' active' : ''}" onclick="selectBatch('${g.key}')">
+      <div class="batch-card-top">
+        <div class="batch-num">${g.name.replace(/[^A-Z0-9]/gi, '').slice(0, 2).toUpperCase() || 'GN'}</div>
+        <div>
+          <h3>${g.name}</h3>
+          <p>${total} class${total === 1 ? '' : 'es'} · ${completedCount} completed</p>
         </div>
       </div>
-      <div id="${rowsId}" style="display:${expanded ? 'block' : 'none'};">
-        ${total === 0 ? '<p style="padding:1.25rem 1.6rem; color:var(--text-faint); font-size:.9rem;">No classes available yet.</p>' : g.classes.map(c => {
-          const done = completedClasses.includes(c.id);
-          return `
-            <div class="class-row" onclick="toggleClassComplete('${c.id}')">
-              <div class="class-icon ${done ? 'done' : 'todo'}">${done ? '✓' : '○'}</div>
-              <div class="info">
-                <div class="title">${c.title}</div>
-                <div class="meta">${c.meta}</div>
-              </div>
-              <a href="${c.driveLink}" target="_blank" onclick="event.stopPropagation()"><button style="width:auto; margin:0; padding:.4rem .9rem; font-size:.8rem;">Watch</button></a>
-              <span class="status ${done ? 'done' : ''}">${done ? 'Completed' : 'Upcoming'}</span>
-            </div>`;
-        }).join('')}
+      <div class="batch-progress">
+        <div class="bar"><div class="fill" style="width:${pct}%;"></div></div>
+        <span>${pct}%</span>
       </div>
     </div>`;
   }).join('');
+
+  wrap.innerHTML = `<div class="batch-grid">${grid}</div><div id="batchPanel"></div>`;
+  renderBatchPanel();
 }
 
-function toggleGroup(key) {
-  expandedGroups[key] = !expandedGroups[key];
-  document.getElementById('rows-' + key).style.display = expandedGroups[key] ? 'block' : 'none';
-  document.getElementById('arrow-' + key).style.transform = expandedGroups[key] ? 'rotate(180deg)' : 'rotate(0deg)';
+function renderBatchPanel() {
+  const g = currentBatchGroups.find(x => x.key === activeBatchKey);
+  const panel = document.getElementById('batchPanel');
+  if (!g) { panel.innerHTML = ''; return; }
+  panel.innerHTML = `
+    <div class="batch-panel">
+      <div class="batch-panel-head">${g.name}</div>
+      ${g.classes.length === 0 ? '<p style="padding:1.25rem 1.6rem; color:var(--text-faint); font-size:.9rem;">No classes available yet.</p>' : g.classes.map(c => {
+        const done = completedClasses.includes(c.id);
+        return `
+          <div class="class-row" onclick="toggleClassComplete('${c.id}')">
+            <div class="class-icon ${done ? 'done' : 'todo'}">${done ? '✓' : '○'}</div>
+            <div class="info">
+              <div class="title">${c.title}</div>
+              <div class="meta">${c.meta}</div>
+            </div>
+            <a href="${c.driveLink}" target="_blank" onclick="event.stopPropagation()"><button style="width:auto; margin:0; padding:.4rem .9rem; font-size:.8rem;">Watch</button></a>
+            <span class="status ${done ? 'done' : ''}">${done ? 'Completed' : 'Upcoming'}</span>
+          </div>`;
+      }).join('')}
+    </div>`;
+}
+
+function selectBatch(key) {
+  activeBatchKey = key;
+  renderBatches(currentBatchGroups);
 }
 
 function toggleClassComplete(id) {
