@@ -375,7 +375,9 @@ loadSiteContent().then(content => {
   fbLoadApproved('service').then(list => {
     if (list.length) {
       const cardsHtml = list.map(fbCard).join('');
-      document.getElementById('serviceFeedbackRow').innerHTML = cardsHtml + cardsHtml;
+      const row = document.getElementById('serviceFeedbackRow');
+      if ((cardsHtml.match(/class="testimonial-card/g) || []).length >= 4) { row.innerHTML = cardsHtml + cardsHtml; }
+      else { row.innerHTML = cardsHtml; row.style.animation = 'none'; row.style.margin = '0 auto'; }
     } else {
       document.getElementById('serviceFeedbackRow').innerHTML = '<p style="text-align:center; color:var(--text-muted); flex:1;">No feedback yet — be the first to share.</p>';
     }
