@@ -38,17 +38,21 @@
   .service-card { background: var(--surface); border: 2px solid var(--border); border-radius: var(--radius); overflow: hidden; display: flex; flex-direction: column; cursor: pointer; box-shadow: var(--shadow-sm); transition: border-color .15s, transform .15s, box-shadow .15s; }
   .service-card:hover { transform: translateY(-3px); box-shadow: var(--shadow-md); }
   .service-card.selected { border-color: var(--accent); }
-  .service-card img { width: 100%; height: 180px; object-fit: cover; display: block; }
-  .service-card .body { padding: 1.5rem; display: flex; flex-direction: column; flex: 1; position: relative; }
-  .service-card .check { position: absolute; top: 1.25rem; right: 1.5rem; width: 26px; height: 26px; border-radius: 50%; border: 2px solid var(--border-strong); background: var(--bg); display: flex; align-items: center; justify-content: center; font-size: .85rem; color: transparent; }
+  .service-card img { width: 100%; height: 150px; object-fit: cover; display: block; }
+  .service-card .thumb { position: relative; width: 100%; height: 150px; display: flex; align-items: center; justify-content: center; font-size: 2.6rem; flex-shrink: 0; }
+  .service-card .thumb .tag { position: absolute; top: .7rem; left: .7rem; background: rgba(255,255,255,.92); color: var(--text); font: 700 .68rem var(--font-display); padding: .3rem .65rem; border-radius: 999px; box-shadow: var(--shadow-sm); }
+  .service-card .body { padding: 1.25rem 1.4rem 1.4rem; display: flex; flex-direction: column; flex: 1; position: relative; }
+  .service-card .check { position: absolute; top: 1.1rem; right: 1.3rem; width: 26px; height: 26px; border-radius: 50%; border: 2px solid var(--border-strong); background: var(--bg); display: flex; align-items: center; justify-content: center; font-size: .85rem; color: transparent; }
   .service-card.selected .check { background: var(--accent); border-color: var(--accent); color: #fff; }
-  .service-card h4 { font-size: 1.1rem; margin-bottom: .5rem; padding-right: 1.5rem; }
-  .service-card p.desc { color: var(--text-soft); font-size: .9rem; line-height: 1.6; }
+  .service-card h4 { font-size: 1.05rem; margin-bottom: .4rem; padding-right: 1.5rem; }
+  .service-card p.desc { color: var(--text-soft); font-size: .87rem; line-height: 1.55; }
   .service-card ol.points { margin: .5rem 0 0; padding-left: 1.2rem; color: var(--text-soft); font-size: .85rem; line-height: 1.7; }
   .see-more-btn { width: auto; margin: .6rem 0 0; padding: 0; background: none; border: none; color: var(--info); font-size: .82rem; font-weight: 600; cursor: pointer; text-align: left; }
-  .service-price-row { display: flex; align-items: baseline; gap: .6rem; margin: .9rem 0 0; }
-  .service-price { color: var(--accent-orange); font: 800 1.3rem var(--font-display); }
-  .service-price-old { text-decoration: line-through; text-decoration-color: var(--danger); color: var(--text); font-size: .95rem; font-weight: 700; }
+  .service-price-row { display: flex; align-items: center; justify-content: space-between; gap: .6rem; margin-top: 1rem; padding-top: .9rem; border-top: 1px solid var(--border); }
+  .service-price-row .one-time { display: flex; align-items: center; gap: .4rem; color: var(--text-muted); font-size: .78rem; font-weight: 600; }
+  .service-price-wrap { display: flex; align-items: baseline; gap: .5rem; }
+  .service-price { color: var(--accent-orange); font: 800 1.25rem var(--font-display); }
+  .service-price-old { text-decoration: line-through; text-decoration-color: var(--danger); color: var(--text-faint); font-size: .85rem; font-weight: 700; }
 
   .plan-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(300px, 1fr)); gap: 1.5rem; max-width: 900px; margin: 0 auto; }
   .plan-card { background: var(--surface-alt); border: 1.5px solid rgba(253,125,1,.35); border-radius: var(--radius-lg); padding: 1.75rem; display: flex; flex-direction: column; box-shadow: var(--shadow-sm); transition: box-shadow .15s; }
@@ -241,6 +245,22 @@ let allPlans = [];
 let currency = 'SAR';
 const selected = new Set();
 
+const SERVICE_THUMBS = [
+  { match: /ppc|sponsored|ad(s|vert)/i, emoji: '📈', gradient: 'linear-gradient(135deg,#2563eb,#5fd0ff)', tag: 'Advertising' },
+  { match: /design|image|a\+|content|store/i, emoji: '🎨', gradient: 'linear-gradient(135deg,#fd7d01,#ffab5c)', tag: 'Design' },
+  { match: /trademark|registration|brand registr|ltd|confirm statement|renewal/i, emoji: '📄', gradient: 'linear-gradient(135deg,#16a34a,#5fe0a0)', tag: 'Legal & Setup' },
+  { match: /bank|paypal|payoneer|stripe|wise/i, emoji: '🏦', gradient: 'linear-gradient(135deg,#7c3aed,#c084fc)', tag: 'Finance' },
+  { match: /keyword|listing|optimi/i, emoji: '🔍', gradient: 'linear-gradient(135deg,#0891b2,#67e8f9)', tag: 'Optimization' },
+  { match: /research|supplier/i, emoji: '🔬', gradient: 'linear-gradient(135deg,#db2777,#fb7185)', tag: 'Research' },
+  { match: /coach|call|consult/i, emoji: '🎧', gradient: 'linear-gradient(135deg,#2563eb,#fd7d01)', tag: 'Coaching' },
+  { match: /account setup|seller account|reactivat/i, emoji: '🛠️', gradient: 'linear-gradient(135deg,#334155,#64748b)', tag: 'Account' },
+  { match: /writ|title|bullet|description/i, emoji: '✍️', gradient: 'linear-gradient(135deg,#ca8a04,#fde047)', tag: 'Copywriting' }
+];
+function serviceThumb(title) {
+  const found = SERVICE_THUMBS.find(t => t.match.test(title || ''));
+  return found || { emoji: '🛒', gradient: 'linear-gradient(135deg,#2563eb,#fd7d01)', tag: 'Service' };
+}
+
 loadSiteContent().then(content => {
   const c = content.course;
   currency = c.currency || 'SAR';
@@ -273,9 +293,13 @@ loadSiteContent().then(content => {
   }
 
   document.getElementById('serviceGrid').innerHTML = allServices.length
-    ? allServices.map((s, i) => `
+    ? allServices.map((s, i) => {
+        const thumb = serviceThumb(s.title);
+        return `
       <div class="service-card" id="serviceCard${i}" onclick="toggleService(${i})">
-        ${s.imageUrl ? `<img src="${driveImgUrl(s.imageUrl)}" alt="${s.title}">` : ''}
+        ${s.imageUrl
+          ? `<img src="${driveImgUrl(s.imageUrl)}" alt="${s.title}">`
+          : `<div class="thumb" style="background:${thumb.gradient};"><span class="tag">${thumb.tag}</span>${thumb.emoji}</div>`}
         <div class="body">
           <div class="check">✓</div>
           <h4>${s.title}</h4>
@@ -283,9 +307,14 @@ loadSiteContent().then(content => {
           ${(s.points && s.points.length) ? `
             <button type="button" class="see-more-btn" onclick="event.stopPropagation(); togglePoints(${i})" id="seeMoreBtn${i}">See More ▾</button>
             <ol class="points" id="servicePoints${i}" style="display:none;">${s.points.map(p => `<li>${p}</li>`).join('')}</ol>` : ''}
-          ${s.price ? `<div class="service-price-row">${s.oldPrice ? `<span class="service-price-old">${s.oldPrice} ${currency}</span>` : ''}<span class="service-price">${s.price} ${currency}</span></div>` : ''}
+          ${s.price ? `
+            <div class="service-price-row">
+              <span class="one-time">🏷️ One-time</span>
+              <span class="service-price-wrap">${s.oldPrice ? `<span class="service-price-old">${s.oldPrice} ${currency}</span>` : ''}<span class="service-price">${s.price} ${currency}</span></span>
+            </div>` : ''}
         </div>
-      </div>`).join('')
+      </div>`;
+      }).join('')
     : '<p style="text-align:center; color:var(--text-muted); grid-column:1/-1;">Services coming soon.</p>';
 
   const bankBox = document.getElementById('bankBox');
