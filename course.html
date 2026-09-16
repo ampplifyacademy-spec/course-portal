@@ -9,24 +9,30 @@
 <link rel="stylesheet" href="css/style.css">
 <style>
   body.course-page { display: block; padding: 0; }
-  .cnav { display: flex; align-items: center; justify-content: space-between; padding: 1.75rem 4rem; flex-wrap: wrap; gap: 1rem; position: relative; }
+  .cnav { display: flex; align-items: center; justify-content: space-between; padding: 1.25rem 4rem; flex-wrap: wrap; gap: 1rem; position: sticky; top: 0; z-index: 50; background: rgba(255,255,255,.9); backdrop-filter: blur(8px); box-shadow: 0 1px 0 var(--border); }
   .cnav-links { display: flex; gap: 2.25rem; font: 600 .95rem var(--font-body); color: var(--text-soft); }
   .cnav-links a { color: inherit; text-decoration: none; cursor: pointer; }
   .cnav-links a:hover { color: var(--accent); }
   .cnav button, .cta-band button { width: auto; margin-top: 0; }
-  .cnav-right { display: flex; align-items: center; gap: .75rem; }
+  .cnav-cta { border-radius: 999px !important; padding: .7rem 1.5rem !important; }
+  .cnav-right { display: flex; align-items: center; gap: 1rem; }
   .menu-toggle { display: none; background: none; border: 1px solid var(--border-strong); color: var(--text); font-size: 1.2rem; line-height: 1; padding: .5rem .75rem; border-radius: var(--radius-sm); cursor: pointer; }
   .csection { padding: 5rem 4rem; }
-  .chero { position: relative; text-align: center; padding: 3.75rem 2rem 6rem; overflow: hidden; }
-  .chero::before { content: ''; position: absolute; top: -100px; left: 50%; transform: translateX(-50%); width: 900px; height: 600px; background: radial-gradient(circle, rgba(37,99,235,.3) 0%, rgba(37,99,235,0) 70%); z-index: 0; }
-  .chero > * { position: relative; z-index: 2; }
+  .chero { position: relative; padding: 4.5rem 4rem 5.5rem; overflow: hidden; }
+  .chero-grid { position: relative; z-index: 2; display: grid; grid-template-columns: 1.05fr .95fr; gap: 3.5rem; align-items: center; max-width: 1200px; margin: 0 auto; }
   .chero-badge { display: inline-flex; align-items: center; gap: .5rem; background: var(--info-bg); border: 1px solid rgba(37,99,235,.3); color: var(--info); font: 600 .8rem var(--font-body); padding: .5rem 1rem; border-radius: 999px; margin-bottom: 1.5rem; }
-  .chero h1 { font-size: clamp(2.2rem, 5vw, 3.7rem); font-weight: 800; line-height: 1.1; max-width: 900px; margin: 0 auto 1.25rem; }
+  .chero h1 { font-size: clamp(2rem, 4vw, 3.2rem); font-weight: 800; line-height: 1.14; margin-bottom: 1.25rem; }
   .chero h1 span { color: var(--accent-orange); }
-  .chero p { font-size: 1.1rem; color: var(--text-soft); max-width: 620px; margin: 0 auto 2.2rem; line-height: 1.6; }
-  .chero-ctas { display: flex; gap: 1rem; justify-content: center; flex-wrap: wrap; margin-bottom: 3.25rem; }
+  .chero p { font-size: 1.08rem; color: var(--text-soft); max-width: 520px; margin-bottom: 2rem; line-height: 1.6; }
+  .chero-ctas { display: flex; gap: 1rem; flex-wrap: wrap; margin-bottom: 2.25rem; }
   .chero-ctas button, .chero-ctas a.btn { width: auto; margin-top: 0; padding: 1rem 2rem; }
-  .chero img { width: 240px; height: 240px; object-fit: cover; border-radius: 50%; border: 4px solid rgba(37,99,235,.4); box-shadow: 0 30px 60px rgba(0,0,0,.5); }
+  .chero-trust { display: flex; align-items: center; gap: .6rem; font-size: .88rem; color: var(--text-muted); font-weight: 600; }
+  .chero-trust span.dot { width: 8px; height: 8px; border-radius: 50%; background: var(--success); display: inline-block; }
+  .chero-media { position: relative; display: flex; align-items: center; justify-content: center; min-height: 320px; }
+  .chero-shape { position: absolute; width: 320px; height: 320px; border-radius: 42% 58% 55% 45% / 45% 42% 58% 55%; background: linear-gradient(135deg, var(--accent), var(--accent-orange)); opacity: .16; z-index: 0; }
+  .chero img { position: relative; z-index: 1; width: 280px; height: 280px; object-fit: cover; border-radius: 45% 55% 52% 48% / 48% 45% 55% 52%; border: 6px solid var(--surface); box-shadow: var(--shadow-lg); }
+  .chero-chip { position: absolute; z-index: 2; bottom: 8%; left: -10px; background: var(--surface); border: 1px solid var(--border); border-radius: var(--radius); padding: .7rem 1.1rem; box-shadow: var(--shadow-md); font: 700 .82rem var(--font-display); display: flex; align-items: center; gap: .5rem; }
+  .chero-chip.top { top: 6%; right: -10px; bottom: auto; left: auto; }
   .instructor-strip { padding: 3rem 4rem; display: flex; justify-content: center; align-items: center; gap: 2rem; flex-wrap: wrap; }
   .instructor-strip .inner { max-width: 720px; }
   .instructor-strip .eyebrow { color: var(--accent-orange); font: 700 .85rem var(--font-display); margin-bottom: .5rem; }
@@ -107,8 +113,12 @@
     .cnav button { padding: .6rem 1.1rem; font-size: .85rem; }
     .csection { padding: 3rem 1.25rem; }
     .chero { padding: 2.5rem 1.25rem 3.5rem; }
+    .chero-grid { grid-template-columns: 1fr; gap: 2.5rem; text-align: center; }
+    .chero p { margin-left: auto; margin-right: auto; }
     .chero-ctas { flex-direction: column; align-items: stretch; }
     .chero-ctas button, .chero-ctas a.btn { padding: .85rem 1.25rem; font-size: .9rem; width: 100%; }
+    .chero-trust { justify-content: center; }
+    .chero-media { order: -1; }
     .instructor-strip { padding: 2rem 1.25rem; }
     .cta-band { padding: 2.5rem 1.25rem; }
     .cta-band button { padding: .8rem 1.5rem; font-size: .9rem; }
@@ -132,19 +142,30 @@
   </div>
   <div class="cnav-right">
     <div class="nav-social" id="navSocial"></div>
+    <button class="cnav-cta" onclick="location.href='signup.html'">Enroll Now</button>
     <button class="menu-toggle" onclick="toggleMobileNav()" id="menuToggleBtn">☰ Menu</button>
   </div>
 </nav>
 
 <section class="chero">
-  <span class="chero-badge">🚀 Trusted by 500+ Amazon sellers</span>
-  <h1 id="heroTitle">Build a Real Amazon Business — <span id="heroHighlight">Without the Guesswork</span></h1>
-  <p id="heroSubtitle">A step-by-step Amazon Selling Course that takes you from zero to your first profitable product — sourcing, listings, ads, and scaling, all in one place.</p>
-  <div class="chero-ctas">
-    <button onclick="location.href='signup.html'" id="heroEnrollBtn">Enroll Now — 320 SAR</button>
-    <button class="secondary" onclick="document.getElementById('curriculum').scrollIntoView({behavior:'smooth'})">View Curriculum</button>
+  <div class="chero-grid">
+    <div class="chero-content">
+      <span class="chero-badge">🚀 Trusted by 500+ Amazon sellers</span>
+      <h1 id="heroTitle">Build a Real Amazon Business — <span id="heroHighlight">Without the Guesswork</span></h1>
+      <p id="heroSubtitle">A step-by-step Amazon Selling Course that takes you from zero to your first profitable product — sourcing, listings, ads, and scaling, all in one place.</p>
+      <div class="chero-ctas">
+        <button onclick="location.href='signup.html'" id="heroEnrollBtn">Enroll Now — 320 SAR</button>
+        <button class="secondary" onclick="document.getElementById('curriculum').scrollIntoView({behavior:'smooth'})">View Curriculum</button>
+      </div>
+      <div class="chero-trust"><span class="dot"></span> Trusted by 500+ students · one-time payment, lifetime access</div>
+    </div>
+    <div class="chero-media">
+      <div class="chero-shape"></div>
+      <img src="assets/instructor.png" alt="Instructor" id="heroImg">
+      <div class="chero-chip top">🎓 6+ Modules</div>
+      <div class="chero-chip">⭐ 4.8 Rated by Students</div>
+    </div>
   </div>
-  <img src="assets/instructor.png" alt="Instructor" id="heroImg">
 </section>
 
 <div class="instructor-strip">
