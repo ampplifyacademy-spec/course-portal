@@ -13,7 +13,7 @@ function driveImgUrl(url) {
 }
 
 const SITE_CONTENT_DEFAULTS = {
-  theme: { accent: '#00b5fe', accentOrange: '#fd7d01', bg: '#0b0e1a' },
+  theme: { accent: '#2563eb', accentOrange: '#fd7d01', bg: '#ffffff' },
   social: { facebook: '', instagram: '', whatsapp: '' },
   footer: { tagline: '', email: '', phone: '', address: '' },
   bankDetails: {

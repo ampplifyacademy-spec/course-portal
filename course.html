@@ -18,15 +18,15 @@
   .menu-toggle { display: none; background: none; border: 1px solid var(--border-strong); color: var(--text); font-size: 1.2rem; line-height: 1; padding: .5rem .75rem; border-radius: var(--radius-sm); cursor: pointer; }
   .csection { padding: 5rem 4rem; }
   .chero { position: relative; text-align: center; padding: 3.75rem 2rem 6rem; overflow: hidden; }
-  .chero::before { content: ''; position: absolute; top: -100px; left: 50%; transform: translateX(-50%); width: 900px; height: 600px; background: radial-gradient(circle, rgba(0,181,254,.3) 0%, rgba(0,181,254,0) 70%); z-index: 0; }
+  .chero::before { content: ''; position: absolute; top: -100px; left: 50%; transform: translateX(-50%); width: 900px; height: 600px; background: radial-gradient(circle, rgba(37,99,235,.3) 0%, rgba(37,99,235,0) 70%); z-index: 0; }
   .chero > * { position: relative; z-index: 2; }
-  .chero-badge { display: inline-flex; align-items: center; gap: .5rem; background: var(--info-bg); border: 1px solid rgba(0,181,254,.3); color: var(--info); font: 600 .8rem var(--font-body); padding: .5rem 1rem; border-radius: 999px; margin-bottom: 1.5rem; }
+  .chero-badge { display: inline-flex; align-items: center; gap: .5rem; background: var(--info-bg); border: 1px solid rgba(37,99,235,.3); color: var(--info); font: 600 .8rem var(--font-body); padding: .5rem 1rem; border-radius: 999px; margin-bottom: 1.5rem; }
   .chero h1 { font-size: clamp(2.2rem, 5vw, 3.7rem); font-weight: 800; line-height: 1.1; max-width: 900px; margin: 0 auto 1.25rem; }
   .chero h1 span { color: var(--accent-orange); }
   .chero p { font-size: 1.1rem; color: var(--text-soft); max-width: 620px; margin: 0 auto 2.2rem; line-height: 1.6; }
   .chero-ctas { display: flex; gap: 1rem; justify-content: center; flex-wrap: wrap; margin-bottom: 3.25rem; }
   .chero-ctas button, .chero-ctas a.btn { width: auto; margin-top: 0; padding: 1rem 2rem; }
-  .chero img { width: 240px; height: 240px; object-fit: cover; border-radius: 50%; border: 4px solid rgba(0,181,254,.4); box-shadow: 0 30px 60px rgba(0,0,0,.5); }
+  .chero img { width: 240px; height: 240px; object-fit: cover; border-radius: 50%; border: 4px solid rgba(37,99,235,.4); box-shadow: 0 30px 60px rgba(0,0,0,.5); }
   .instructor-strip { padding: 3rem 4rem; display: flex; justify-content: center; align-items: center; gap: 2rem; flex-wrap: wrap; }
   .instructor-strip .inner { max-width: 720px; }
   .instructor-strip .eyebrow { color: var(--accent-orange); font: 700 .85rem var(--font-display); margin-bottom: .5rem; }
@@ -53,7 +53,7 @@
   @keyframes testimonial-marquee { from { transform: translateX(0); } to { transform: translateX(-50%); } }
   .testimonial-card { flex: 0 0 auto; width: 320px; background: var(--surface); border: 1px solid var(--border); border-radius: var(--radius); padding: 1.75rem; }
   .testimonial-card .stars { color: var(--accent-orange); margin-bottom: .75rem; }
-  .testimonial-card p { font-size: .92rem; line-height: 1.7; color: #d4d9e6; margin-bottom: 1.1rem; }
+  .testimonial-card p { font-size: .92rem; line-height: 1.7; color: var(--text-soft); margin-bottom: 1.1rem; }
   .video-review-wrap { max-width: 1200px; margin: 0 auto; position: relative; display: flex; align-items: center; gap: .75rem; }
   .video-review-row { overflow-x: auto; scroll-behavior: smooth; scrollbar-width: none; }
   .video-review-row::-webkit-scrollbar { display: none; }
@@ -67,7 +67,7 @@
   .testimonial-card .tname { font: 700 .95rem var(--font-display); }
   .testimonial-card .tresult { color: var(--info); font-size: .82rem; }
   .pricing-wrap { text-align: center; }
-  .pricing-card { max-width: 460px; margin: 0 auto; background: linear-gradient(180deg, var(--surface), #0d1120); border: 1.5px solid rgba(255,153,0,.4); border-radius: var(--radius-lg); padding: 2.5rem; box-shadow: 0 30px 60px rgba(0,0,0,.4); }
+  .pricing-card { max-width: 460px; margin: 0 auto; background: linear-gradient(180deg, var(--surface), var(--surface-alt)); border: 1.5px solid rgba(253,125,1,.4); border-radius: var(--radius-lg); padding: 2.5rem; box-shadow: var(--shadow-lg); }
   .pricing-card .eyebrow { color: var(--accent-orange); font: 700 .85rem var(--font-display); margin-bottom: .5rem; }
   .price-row { display: flex; align-items: baseline; justify-content: center; gap: .75rem; margin-bottom: .3rem; }
   .price-old { text-decoration: line-through; text-decoration-color: var(--danger); color: var(--text); font-size: 1.4rem; font-weight: 700; }
@@ -81,7 +81,7 @@
   .offer-countdown-clock .unit span { display: block; font-size: .65rem; color: var(--text-muted); text-transform: uppercase; letter-spacing: .03em; }
   .offer-end-date { display: block; margin-top: .6rem; color: var(--danger); font: 700 .78rem var(--font-body); text-transform: uppercase; letter-spacing: .04em; }
   .price-features { text-align: left; display: flex; flex-direction: column; gap: .75rem; margin-bottom: 1.75rem; }
-  .price-features div { display: flex; gap: .6rem; align-items: flex-start; font-size: .92rem; color: #d4d9e6; }
+  .price-features div { display: flex; gap: .6rem; align-items: flex-start; font-size: .92rem; color: var(--text-soft); }
   .price-features span { color: var(--accent); }
   .feedback-form-wrap { max-width: 480px; margin: 3rem auto 0; background: var(--surface); border: 1px solid var(--border); border-radius: var(--radius); padding: 1.75rem; }
   .feedback-form-wrap h3 { font-size: 1.2rem; margin-bottom: .3rem; }
@@ -94,7 +94,7 @@
   details > summary::-webkit-details-marker { display: none; }
   details summary span { color: var(--info); }
   details p { color: var(--text-soft); font-size: .92rem; line-height: 1.7; margin-top: .9rem; }
-  .cta-band { background: linear-gradient(135deg, rgba(0,181,254,.13), rgba(253,125,1,.13)); padding: 3.5rem 4rem; text-align: center; }
+  .cta-band { background: linear-gradient(135deg, rgba(37,99,235,.13), rgba(253,125,1,.13)); padding: 3.5rem 4rem; text-align: center; }
   .cta-band h3 { font-size: 1.9rem; margin-bottom: .75rem; }
   .cta-band button { width: auto; margin: 0 auto; padding: 1rem 2.25rem; }
   @media (max-width: 760px) {
@@ -161,13 +161,13 @@
   <div class="module-grid" id="moduleGrid"></div>
 </section>
 
-<section class="csection" style="background:#0d1120;">
+<section class="csection" style="background:var(--surface-alt);">
   <h2>Real Results From Real Students</h2>
   <p class="lead">&nbsp;</p>
   <div class="testimonial-row"><div class="testimonial-track" id="testimonialRow"></div></div>
 </section>
 
-<section class="csection" id="videoReviews" style="display:none; background:#0d1120;">
+<section class="csection" id="videoReviews" style="display:none; background:var(--surface-alt);">
   <h2>Video Reviews</h2>
   <p class="lead">Hear directly from our students, in their own words.</p>
   <div class="video-review-wrap">
@@ -177,7 +177,7 @@
   </div>
 </section>
 
-<section class="csection" style="background:#0d1120;">
+<section class="csection" style="background:var(--surface-alt);">
   <div class="feedback-form-wrap">
     <h3>Share Your Feedback</h3>
     <p class="hint">No account needed. Your feedback will appear above once we approve it.</p>
