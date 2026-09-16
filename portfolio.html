@@ -61,6 +61,12 @@
   .folder-heading { text-align: center; margin-bottom: 2rem; }
   .section-label { text-align: center; color: var(--text-muted); font: 700 .85rem var(--font-display); letter-spacing: .04em; text-transform: uppercase; margin: 3rem 0 1.5rem; }
   .section-label:first-child { margin-top: 0; }
+  .work-type-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(260px, 1fr)); gap: 1.5rem; max-width: 1100px; margin: 0 auto 1rem; }
+  .work-type { background: var(--surface); border: 1px solid var(--border); border-radius: var(--radius); padding: 1.4rem; }
+  .work-type h4 { font-size: 1rem; margin-bottom: .5rem; color: var(--accent-orange); }
+  .work-type p { color: var(--text-soft); font-size: .88rem; line-height: 1.65; }
+  .portfolio-card .meta { color: var(--text-muted); font-size: .78rem; margin-bottom: .35rem; }
+  .portfolio-card .result { color: var(--accent); font-weight: 700; font-size: .85rem; margin-top: .5rem; }
   .cta-band { background: linear-gradient(135deg, rgba(37,99,235,.13), rgba(253,125,1,.13)); padding: 3.5rem 4rem; text-align: center; }
   .cta-band h3 { font-size: 1.9rem; margin-bottom: .75rem; }
   .cta-band button { width: auto; margin: 0 auto; padding: 1rem 2.25rem; }
@@ -100,9 +106,17 @@
   </div>
 </nav>
 
-<section class="csection" style="padding-top:3.5rem;">
+<section class="csection" style="padding-top:3.5rem; padding-bottom:0;">
   <h2>Our Portfolio</h2>
-  <p class="lead">A look at work we've done.</p>
+  <p class="lead">Work completed for paying Amazon seller clients by Ampplify Academy (a trading name of Rakiza Company LTD, London, United Kingdom) across the USA, Saudi Arabia and UAE marketplaces. Each image below is a real deliverable &mdash; listing images, A+ content, account cases and brand filings.</p>
+  <div class="work-type-grid">
+    <div class="work-type"><h4>Listing images &amp; A+ content</h4><p>Main images, infographics, lifestyle images and Premium A+ modules designed and published on client listings.</p></div>
+    <div class="work-type"><h4>Account &amp; compliance cases</h4><p>Suspended-account appeals and reactivations, Brand Registry applications, trademark filings and company registrations.</p></div>
+    <div class="work-type"><h4>Store &amp; advertising setup</h4><p>Amazon Storefront pages, keyword-researched listings and Sponsored Products campaigns built for client accounts.</p></div>
+  </div>
+</section>
+
+<section class="csection" style="padding-top:2.5rem;">
 
   <div id="folderListView">
     <div id="ungroupedSection"></div>
@@ -144,14 +158,15 @@
       <a href="success-stories.html">Success Stories</a>
       <a href="partnership.html">Partnership</a>
       <a href="partnership.html">Terms &amp; Conditions</a>
+      <a href="privacy.html">Privacy Policy</a>
     </div>
     <div class="footer-col">
       <h4>Contact</h4>
-      <a href="#" onclick="event.preventDefault(); toggleFooterContact()">📩 Contact Us</a>
-      <div id="footerContactDetails" style="display:none;">
-        <p id="footerEmail" style="display:none;"></p>
-        <p id="footerPhone" style="display:none;"></p>
-        <p id="footerAddress" style="display:none;"></p>
+      <div id="footerContactDetails">
+        <p id="footerEmail"><a href="mailto:ampplifyacademy@gmail.com">&#9993;&#65039; ampplifyacademy@gmail.com</a></p>
+        <p id="footerPhone"><a href="tel:+8801409207525">&#128222; +880 1409 207525</a></p>
+        <p><a href="https://wa.me/8801409207525" target="_blank" rel="noopener">&#128172; WhatsApp us</a></p>
+        <p id="footerAddress">&#128205; Rakiza Company LTD, 128 City Road, London, EC1V 2NX, United Kingdom</p>
       </div>
     </div>
   </div>
@@ -175,10 +190,20 @@ let ungroupedItems = [];
 let activeLightboxItems = [];
 
 function itemCard(p, i) {
+  // Amazon's reviewer needs to know what each piece of work actually was, so a
+  // card shows the caption fields (client, what was done, result, date) whenever
+  // the admin has filled them in.
+  const meta = [p.client, p.date].filter(Boolean).join(' · ');
+  const hasText = p.title || p.desc || meta || p.result;
   return `
     <div class="portfolio-card" onclick="openLightbox(${i})">
       ${p.imageUrl ? `<div class="img-wrap"><img src="${driveImgUrl(p.imageUrl)}" alt="${p.title || 'Portfolio image'}">${p.videoUrl ? '<span class="video-badge">▶ Video</span>' : ''}</div>` : (p.videoUrl ? `<div class="img-wrap"><div style="position:absolute; inset:0; display:flex; align-items:center; justify-content:center; font-size:2.5rem; background:var(--surface-alt);">▶</div></div>` : '')}
-      ${(p.title || p.desc) ? `<div class="body">${p.title ? `<h4>${p.title}</h4>` : ''}${p.desc ? `<p>${p.desc}</p>` : ''}</div>` : ''}
+      ${hasText ? `<div class="body">
+        ${p.title ? `<h4>${p.title}</h4>` : ''}
+        ${meta ? `<p class="meta">${meta}</p>` : ''}
+        ${p.desc ? `<p>${p.desc}</p>` : ''}
+        ${p.result ? `<p class="result">Result: ${p.result}</p>` : ''}
+      </div>` : ''}
     </div>`;
 }
 
@@ -211,13 +236,6 @@ loadSiteContent().then(content => {
 
   if (!ungroupedItems.length && !allFolders.length) {
     document.getElementById('ungroupedSection').innerHTML = '<p style="text-align:center; color:var(--text-muted);">Portfolio coming soon.</p>';
-  }
-
-  const firstTool = (content.course.tools || [])[0];
-  if (firstTool && firstTool.link) {
-    const link = document.getElementById('navToolsLink');
-    link.href = firstTool.link;
-    link.target = '_blank';
   }
 
   renderSocialNav(content.social, 'navSocial');

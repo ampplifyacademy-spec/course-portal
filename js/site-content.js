@@ -15,7 +15,7 @@ function driveImgUrl(url) {
 const SITE_CONTENT_DEFAULTS = {
   theme: { accent: '#2563eb', accentOrange: '#fd7d01', bg: '#ffffff' },
   social: { facebook: '', instagram: '', whatsapp: '' },
-  footer: { tagline: '', email: '', phone: '', address: '' },
+  footer: { tagline: '', email: 'ampplifyacademy@gmail.com', phone: '+880 1409 207525', address: 'Rakiza Company LTD, 128 City Road, London, EC1V 2NX, United Kingdom' },
   bankDetails: {
     accounts: [
       { bankName: '', accountName: '', accountNumber: '', iban: '' }
@@ -158,15 +158,20 @@ function renderSiteFooter(footer, social) {
   const el = document.getElementById('siteFooter');
   if (!el) return;
   const f = footer || {};
-  const setLine = (id, value, prefix) => {
+  // Each page ships the contact details as plain HTML so they stay readable with
+  // JavaScript off (Amazon's Solution Provider review loads the site that way).
+  // Firestore values only overwrite that markup when the admin has set them.
+  const setLine = (id, value, prefix, href) => {
     const line = document.getElementById(id);
-    if (!line) return;
-    if (value) { line.textContent = prefix ? prefix + value : value; line.style.display = ''; }
-    else { line.style.display = 'none'; }
+    if (!line || !value) return;
+    line.innerHTML = href
+      ? '<a href="' + href + value.replace(/\s/g, '') + '">' + prefix + value + '</a>'
+      : prefix + value;
+    line.style.display = '';
   };
   setLine('footerTagline', f.tagline);
-  setLine('footerEmail', f.email, '✉️ ');
-  setLine('footerPhone', f.phone, '📞 ');
+  setLine('footerEmail', f.email, '✉️ ', 'mailto:');
+  setLine('footerPhone', f.phone, '📞 ', 'tel:');
   setLine('footerAddress', f.address, '📍 ');
   const copyright = document.getElementById('footerCopyright');
   // The registered company name belongs in the footer, not only in the privacy
@@ -177,9 +182,14 @@ function renderSiteFooter(footer, social) {
   renderSocialNav(social, 'footerSocial');
 }
 
-function toggleFooterContact() {
-  const box = document.getElementById('footerContactDetails');
-  if (box) box.style.display = box.style.display === 'none' ? 'block' : 'none';
+// Video testimonials appear on course.html and on success-stories.html, so the
+// card markup lives here instead of being copied into both pages.
+function videoReviewCards(list) {
+  return (list || []).map(v => `
+    <div class="video-review-card">
+      <div class="video-review-frame"><iframe src="${fbVideoEmbedUrl(v.videoUrl)}" scrolling="no" frameborder="0" allowfullscreen="true" allow="autoplay; clipboard-write; encrypted-media; picture-in-picture; web-share"></iframe></div>
+      ${v.name ? `<div class="video-review-name">${v.name}</div>` : ''}
+    </div>`).join('');
 }
 
 function fbVideoEmbedUrl(videoUrl) {
