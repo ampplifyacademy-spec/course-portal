@@ -42,11 +42,11 @@
   .chero-ctas button, .chero-ctas a.btn { width: auto; margin-top: 0; padding: 1rem 2rem; }
   .chero-trust { display: flex; align-items: center; gap: .6rem; font-size: .88rem; color: var(--text-muted); font-weight: 600; }
   .chero-trust span.dot { width: 8px; height: 8px; border-radius: 50%; background: var(--success); display: inline-block; }
-  .chero-media { position: relative; display: flex; align-items: center; justify-content: center; min-height: 320px; }
-  .chero-shape { position: absolute; width: 320px; height: 320px; border-radius: 42% 58% 55% 45% / 45% 42% 58% 55%; background: linear-gradient(135deg, var(--accent), var(--accent-orange)); opacity: .16; z-index: 0; }
-  .chero img { position: relative; z-index: 1; width: 280px; height: 280px; object-fit: cover; border-radius: 45% 55% 52% 48% / 48% 45% 55% 52%; border: 6px solid var(--surface); box-shadow: var(--shadow-lg); }
-  .chero-chip { position: absolute; z-index: 2; bottom: 8%; left: -10px; background: var(--surface); border: 1px solid var(--border); border-radius: var(--radius); padding: .7rem 1.1rem; box-shadow: var(--shadow-md); font: 700 .82rem var(--font-display); display: flex; align-items: center; gap: .5rem; }
-  .chero-chip.top { top: 6%; right: -10px; bottom: auto; left: auto; }
+  .chero-media { position: relative; display: flex; align-items: flex-end; justify-content: center; min-height: 420px; }
+  .chero-shape { position: absolute; bottom: 0; width: 360px; height: 360px; border-radius: 42% 58% 55% 45% / 45% 42% 58% 55%; background: linear-gradient(135deg, var(--accent), var(--accent-orange)); opacity: .16; z-index: 0; }
+  .chero img { position: relative; z-index: 1; width: 100%; max-width: 380px; height: 440px; object-fit: contain; object-position: bottom; filter: drop-shadow(0 20px 30px rgba(16,24,40,.18)); }
+  .chero-chip { position: absolute; z-index: 2; bottom: 10%; left: 0; background: var(--surface); border: 1px solid var(--border); border-radius: var(--radius); padding: .7rem 1.1rem; box-shadow: var(--shadow-md); font: 700 .82rem var(--font-display); display: flex; align-items: center; gap: .5rem; }
+  .chero-chip.top { top: 8%; right: 0; bottom: auto; left: auto; }
   .instructor-strip { padding: 3rem 4rem; display: flex; justify-content: center; align-items: center; gap: 2rem; flex-wrap: wrap; }
   .instructor-strip .inner { max-width: 720px; }
   .instructor-strip .eyebrow { color: var(--accent-orange); font: 700 .85rem var(--font-display); margin-bottom: .5rem; }
