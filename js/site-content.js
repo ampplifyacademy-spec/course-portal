@@ -171,9 +171,9 @@ function renderSiteFooter(footer, social) {
     line.style.display = '';
   };
   setLine('footerTagline', f.tagline);
-  setLine('footerEmail', f.email, '✉️ ', 'mailto:');
-  setLine('footerPhone', f.phone, '📞 ', 'tel:');
-  setLine('footerAddress', f.address, '📍 ');
+  setLine('footerEmail', f.email, '✉️', 'mailto:');
+  setLine('footerPhone', f.phone, '📞', 'tel:');
+  setLine('footerAddress', f.address, '📍');
   const copyright = document.getElementById('footerCopyright');
   // The registered company name belongs in the footer, not only in the privacy
   // policy. Amazon's Solution Provider review checks the organisation name on
