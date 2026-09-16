@@ -154,6 +154,13 @@ function renderSocialNav(social, elId) {
   el.innerHTML = links.join('');
 }
 
+const FOOTER_ICONS = {
+  pin: '<svg viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M12 2a7 7 0 0 0-7 7c0 5.25 7 13 7 13s7-7.75 7-13a7 7 0 0 0-7-7Zm0 9.5A2.5 2.5 0 1 1 12 6.5a2.5 2.5 0 0 1 0 5Z"/></svg>',
+  phone: '<svg viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M6.6 10.8a15.1 15.1 0 0 0 6.6 6.6l2.2-2.2a1 1 0 0 1 1-.25 11.4 11.4 0 0 0 3.6.57 1 1 0 0 1 1 1V20a1 1 0 0 1-1 1A17 17 0 0 1 3 4a1 1 0 0 1 1-1h3.5a1 1 0 0 1 1 1c0 1.25.2 2.45.57 3.57a1 1 0 0 1-.25 1Z"/></svg>',
+  mail: '<svg viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M20 4H4a2 2 0 0 0-2 2v12a2 2 0 0 0 2 2h16a2 2 0 0 0 2-2V6a2 2 0 0 0-2-2Zm0 4.2-8 5-8-5V6l8 5 8-5Z"/></svg>',
+  chat: '<svg viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M12 2a10 10 0 0 0-8.66 15l-1.3 4.76 4.87-1.28A10 10 0 1 0 12 2Zm5.3 14.1c-.22.63-1.3 1.2-1.8 1.27-.46.07-1.05.1-1.7-.1a15.5 15.5 0 0 1-1.53-.57c-2.7-1.16-4.45-3.87-4.59-4.05-.13-.18-1.1-1.46-1.1-2.79 0-1.32.7-1.97.94-2.24.25-.27.54-.34.72-.34h.51c.17 0 .39-.06.61.46.22.53.75 1.83.82 1.96.07.13.11.29.02.47-.09.18-.13.29-.27.45l-.4.47c-.13.13-.28.28-.12.55.16.27.7 1.16 1.51 1.88 1.04.93 1.91 1.21 2.18 1.35.27.13.43.11.59-.07.16-.18.68-.79.86-1.06.18-.27.36-.22.61-.13.25.09 1.58.75 1.85.88.27.13.45.2.52.31.07.11.07.64-.15 1.27Z"/></svg>'
+};
+
 function renderSiteFooter(footer, social) {
   const el = document.getElementById('siteFooter');
   if (!el) return;
@@ -171,9 +178,9 @@ function renderSiteFooter(footer, social) {
     line.style.display = '';
   };
   setLine('footerTagline', f.tagline);
-  setLine('footerEmail', f.email, '✉️', 'mailto:');
-  setLine('footerPhone', f.phone, '📞', 'tel:');
-  setLine('footerAddress', f.address, '📍');
+  setLine('footerEmail', f.email, FOOTER_ICONS.mail, 'mailto:');
+  setLine('footerPhone', f.phone, FOOTER_ICONS.phone, 'tel:');
+  setLine('footerAddress', f.address, FOOTER_ICONS.pin);
   const copyright = document.getElementById('footerCopyright');
   // The registered company name belongs in the footer, not only in the privacy
   // policy. Amazon's Solution Provider review checks the organisation name on
