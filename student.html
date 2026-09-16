@@ -12,12 +12,14 @@
   .progress-badge .label { color: var(--text-muted); font-size: .78rem; margin-bottom: .25rem; }
   .progress-badge .value { font: 800 1.4rem var(--font-display); color: var(--accent); }
   .batch-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(280px, 1fr)); gap: 1.5rem; margin-bottom: 1.5rem; }
-  .batch-card { background: var(--surface); border: 1px solid var(--border); border-radius: var(--radius); padding: 1.75rem 1.25rem; cursor: pointer; display: flex; flex-direction: column; align-items: center; text-align: center; gap: .7rem; justify-content: center; box-shadow: var(--shadow-sm); transition: border-color .15s ease, transform .15s ease, box-shadow .15s ease; }
+  .batch-card { background: var(--surface); border: 1px solid var(--border); border-radius: var(--radius); overflow: hidden; cursor: pointer; display: flex; flex-direction: column; box-shadow: var(--shadow-sm); transition: border-color .15s ease, transform .15s ease, box-shadow .15s ease; }
   .batch-card:hover { border-color: var(--accent); transform: translateY(-3px); box-shadow: var(--shadow-md); }
-  .batch-num { width: 56px; height: 56px; border-radius: var(--radius-sm); background: var(--info-bg); color: var(--accent); display: flex; align-items: center; justify-content: center; font: 800 1.15rem var(--font-display); flex-shrink: 0; }
-  .batch-card h3 { font-size: 1.05rem; margin-bottom: .15rem; }
-  .batch-card-top p { color: var(--text-muted); font-size: .78rem; }
-  .batch-progress { display: flex; align-items: center; gap: .6rem; width: 100%; }
+  .batch-thumb { position: relative; width: 100%; height: 150px; display: flex; align-items: center; justify-content: center; font-size: 2.6rem; flex-shrink: 0; }
+  .batch-thumb .tag { position: absolute; top: .7rem; left: .7rem; background: rgba(255,255,255,.92); color: var(--text); font: 700 .68rem var(--font-display); padding: .3rem .65rem; border-radius: 999px; box-shadow: var(--shadow-sm); }
+  .batch-card .body { padding: 1.25rem 1.4rem 1.4rem; display: flex; flex-direction: column; flex: 1; }
+  .batch-card h3 { font-size: 1.05rem; margin-bottom: .4rem; }
+  .batch-card-top p { color: var(--text-muted); font-size: .87rem; }
+  .batch-progress { display: flex; align-items: center; gap: .6rem; width: 100%; margin-top: 1rem; padding-top: .9rem; border-top: 1px solid var(--border); }
   .batch-progress .bar { flex: 1; height: 6px; background: var(--border); border-radius: 999px; overflow: hidden; }
   .batch-progress .bar .fill { height: 100%; background: linear-gradient(90deg, var(--accent), var(--accent-orange)); }
   .batch-progress span { color: var(--text-muted); font-size: .78rem; white-space: nowrap; font-weight: 600; }
@@ -222,18 +224,27 @@ function renderBatchGrid() {
     return;
   }
 
-  const grid = currentBatchGroups.map(g => {
+  const BATCH_THUMBS = [
+    { emoji: '🎓', gradient: 'linear-gradient(135deg,#2563eb,#5fd0ff)' },
+    { emoji: '📚', gradient: 'linear-gradient(135deg,#fd7d01,#ffab5c)' },
+    { emoji: '🚀', gradient: 'linear-gradient(135deg,#16a34a,#5fe0a0)' },
+    { emoji: '🛠️', gradient: 'linear-gradient(135deg,#7c3aed,#c084fc)' }
+  ];
+  const grid = currentBatchGroups.map((g, i) => {
     const total = g.classes.length;
     const completedCount = g.classes.filter(c => completedClasses.includes(c.id)).length;
     const pct = total ? Math.round((completedCount / total) * 100) : 0;
+    const thumb = BATCH_THUMBS[i % BATCH_THUMBS.length];
     return `
     <div class="batch-card" onclick="selectBatch('${g.key}')">
-      <div class="batch-num">${g.name.replace(/[^A-Z0-9]/gi, '').slice(0, 2).toUpperCase() || 'GN'}</div>
-      <h3>${g.name}</h3>
-      <div class="batch-card-top"><p>${total} class${total === 1 ? '' : 'es'} · ${completedCount} completed</p></div>
-      <div class="batch-progress">
-        <div class="bar"><div class="fill" style="width:${pct}%;"></div></div>
-        <span>${pct}%</span>
+      <div class="batch-thumb" style="background:${thumb.gradient};"><span class="tag">${g.name}</span>${thumb.emoji}</div>
+      <div class="body">
+        <h3>${g.name}</h3>
+        <div class="batch-card-top"><p>${total} class${total === 1 ? '' : 'es'} · ${completedCount} completed</p></div>
+        <div class="batch-progress">
+          <div class="bar"><div class="fill" style="width:${pct}%;"></div></div>
+          <span>${pct}%</span>
+        </div>
       </div>
     </div>`;
   }).join('');
