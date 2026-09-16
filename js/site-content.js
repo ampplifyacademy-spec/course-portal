@@ -161,12 +161,13 @@ function renderSiteFooter(footer, social) {
   // Each page ships the contact details as plain HTML so they stay readable with
   // JavaScript off (Amazon's Solution Provider review loads the site that way).
   // Firestore values only overwrite that markup when the admin has set them.
-  const setLine = (id, value, prefix, href) => {
+  const setLine = (id, value, icon, href) => {
     const line = document.getElementById(id);
     if (!line || !value) return;
-    line.innerHTML = href
-      ? '<a href="' + href + value.replace(/\s/g, '') + '">' + prefix + value + '</a>'
-      : prefix + value;
+    const body = href
+      ? '<a href="' + href + value.replace(/\s/g, '') + '">' + value + '</a>'
+      : '<span>' + value + '</span>';
+    line.innerHTML = icon ? '<span class="ficon">' + icon + '</span>' + body : value;
     line.style.display = '';
   };
   setLine('footerTagline', f.tagline);
