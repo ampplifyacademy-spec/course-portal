@@ -35,7 +35,7 @@
   .csection h2 { font-size: 2.1rem; text-align: center; margin-bottom: .6rem; }
   .csection > p.lead { text-align: center; color: var(--text-soft); margin-bottom: 2.75rem; }
   .service-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(280px, 1fr)); gap: 1.5rem; max-width: 1100px; margin: 0 auto; }
-  .service-card { background: var(--surface); border: 2px solid var(--border); border-radius: var(--radius); overflow: hidden; display: flex; flex-direction: column; cursor: pointer; box-shadow: var(--shadow-sm); transition: border-color .15s, transform .15s, box-shadow .15s; }
+  .service-card { background: var(--surface); border: 2px solid var(--border); border-radius: var(--radius); overflow: hidden; display: flex; flex-direction: column; min-height: 356px; cursor: pointer; box-shadow: var(--shadow-sm); transition: border-color .15s, transform .15s, box-shadow .15s; }
   .service-card:hover { transform: translateY(-3px); box-shadow: var(--shadow-md); }
   .service-card.selected { border-color: var(--accent); }
   .service-card img { width: 100%; height: 150px; object-fit: cover; display: block; }
@@ -48,7 +48,7 @@
   .service-card p.desc { color: var(--text-soft); font-size: .87rem; line-height: 1.55; }
   .service-card ol.points { margin: .5rem 0 0; padding-left: 1.2rem; color: var(--text-soft); font-size: .85rem; line-height: 1.7; }
   .see-more-btn { width: auto; margin: .6rem 0 0; padding: 0; background: none; border: none; color: var(--info); font-size: .82rem; font-weight: 600; cursor: pointer; text-align: left; }
-  .service-price-row { display: flex; align-items: center; justify-content: space-between; gap: .6rem; margin-top: 1rem; padding-top: .9rem; border-top: 1px solid var(--border); }
+  .service-price-row { display: flex; align-items: center; justify-content: space-between; gap: .6rem; margin-top: auto; padding-top: .9rem; border-top: 1px solid var(--border); }
   .service-price-row .one-time { display: flex; align-items: center; gap: .4rem; color: var(--text-muted); font-size: .78rem; font-weight: 600; }
   .service-price-wrap { display: flex; align-items: baseline; gap: .5rem; }
   .service-price { color: var(--accent-orange); font: 800 1.25rem var(--font-display); }
