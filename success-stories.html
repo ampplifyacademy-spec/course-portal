@@ -43,6 +43,12 @@
   .proof { margin: 0; background: var(--bg); border: 1px solid var(--border); border-radius: var(--radius-sm); overflow: hidden; }
   .proof img { width: 100%; display: block; background: #fff; }
   .proof figcaption { padding: .9rem 1rem; font-size: .82rem; line-height: 1.6; color: var(--text-soft); }
+  .proof a { display: block; cursor: zoom-in; }
+  .proof-lightbox { position: fixed; inset: 0; z-index: 100; background: rgba(9,12,20,.92); display: none; align-items: center; justify-content: center; padding: 3.5rem 1rem 1rem; }
+  .proof-lightbox.open { display: flex; }
+  .proof-lightbox img { max-width: 100%; max-height: 100%; object-fit: contain; border-radius: var(--radius-sm); background: #fff; }
+  .proof-lightbox .close { position: absolute; top: .9rem; right: 1rem; width: auto; margin: 0; padding: .5rem 1.1rem; font-size: .9rem; background: var(--surface); color: var(--text); border: 1px solid var(--border-strong); border-radius: 999px; cursor: pointer; }
+  .proof-lightbox .hint { position: absolute; top: 1.15rem; left: 1.25rem; color: #fff; font-size: .82rem; opacity: .75; }
   .case-list { max-width: 1100px; margin: 0 auto; display: grid; grid-template-columns: repeat(auto-fit, minmax(300px, 1fr)); gap: 1.5rem; }
   .case-card { background: var(--surface); border: 1px solid var(--border); border-radius: var(--radius); padding: 1.5rem; }
   .case-card h4 { font-size: 1rem; margin-bottom: .5rem; }
@@ -219,6 +225,12 @@
   </div>
 </section>
 
+<div class="proof-lightbox" id="proofLightbox" onclick="closeProof()">
+  <span class="hint">Tap anywhere or press Esc to go back</span>
+  <button class="close" onclick="closeProof()">&times; Close</button>
+  <img id="proofLightboxImg" src="" alt="">
+</div>
+
 <div class="cta-band">
   <h3>Ready to write your own success story?</h3>
   <button onclick="location.href='signup.html'">Enroll Now</button>
@@ -266,6 +278,24 @@
 function toggleMobileNav() {
   document.querySelector('.cnav-links').classList.toggle('open');
 }
+
+// A proof screenshot used to open as a raw file in a new tab, which left the
+// visitor with no way back. Show it over the page instead.
+function closeProof() {
+  document.getElementById('proofLightbox').classList.remove('open');
+  document.getElementById('proofLightboxImg').src = '';
+}
+document.querySelectorAll('.proof a').forEach(link => {
+  link.removeAttribute('target');
+  link.addEventListener('click', e => {
+    e.preventDefault();
+    const img = document.getElementById('proofLightboxImg');
+    img.src = link.getAttribute('href');
+    img.alt = link.querySelector('img').alt;
+    document.getElementById('proofLightbox').classList.add('open');
+  });
+});
+document.addEventListener('keydown', e => { if (e.key === 'Escape') closeProof(); });
 
 loadSiteContent().then(content => {
   const stories = content.course.successStories || [];
