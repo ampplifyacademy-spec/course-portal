@@ -259,7 +259,7 @@
 <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-auth-compat.js"></script>
 <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore-compat.js"></script>
 <script src="js/firebase-config.js"></script>
-<script src="js/site-content.js?v=5"></script>
+<script src="js/site-content.js?v=6"></script>
 <script src="js/country-codes.js"></script>
 <script>
 function toggleMobileNav() {
@@ -342,7 +342,7 @@ function submitPartnership() {
   }).then(() => {
     msg.style.color = 'var(--success)';
     msg.textContent = "Thanks! We'll reach out to you on WhatsApp soon.";
-    sendAdminAlert('New partnership application', name + ' (' + email + ', ' + whatsapp + ')\nPlan: ' + planType + '\nBudget: ' + amount + '\nMarketplace: ' + marketplace + (category ? '\nCategory: ' + category : ''));
+    sendAdminAlert('New partnership application', 'Open the admin panel to review it.');
     document.getElementById('partnerName').value = '';
     document.getElementById('partnerEmail').value = '';
     document.getElementById('partnerNumber').value = '';

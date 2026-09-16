@@ -227,7 +227,10 @@ function fbVideoEmbedUrl(videoUrl) {
 
 // Instant mobile push alerts via ntfy.sh (free, no backend). Install the ntfy
 // app (Android/iOS) and subscribe to this exact topic name to get notified.
-const ADMIN_ALERT_TOPIC = 'ampplify-academy-alerts-7f2q9k';
+// ntfy topics are public: anyone who reads this file can subscribe and read
+// every message. So an alert only says that something happened - never a
+// name, email, phone number or amount. The details are in the admin panel.
+const ADMIN_ALERT_TOPIC = 'ampplify-alerts-5b75e40ddfb0';
 function sendAdminAlert(title, message) {
   fetch('https://ntfy.sh/' + ADMIN_ALERT_TOPIC, {
     method: 'POST',

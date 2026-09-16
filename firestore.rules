@@ -4,7 +4,13 @@ service cloud.firestore {
 
     match /users/{userId} {
       allow read: if request.auth != null && (request.auth.uid == userId || isAdmin());
-      allow create: if request.auth != null && request.auth.uid == userId;
+      // A new account may only describe itself; it can never approve itself or
+      // set payment, batch or access fields - those belong to the admin.
+      allow create: if request.auth != null && request.auth.uid == userId
+        && request.resource.data.status == 'pending'
+        && request.resource.data.keys().hasOnly(['name', 'email', 'whatsapp', 'invoiceUrl', 'status', 'createdAt',
+             'serviceDocuments', 'selectedServices', 'serviceTotal', 'serviceCurrency', 'preferredCallDate',
+             'preferredCallTime', 'productType', 'toolName', 'toolPrice', 'toolCurrency', 'toolLink']);
       allow update: if request.auth != null && (
         isAdmin() ||
         (request.auth.uid == userId &&
@@ -14,7 +20,7 @@ service cloud.firestore {
     }
 
     match /courses/{courseId} {
-      allow read: if request.auth != null;
+      allow read: if request.auth != null && (isAdmin() || isApprovedUser());
       allow write: if request.auth != null && isAdmin();
     }
 
@@ -24,12 +30,12 @@ service cloud.firestore {
     }
 
     match /courseContent/{docId} {
-      allow read: if request.auth != null;
+      allow read: if request.auth != null && (isAdmin() || isApprovedUser());
       allow write: if request.auth != null && isAdmin();
     }
 
     match /batches/{batchId} {
-      allow read: if request.auth != null;
+      allow read: if request.auth != null && (isAdmin() || isApprovedUser());
       allow write: if request.auth != null && isAdmin();
     }
 
@@ -50,7 +56,16 @@ service cloud.firestore {
     }
 
     function isAdmin() {
+      // TODO: add "&& request.auth.token.email_verified == true" once the admin
+      // account's email is verified; today it is not, and the check would lock
+      // the admin out of the panel.
       return request.auth.token.email in ['ampplifyacademy@gmail.com'];
+    }
+
+    // Course material is for accounts the admin has approved, not for anyone
+    // who has merely signed up.
+    function isApprovedUser() {
+      return get(/databases/$(database)/documents/users/$(request.auth.uid)).data.status == 'approved';
     }
   }
 }
