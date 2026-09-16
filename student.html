@@ -14,7 +14,7 @@
   .batch-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(280px, 1fr)); gap: 1.5rem; margin-bottom: 1.5rem; }
   .batch-card { background: var(--surface); border: 1px solid var(--border); border-radius: var(--radius); overflow: hidden; cursor: pointer; display: flex; flex-direction: column; min-height: 356px; box-shadow: var(--shadow-sm); transition: border-color .15s ease, transform .15s ease, box-shadow .15s ease; }
   .batch-card:hover { border-color: var(--accent); transform: translateY(-3px); box-shadow: var(--shadow-md); }
-  .batch-thumb { position: relative; width: 100%; height: 150px; display: flex; align-items: center; justify-content: center; font-size: 2.6rem; flex-shrink: 0; }
+  .batch-thumb { position: relative; width: 100%; height: 150px; display: flex; align-items: center; justify-content: center; font-size: 2.6rem; flex-shrink: 0; object-fit: cover; }
   .batch-card .body { padding: 1.25rem 1.4rem 1.4rem; display: flex; flex-direction: column; flex: 1; }
   .batch-card h3 { font-size: 1.05rem; margin-bottom: .4rem; }
   .batch-name-tag { display: block; color: var(--accent); font: 700 1.05rem var(--font-display); margin-bottom: .6rem; }
@@ -116,7 +116,11 @@
 <script src="js/firebase-config.js"></script>
 <script src="js/site-content.js"></script>
 <script>
-loadSiteContent();
+let batchThumbUrl = null;
+loadSiteContent().then(content => {
+  batchThumbUrl = content.course.batchThumbUrl ? driveImgUrl(content.course.batchThumbUrl) : null;
+  if (currentBatchGroups.length) renderBatches(currentBatchGroups);
+});
 let currentUid = null;
 let currentEmail = null;
 let completedClasses = [];
@@ -235,9 +239,12 @@ function renderBatchGrid() {
     const completedCount = g.classes.filter(c => completedClasses.includes(c.id)).length;
     const pct = total ? Math.round((completedCount / total) * 100) : 0;
     const thumb = BATCH_THUMBS[i % BATCH_THUMBS.length];
+    const thumbHtml = batchThumbUrl
+      ? `<img class="batch-thumb" src="${batchThumbUrl}" alt="">`
+      : `<div class="batch-thumb" style="background:${thumb.gradient};">${thumb.emoji}</div>`;
     return `
     <div class="batch-card" onclick="selectBatch('${g.key}')">
-      <div class="batch-thumb" style="background:${thumb.gradient};">${thumb.emoji}</div>
+      ${thumbHtml}
       <div class="body">
         <h3>Amazon Live Course with AI</h3>
         <span class="batch-name-tag">${g.name}</span>
