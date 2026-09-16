@@ -12,6 +12,10 @@ function driveImgUrl(url) {
   return m ? `https://lh3.googleusercontent.com/d/${m[1]}` : url;
 }
 
+// Testimonials listed here are not shown anywhere on the site. Emptying the
+// list shows them again.
+const HIDDEN_TESTIMONIALS = ['Priya Sharma', 'Ahmed Raza'];
+
 const SITE_CONTENT_DEFAULTS = {
   theme: { accent: '#2563eb', accentOrange: '#fd7d01', bg: '#ffffff' },
   social: { facebook: '', instagram: '', whatsapp: '' },
@@ -41,7 +45,7 @@ const SITE_CONTENT_DEFAULTS = {
     ],
     currency: 'SAR',
     mentorName: 'Yasin Arafat',
-    mentorBio: "I've spent the last 6 years selling on Amazon full-time. This course is everything I wish someone had handed me on day one — no fluff, just what actually works.",
+    mentorBio: "I've spent the last 4 years selling on Amazon full-time. This course is everything I wish someone had handed me on day one — no fluff, just what actually works.",
     heroImageUrl: '',
     siteLogoUrl: '',
     curriculumTopics: [
@@ -120,6 +124,8 @@ function loadSiteContent() {
       if (!data.course || !data.course.testimonials || !data.course.testimonials.length) {
         merged.course.testimonials = SITE_CONTENT_DEFAULTS.course.testimonials;
       }
+      merged.course.testimonials = merged.course.testimonials
+        .filter(t => !HIDDEN_TESTIMONIALS.includes((t.name || '').trim()));
       if (!data.course || !data.course.faqs || !data.course.faqs.length) {
         merged.course.faqs = SITE_CONTENT_DEFAULTS.course.faqs;
       }

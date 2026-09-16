@@ -94,7 +94,7 @@
 
 <section class="csection" style="padding-top:3.5rem; padding-bottom:2rem;">
   <h2>Client Success Stories &amp; Proof of Results</h2>
-  <p class="lead">Ampplify Academy is a trading name of Rakiza Company LTD (registered in England &amp; Wales, office: 128 City Road, London, EC1V 2NX). We have 3+ years of hands-on Amazon account management experience and deliver work across the USA, Saudi Arabia (KSA) and UAE marketplaces. Everything below is work we completed for paying clients &mdash; images of the delivered work are on our <a href="portfolio.html" style="color:var(--accent-orange); font-weight:600;">Portfolio page</a>.</p>
+  <p class="lead">Ampplify Academy is a trading name of Rakiza Company LTD (registered in England &amp; Wales, office: 128 City Road, London, EC1V 2NX). We have 4 years of hands-on Amazon account management experience and deliver work across the USA, Saudi Arabia (KSA) and UAE marketplaces. Everything below is work we completed for paying clients &mdash; images of the delivered work are on our <a href="portfolio.html" style="color:var(--accent-orange); font-weight:600;">Portfolio page</a>.</p>
   <div class="expertise-grid">
     <div class="expertise-card">
       <h4>Listing &amp; Content Work</h4>
@@ -217,8 +217,7 @@
   <div class="story-grid" id="storyGrid">
     <div class="story-card">
       <div class="body">
-        <span class="tag">Course student &rarr; service client</span>
-        <div class="name">Tanvir Ahmed</div>
+                <div class="name">Tanvir Ahmed</div>
         <p>Launched his first product in 3 weeks and reached consistent monthly sales within 2 months after completing the course and taking our listing and launch service.</p>
       </div>
     </div>
@@ -284,7 +283,7 @@
 <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-auth-compat.js"></script>
 <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore-compat.js"></script>
 <script src="js/firebase-config.js"></script>
-<script src="js/site-content.js?v=3"></script>
+<script src="js/site-content.js?v=4"></script>
 <script>
 function toggleMobileNav() {
   document.querySelector('.cnav-links').classList.toggle('open');
@@ -315,7 +314,7 @@ loadSiteContent().then(content => {
       <div class="story-card">
         ${s.imageUrl ? `<img src="${driveImgUrl(s.imageUrl)}" alt="${s.name}">` : ''}
         <div class="body">
-          <span class="tag">${s.relationship || 'Course student &rarr; service client'}</span>
+          ${s.relationship ? `<span class="tag">${s.relationship}</span>` : ''}
           <div class="name">${s.name}</div>
           <p>${s.text}</p>
           ${s.result ? `<div class="result">${s.result}</div>` : ''}
