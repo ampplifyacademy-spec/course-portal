@@ -34,6 +34,10 @@
   .csection { padding: 5rem 4rem; }
   .csection h2 { font-size: 2.1rem; text-align: center; margin-bottom: .6rem; }
   .csection > p.lead { text-align: center; color: var(--text-soft); margin-bottom: 2.75rem; }
+  .expertise-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(260px, 1fr)); gap: 1.5rem; max-width: 1100px; margin: 0 auto; }
+  .expertise-card { background: var(--surface); border: 1px solid var(--border); border-radius: var(--radius); padding: 1.5rem; box-shadow: var(--shadow-sm); }
+  .expertise-card h4 { font-size: 1.05rem; margin-bottom: .6rem; color: var(--accent-orange); }
+  .expertise-card p { color: var(--text-soft); font-size: .9rem; line-height: 1.65; }
   .service-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(280px, 1fr)); gap: 1.5rem; max-width: 1100px; margin: 0 auto; }
   .service-card { background: var(--surface); border: 2px solid var(--border); border-radius: var(--radius); overflow: hidden; display: flex; flex-direction: column; min-height: 356px; cursor: pointer; box-shadow: var(--shadow-sm); transition: border-color .15s, transform .15s, box-shadow .15s; }
   .service-card:hover { transform: translateY(-3px); box-shadow: var(--shadow-md); }
@@ -140,6 +144,25 @@
     <button class="menu-toggle" onclick="toggleMobileNav()" id="menuToggleBtn">☰ Menu</button>
   </div>
 </nav>
+
+<section class="csection" style="padding-top:3.5rem; padding-bottom:2rem;">
+  <h2>What We Do &amp; Our Expertise</h2>
+  <p class="lead">Ampplify Academy is the Amazon account management service arm of Rakiza Company LTD, a company registered in the United Kingdom (128 City Road, London, EC1V 2NX). We provide hands-on, done-for-you Amazon Seller account management for sellers on the Amazon USA, Saudi Arabia (KSA), and UAE marketplaces.</p>
+  <div class="expertise-grid">
+    <div class="expertise-card">
+      <h4>Core Offerings</h4>
+      <p>End-to-end Amazon Seller account management: new account setup and reactivation, product and supplier research, listing creation and keyword optimization, A+ Content and storefront design, brand registration, and Sponsored Products/Brands/Display advertising management.</p>
+    </div>
+    <div class="expertise-card">
+      <h4>Our Expertise</h4>
+      <p>Our team has 3+ years of hands-on, full-time experience managing real Amazon Seller Central accounts — not just teaching theory. We work directly inside client accounts across multiple marketplaces, handling everything from account health issues to day-to-day advertising optimization.</p>
+    </div>
+    <div class="expertise-card">
+      <h4>Benefits of Working With Us</h4>
+      <p>A boutique, specialist-led service rather than a call-center model — every account is handled directly by our team, not outsourced or handed off. You can choose a single one-off service or a full-service plan, with the total cost shown upfront before you commit.</p>
+    </div>
+  </div>
+</section>
 
 <section class="csection" style="padding-top:3.5rem;" id="plansSection">
   <h2>Full-Service Plans</h2>
