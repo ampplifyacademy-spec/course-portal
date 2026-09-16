@@ -56,10 +56,10 @@ service cloud.firestore {
     }
 
     function isAdmin() {
-      // TODO: add "&& request.auth.token.email_verified == true" once the admin
-      // account's email is verified; today it is not, and the check would lock
-      // the admin out of the panel.
-      return request.auth.token.email in ['ampplifyacademy@gmail.com'];
+      // The email must also be verified, so an unverified account that merely
+      // claims the admin address is not treated as the admin.
+      return request.auth.token.email in ['ampplifyacademy@gmail.com']
+        && request.auth.token.email_verified == true;
     }
 
     // Course material is for accounts the admin has approved, not for anyone
