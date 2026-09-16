@@ -15,7 +15,7 @@ function driveImgUrl(url) {
 const SITE_CONTENT_DEFAULTS = {
   theme: { accent: '#2563eb', accentOrange: '#fd7d01', bg: '#ffffff' },
   social: { facebook: '', instagram: '', whatsapp: '' },
-  footer: { tagline: '', email: 'ampplifyacademy@gmail.com', phone: '+880 1409 207525', address: 'Rakiza Company LTD, 128 City Road, London, EC1V 2NX, United Kingdom' },
+  footer: { tagline: '', email: 'ampplifyacademy@gmail.com', phone: '+880 1571 068040', address: 'Rakiza Company LTD, 128 City Road, London, EC1V 2NX, United Kingdom' },
   bankDetails: {
     accounts: [
       { bankName: '', accountName: '', accountNumber: '', iban: '' }
