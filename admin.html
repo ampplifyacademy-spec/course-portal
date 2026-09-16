@@ -201,7 +201,7 @@
         <h2 style="margin-bottom:.25rem;">Partnership Applications</h2>
         <p style="color:var(--text-muted); font-size:.85rem; margin-bottom:1.1rem;">Leads from the Partnership page — people who want to work with us on a profit-share basis instead of paying upfront.</p>
         <table>
-          <thead><tr><th>Name</th><th>Email</th><th>WhatsApp</th><th>Plan</th><th>Budget</th><th>Marketplace</th><th>Category</th><th>Status</th><th>Action</th></tr></thead>
+          <thead><tr><th>Name</th><th>Email</th><th>WhatsApp</th><th>Plan</th><th>Budget</th><th>Marketplace</th><th>Category</th><th>Applied</th><th>Contacted</th><th>Partner since</th><th>Status</th><th>Action</th></tr></thead>
           <tbody id="partnershipRows"></tbody>
         </table>
       </div>
@@ -848,12 +848,28 @@ function setFeedbackStatus(id, status) {
   db.collection('feedback').doc(id).update({ status }).then(loadFeedback);
 }
 
+// Dates are stored when the admin moves a lead along: contactedAt on "Mark
+// Contacted", partnerSince on "Start Partnership". Leads that were marked
+// before these fields existed show a dash, and the partnership start date can
+// be corrected by hand for partners who started earlier.
+function leadDate(ts) {
+  const d = ts && ts.toDate ? ts.toDate() : null;
+  return d ? d.toLocaleDateString('en-GB', { day: '2-digit', month: 'short', year: 'numeric' }) : '—';
+}
+
+function leadDateInputValue(ts) {
+  const d = ts && ts.toDate ? ts.toDate() : null;
+  if (!d) return '';
+  const pad = n => String(n).padStart(2, '0');
+  return d.getFullYear() + '-' + pad(d.getMonth() + 1) + '-' + pad(d.getDate());
+}
+
 function loadPartnershipLeads() {
   return db.collection('partnershipLeads').orderBy('createdAt', 'desc').get().then(snap => {
     const all = snap.docs.map(d => ({ id: d.id, ...d.data() }));
     const tbody = document.getElementById('partnershipRows');
     if (!all.length) {
-      tbody.innerHTML = `<tr><td colspan="9" style="color:var(--text-faint);">No applications yet.</td></tr>`;
+      tbody.innerHTML = `<tr><td colspan="12" style="color:var(--text-faint);">No applications yet.</td></tr>`;
       return;
     }
     tbody.innerHTML = all.map(p => `
@@ -865,9 +881,15 @@ function loadPartnershipLeads() {
         <td>${p.amount || '—'}</td>
         <td>${p.marketplace || '—'}</td>
         <td>${p.category || '—'}</td>
-        <td><span class="status-${p.status === 'contacted' ? 'approved' : 'pending'}">${p.status}</span></td>
+        <td style="white-space:nowrap;">${leadDate(p.createdAt)}</td>
+        <td style="white-space:nowrap;">${leadDate(p.contactedAt)}</td>
+        <td style="white-space:nowrap;">${p.status === 'partner'
+          ? `<input type="date" value="${leadDateInputValue(p.partnerSince)}" onchange="setPartnerSince('${p.id}', this.value)" style="width:auto; margin:0; padding:.3rem .4rem;">`
+          : '—'}</td>
+        <td><span class="status-${p.status === 'new' ? 'pending' : 'approved'}">${p.status === 'partner' ? 'partner' : p.status}</span></td>
         <td>
-          ${p.status !== 'contacted' ? `<button onclick="setPartnershipStatus('${p.id}','contacted')">Mark Contacted</button>` : ''}
+          ${p.status === 'new' ? `<button onclick="setPartnershipStatus('${p.id}','contacted')">Mark Contacted</button>` : ''}
+          ${p.status !== 'partner' ? `<button onclick="setPartnershipStatus('${p.id}','partner')">Start Partnership</button>` : ''}
           <button class="danger" onclick="deletePartnershipLead('${p.id}')">Remove</button>
         </td>
       </tr>`).join('');
@@ -875,7 +897,22 @@ function loadPartnershipLeads() {
 }
 
 function setPartnershipStatus(id, status) {
-  db.collection('partnershipLeads').doc(id).update({ status }).then(loadPartnershipLeads);
+  const update = { status };
+  const now = firebase.firestore.FieldValue.serverTimestamp();
+  if (status === 'contacted') update.contactedAt = now;
+  if (status === 'partner') {
+    if (!confirm('Start the partnership with this applicant from today? You can change the start date afterwards.')) return;
+    update.partnerSince = now;
+  }
+  db.collection('partnershipLeads').doc(id).update(update).then(loadPartnershipLeads);
+}
+
+function setPartnerSince(id, value) {
+  if (!value) return;
+  const [y, m, d] = value.split('-').map(Number);
+  db.collection('partnershipLeads').doc(id)
+    .update({ partnerSince: firebase.firestore.Timestamp.fromDate(new Date(y, m - 1, d)) })
+    .then(loadPartnershipLeads);
 }
 
 function deletePartnershipLead(id) {
