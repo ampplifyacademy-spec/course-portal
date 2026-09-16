@@ -158,11 +158,11 @@ body.admin-shell { display: block; padding: 0; background: var(--bg); }
 .logo { position: relative; display: inline-grid; line-height: 1; font-family: var(--font-display); color: #1c1d21; font-size: 22px; padding-bottom: .12em; white-space: nowrap; }
 .logo-word { font-weight: 800; letter-spacing: .02em; }
 .logo-a { background: linear-gradient(180deg, #34b3ec 0%, #1a8fd6 100%); -webkit-background-clip: text; background-clip: text; color: transparent; }
-.logo-sub { justify-self: end; font-weight: 500; font-size: .4em; letter-spacing: .45em; margin: .45em -.45em 0 0; color: inherit; }
+.logo-sub { justify-self: end; font-weight: 500; font-size: .42em; letter-spacing: .4em; margin: .4em -.4em 0 0; color: inherit; }
 .logo-smile { position: absolute; left: -.06em; bottom: -.2em; width: 2.05em; height: auto; fill: none; stroke: #f7941d; stroke-width: 4.5; stroke-linecap: round; stroke-linejoin: round; }
-.brand .logo { font-size: 22px; }
-.sidebar .brand .logo { font-size: 18px; }
-.footer-logo .logo { font-size: 32px; }
+.brand .logo { font-size: 30px; }
+.sidebar .brand .logo { font-size: 22px; }
+.footer-logo .logo { font-size: 40px; }
 
 /* ===== Site footer ===== */
 /* Soft peach band that fades in from the page, bold column titles, plain
@@ -191,7 +191,8 @@ body.admin-shell { display: block; padding: 0; background: var(--bg); }
 @media (max-width: 760px) {
   .site-footer { padding: 3.5rem 1.25rem 1.5rem; }
   .footer-grid { grid-template-columns: 1fr; gap: 2.25rem; text-align: left; }
-  .footer-logo .logo { font-size: 26px; }
+  .footer-logo .logo { font-size: 32px; }
+  .brand .logo { font-size: 24px; }
   .footer-contact .ficon { width: 36px; height: 36px; }
 }
 
