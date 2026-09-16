@@ -169,6 +169,15 @@
 
     <!-- FEEDBACK MODERATION -->
     <div class="tab-section" id="tab-feedback">
+      <div class="panel" style="margin-bottom:1.5rem;">
+        <h2 style="margin-bottom:.25rem;">Sample Reviews</h2>
+        <p style="color:var(--text-muted); font-size:.85rem; margin-bottom:1rem;">The built-in sample testimonials (Tanvir Ahmed, Priya Sharma, Ahmed Raza) and the sample success story. Off hides them on every page; On shows them exactly as before.</p>
+        <label style="display:flex; align-items:center; gap:.6rem; cursor:pointer; font-weight:600;">
+          <input type="checkbox" id="showSampleReviews" onchange="saveShowSampleReviews(this.checked)" style="width:auto; margin:0;">
+          Show sample reviews on the website
+        </label>
+        <p class="msg" id="showSampleReviewsMsg" style="margin:.5rem 0 0;"></p>
+      </div>
       <div class="panel">
         <h2 style="margin-bottom:.25rem;">Pending Feedback</h2>
         <p style="color:var(--text-muted); font-size:.85rem; margin-bottom:1.1rem;">Public submissions (course students & service customers, no login required). Approve to show on the public pages.</p>
@@ -577,7 +586,7 @@
 <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-auth-compat.js"></script>
 <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore-compat.js"></script>
 <script src="js/firebase-config.js"></script>
-<script src="js/site-content.js?v=4"></script>
+<script src="js/site-content.js?v=5"></script>
 <script src="js/feedback.js"></script>
 <script>
 const SAUDI_OFFSET_MS = 3 * 3600000;
@@ -801,6 +810,7 @@ auth.onAuthStateChanged(user => {
   loadResources();
   loadResourceLinks();
   loadFeedback();
+  loadShowSampleReviews();
   loadPartnershipLeads();
 });
 
@@ -871,6 +881,26 @@ function setPartnershipStatus(id, status) {
 function deletePartnershipLead(id) {
   if (!confirm('Remove this partnership application?')) return;
   db.collection('partnershipLeads').doc(id).delete().then(loadPartnershipLeads);
+}
+
+function loadShowSampleReviews() {
+  db.collection('siteContent').doc('main').get().then(doc => {
+    document.getElementById('showSampleReviews').checked = !!(doc.exists && doc.data().showSampleReviews === true);
+  });
+}
+
+function saveShowSampleReviews(on) {
+  const msg = document.getElementById('showSampleReviewsMsg');
+  msg.style.color = 'var(--text-muted)';
+  msg.textContent = 'Saving...';
+  db.collection('siteContent').doc('main').update({ showSampleReviews: on }).then(() => {
+    msg.style.color = 'var(--success)';
+    msg.textContent = on ? 'Sample reviews are now shown on the website.' : 'Sample reviews are now hidden.';
+  }).catch(err => {
+    msg.style.color = 'var(--danger)';
+    msg.textContent = 'Could not save: ' + err.message;
+    document.getElementById('showSampleReviews').checked = !on;
+  });
 }
 
 function deleteFeedback(id) {

@@ -12,10 +12,6 @@ function driveImgUrl(url) {
   return m ? `https://lh3.googleusercontent.com/d/${m[1]}` : url;
 }
 
-// Testimonials listed here are not shown anywhere on the site. Emptying the
-// list shows them again.
-const HIDDEN_TESTIMONIALS = ['Priya Sharma', 'Ahmed Raza'];
-
 const SITE_CONTENT_DEFAULTS = {
   theme: { accent: '#2563eb', accentOrange: '#fd7d01', bg: '#ffffff' },
   social: { facebook: '', instagram: '', whatsapp: '' },
@@ -121,11 +117,12 @@ function loadSiteContent() {
       if (!data.course || !data.course.curriculumTopics || !data.course.curriculumTopics.length) {
         merged.course.curriculumTopics = SITE_CONTENT_DEFAULTS.course.curriculumTopics;
       }
+      // The built-in sample testimonials and success story only appear when the
+      // admin turns on "Show sample reviews" (siteContent/main.showSampleReviews).
+      merged.showSampleReviews = data.showSampleReviews === true;
       if (!data.course || !data.course.testimonials || !data.course.testimonials.length) {
-        merged.course.testimonials = SITE_CONTENT_DEFAULTS.course.testimonials;
+        merged.course.testimonials = merged.showSampleReviews ? SITE_CONTENT_DEFAULTS.course.testimonials : [];
       }
-      merged.course.testimonials = merged.course.testimonials
-        .filter(t => !HIDDEN_TESTIMONIALS.includes((t.name || '').trim()));
       if (!data.course || !data.course.faqs || !data.course.faqs.length) {
         merged.course.faqs = SITE_CONTENT_DEFAULTS.course.faqs;
       }
@@ -133,7 +130,7 @@ function loadSiteContent() {
         merged.course.services = SITE_CONTENT_DEFAULTS.course.services;
       }
       if (!data.course || !data.course.successStories || !data.course.successStories.length) {
-        merged.course.successStories = SITE_CONTENT_DEFAULTS.course.successStories;
+        merged.course.successStories = merged.showSampleReviews ? SITE_CONTENT_DEFAULTS.course.successStories : [];
       }
       applySiteTheme(merged.theme);
       return merged;
