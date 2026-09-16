@@ -19,6 +19,10 @@
   .csection { padding: 5rem 4rem; }
   .csection h2 { font-size: 2.1rem; text-align: center; margin-bottom: .6rem; }
   .csection > p.lead { text-align: center; color: var(--text-soft); margin-bottom: 2.75rem; }
+  .expertise-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(260px, 1fr)); gap: 1.5rem; max-width: 1100px; margin: 0 auto; }
+  .expertise-card { background: var(--surface); border: 1px solid var(--border); border-radius: var(--radius); padding: 1.5rem; box-shadow: var(--shadow-sm); }
+  .expertise-card h4 { font-size: 1.05rem; margin-bottom: .6rem; color: var(--accent-orange); }
+  .expertise-card p { color: var(--text-soft); font-size: .9rem; line-height: 1.65; }
   .story-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(300px, 1fr)); gap: 1.5rem; max-width: 1100px; margin: 0 auto; }
   .story-card { background: var(--surface); border: 1px solid var(--border); border-radius: var(--radius); overflow: hidden; display: flex; flex-direction: column; }
   .story-card img { width: 100%; height: 220px; object-fit: cover; display: block; }
@@ -63,7 +67,26 @@
   </div>
 </nav>
 
-<section class="csection" style="padding-top:3.5rem;">
+<section class="csection" style="padding-top:3.5rem; padding-bottom:2rem;">
+  <h2>Real Client Work &amp; Proof of Results</h2>
+  <p class="lead">Ampplify Academy (Rakiza Company LTD) has 3+ years of hands-on experience delivering Amazon account management services across the USA, Saudi Arabia (KSA), and UAE marketplaces. Below is a sample of completed client work — full case studies with images are on our <a href="portfolio.html" style="color:var(--accent-orange); font-weight:600;">Portfolio page</a>.</p>
+  <div class="expertise-grid">
+    <div class="expertise-card">
+      <h4>Listing &amp; Content Work</h4>
+      <p>Amazon listing image design, Premium A+ Content, and brand story pages delivered for client product listings.</p>
+    </div>
+    <div class="expertise-card">
+      <h4>Account &amp; Compliance Work</h4>
+      <p>Seller account reactivations (including Saudi Arabia Iqama-based accounts), trademark registration filings, brand registry applications, and UK LTD filings completed for clients.</p>
+    </div>
+    <div class="expertise-card">
+      <h4>Video Testimonials</h4>
+      <p>Real students and clients speaking on camera about their experience are featured in the Video Reviews section on our <a href="course.html#videoReviews" style="color:var(--accent-orange); font-weight:600;">course page</a>.</p>
+    </div>
+  </div>
+</section>
+
+<section class="csection" style="padding-top:0;">
   <h2>Student Success Stories</h2>
   <p class="lead">Real students, real results — case studies from past work.</p>
   <div class="story-grid" id="storyGrid"></div>
