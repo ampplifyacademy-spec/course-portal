@@ -420,6 +420,9 @@ loadSiteContent().then(content => {
         <div class="video-review-frame"><iframe src="${fbVideoEmbedUrl(v.videoUrl)}" scrolling="no" allowfullscreen allow="autoplay; clipboard-write; encrypted-media; picture-in-picture; web-share"></iframe></div>
         ${v.name ? `<div class="video-review-name">${v.name}</div>` : ''}
       </div>`).join('');
+    if (location.hash === '#videoReviews') {
+      setTimeout(() => document.getElementById('videoReviews').scrollIntoView({ behavior: 'smooth' }), 100);
+    }
   }
 
   fbLoadApproved('course').then(list => {
