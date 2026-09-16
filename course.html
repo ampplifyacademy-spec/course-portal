@@ -77,6 +77,10 @@
   .testimonial-card { flex: 0 0 auto; width: 320px; background: var(--surface); border: 1px solid var(--border); border-radius: var(--radius); padding: 1.75rem; }
   .testimonial-card .stars { color: var(--accent-orange); margin-bottom: .75rem; }
   .testimonial-card p { font-size: .92rem; line-height: 1.7; color: var(--text-soft); margin-bottom: 1.1rem; }
+  .about-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(270px, 1fr)); gap: 1.5rem; max-width: 1100px; margin: 0 auto; }
+  .about-card { background: var(--surface); border: 1px solid var(--border); border-radius: var(--radius); padding: 1.5rem; }
+  .about-card h4 { font-size: 1.05rem; margin-bottom: .6rem; color: var(--accent-orange); }
+  .about-card p { color: var(--text-soft); font-size: .9rem; line-height: 1.7; }
   .video-review-wrap { max-width: 1200px; margin: 0 auto; position: relative; display: flex; align-items: center; gap: .75rem; }
   .video-review-row { overflow-x: auto; scroll-behavior: smooth; scrollbar-width: none; }
   .video-review-row::-webkit-scrollbar { display: none; }
@@ -203,6 +207,25 @@
   <h2>Real Results From Real Students</h2>
   <p class="lead">&nbsp;</p>
   <div class="testimonial-row"><div class="testimonial-track" id="testimonialRow"></div></div>
+</section>
+
+<section class="csection" id="about">
+  <h2>About Ampplify Academy</h2>
+  <p class="lead">Amazon Seller account management services and Amazon selling training, run by working sellers.</p>
+  <div class="about-grid">
+    <div class="about-card">
+      <h4>Who we are</h4>
+      <p>Ampplify Academy is a trading name of Rakiza Company LTD, registered in England &amp; Wales (registered office: 128 City Road, London, EC1V 2NX, United Kingdom). We have 3+ years of full-time, hands-on experience running Amazon Seller Central accounts in the USA, Saudi Arabia (KSA) and UAE marketplaces.</p>
+    </div>
+    <div class="about-card">
+      <h4>What we offer</h4>
+      <p>Done-for-you account management: seller account setup and reactivation, listing creation and keyword optimisation, image design and Premium A+ content, Sponsored Products advertising, Brand Registry and trademark filings, product research and supplier sourcing, FBA shipment and inventory planning, and monthly performance reporting. We also teach the same process in our Amazon selling course.</p>
+    </div>
+    <div class="about-card">
+      <h4>Why sellers choose us</h4>
+      <p>Fixed, published prices with no hidden fees; the same specialists work on your account from start to finish; and every recommendation comes from managing live accounts, not theory. See our <a href="portfolio.html">portfolio</a> and <a href="success-stories.html">client results</a>, or email <a href="mailto:ampplifyacademy@gmail.com">ampplifyacademy@gmail.com</a>.</p>
+    </div>
+  </div>
 </section>
 
 <section class="csection" id="videoReviews" style="display:none; background:var(--surface-alt);">
