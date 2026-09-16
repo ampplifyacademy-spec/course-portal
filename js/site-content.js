@@ -173,7 +173,7 @@ function renderSiteFooter(footer, social) {
   // policy. Amazon's Solution Provider review checks the organisation name on
   // the profile against the website, and "Ampplify Academy" alone gives a
   // reviewer nothing to match "Rakiza Company LTD" to.
-  if (copyright) copyright.textContent = `© ${new Date().getFullYear()} Ampplify Academy — a trading name of Rakiza Company LTD (United Kingdom). All rights reserved.`;
+  if (copyright) copyright.textContent = `© ${new Date().getFullYear()} Ampplify Academy — a trading name of Rakiza Company LTD. Registered office: 128 City Road, London, EC1V 2NX, United Kingdom. All rights reserved.`;
   renderSocialNav(social, 'footerSocial');
 }
 
