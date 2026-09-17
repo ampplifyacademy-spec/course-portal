@@ -183,7 +183,7 @@
     <div class="chero-media">
       <div class="chero-shape"></div>
       <img src="https://lh3.googleusercontent.com/d/15SuGvVJEyZwh5vgq6hzEghaWalEWSGP7" alt="Instructor" id="heroImg" fetchpriority="high">
-      <div class="chero-chip top">🎓 6+ Modules</div>
+      <div class="chero-chip top" id="heroModuleCountChip">🎓 6+ Modules</div>
       <div class="chero-chip">⭐ 4.8 Rated by Students</div>
     </div>
   </div>
@@ -420,6 +420,7 @@ loadSiteContent().then(content => {
   document.getElementById('priceFeatures').innerHTML = (c.priceFeatures || []).map(f => `<div><span>✓</span>${f}</div>`).join('');
 
   document.getElementById('moduleCountLead').textContent = c.curriculumTopics.length + ' modules. Lifetime access. Real templates and tools included.';
+  document.getElementById('heroModuleCountChip').textContent = '🎓 ' + c.curriculumTopics.length + '+ Modules';
   const VISIBLE_MODULE_COUNT = 4;
   const cardsHtml = c.curriculumTopics.map((m, i) => `
     <details class="module-card${i >= VISIBLE_MODULE_COUNT ? ' module-hidden' : ''}"${i >= VISIBLE_MODULE_COUNT ? ' style="display:none;"' : ''}>
