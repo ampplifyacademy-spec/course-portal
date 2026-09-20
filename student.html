@@ -41,6 +41,14 @@
   .class-row .info .meta { color: var(--text-muted); font-size: .78rem; margin-top: .15rem; }
   .class-row .status { font-size: .82rem; font-weight: 600; color: var(--text-muted); }
   .class-row .status.done { color: var(--success); }
+  .player-overlay { position: fixed; inset: 0; z-index: 200; background: rgba(9,12,20,.93); display: none; flex-direction: column; padding: 1rem; }
+  .player-overlay.open { display: flex; }
+  .player-bar { display: flex; align-items: center; gap: 1rem; color: #fff; padding: .25rem .25rem .75rem; }
+  .player-bar .player-title { font: 700 1rem var(--font-display); flex: 1; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+  .player-bar button, .player-bar a button { width: auto; margin: 0; padding: .45rem 1rem; font-size: .82rem; }
+  .player-frame { flex: 1; background: #000; border-radius: var(--radius-sm); overflow: hidden; }
+  .player-frame iframe { width: 100%; height: 100%; border: none; }
+  .player-help { color: #d7d9e0; font-size: .8rem; padding: .6rem .25rem 0; line-height: 1.5; }
   .drive-note { background: var(--warning-bg, #fff7e6); border: 1px solid var(--accent-orange); border-radius: var(--radius-sm); padding: .85rem 1rem; margin-bottom: 1.25rem; font-size: .86rem; line-height: 1.6; color: var(--text-soft); }
   .drive-note strong { color: var(--text); }
   .drive-note #driveNoteEmail { font-weight: 700; color: var(--accent); }
@@ -78,6 +86,18 @@
         <div class="label">Overall progress</div>
         <div class="value" id="overallProgress">0%</div>
       </div>
+    </div>
+
+    <div class="player-overlay" id="playerOverlay">
+      <div class="player-bar">
+        <span class="player-title" id="playerTitle"></span>
+        <a id="playerOpenDrive" href="#" target="_blank"><button class="secondary">Open in Google Drive</button></a>
+        <button onclick="closePlayer()">&times; Close</button>
+      </div>
+      <div class="player-frame"><iframe id="playerFrame" src="" allow="autoplay; fullscreen" allowfullscreen></iframe></div>
+      <p class="player-help">Video blank or asking for access? It plays with your course email
+        &mdash; <span id="playerEmail"></span>. Sign in to Google with that email in this browser,
+        or use "Open in Google Drive" and pick it there.</p>
     </div>
 
     <div class="drive-note" id="driveNote" style="display:none;">
@@ -210,6 +230,45 @@ function courseLink(url) {
          '&continue=' + encodeURIComponent(url);
 }
 
+// Classes play inside the dashboard. Drive serves a player for a file id at
+// /file/d/<id>/preview and a listing for a folder at /embeddedfolderview, so
+// the id is pulled out of whatever link shape the admin pasted.
+function driveIdOf(url) {
+  const u = String(url || '');
+  const file = u.match(/\/file\/d\/([\w-]+)/) || u.match(/[?&]id=([\w-]+)/);
+  if (file) return { id: file[1], kind: 'file' };
+  const folder = u.match(/\/folders\/([\w-]+)/);
+  if (folder) return { id: folder[1], kind: 'folder' };
+  return null;
+}
+
+function drivePlayerUrl(url) {
+  const found = driveIdOf(url);
+  if (!found) return null;
+  return found.kind === 'file'
+    ? 'https://drive.google.com/file/d/' + found.id + '/preview'
+    : 'https://drive.google.com/embeddedfolderview?id=' + found.id + '#grid';
+}
+
+function openPlayer(title, url) {
+  const embed = drivePlayerUrl(url);
+  if (!embed) { window.open(courseLink(url), '_blank'); return; }
+  document.getElementById('playerTitle').textContent = title;
+  document.getElementById('playerEmail').textContent = currentEmail;
+  document.getElementById('playerOpenDrive').href = courseLink(url);
+  document.getElementById('playerFrame').src = embed;
+  document.getElementById('playerOverlay').classList.add('open');
+  document.body.style.overflow = 'hidden';
+}
+
+function closePlayer() {
+  document.getElementById('playerOverlay').classList.remove('open');
+  document.getElementById('playerFrame').src = '';
+  document.body.style.overflow = '';
+}
+
+document.addEventListener('keydown', e => { if (e.key === 'Escape') closePlayer(); });
+
 function loadAllBatches(blockedCourses) {
   db.collection('courseContent').doc('main').get().then(contentDoc => {
     const allModules = contentDoc.exists ? (contentDoc.data().modules || []) : [];
@@ -307,7 +366,7 @@ function renderBatchPanel() {
               <div class="title">${c.title}</div>
               <div class="meta">${c.meta}</div>
             </div>
-            <a href="${courseLink(c.driveLink)}" target="_blank" onclick="event.stopPropagation()"><button style="width:auto; margin:0; padding:.4rem .9rem; font-size:.8rem;">Watch</button></a>
+            <button onclick="event.stopPropagation(); openPlayer(${JSON.stringify(c.title)}, ${JSON.stringify(c.driveLink || '')})" style="width:auto; margin:0; padding:.4rem .9rem; font-size:.8rem;">Watch</button>
             <span class="status ${done ? 'done' : ''}">${done ? 'Completed' : 'Upcoming'}</span>
           </div>`;
       }).join('')}
