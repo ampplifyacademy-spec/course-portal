@@ -9,7 +9,7 @@
 <link rel="preconnect" href="https://firestore.googleapis.com" crossorigin>
 <link rel="preconnect" href="https://lh3.googleusercontent.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@500;600;700;800&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
-<link rel="stylesheet" href="css/style.css?v=8">
+<link rel="stylesheet" href="css/style.css?v=9">
 <style>
   .picker-popover { position: absolute; z-index: 50; top: 100%; left: 0; right: 0; margin-top: .3rem; background: var(--surface-alt); border: 1px solid var(--border-strong); border-radius: var(--radius); box-shadow: 0 20px 40px rgba(0,0,0,.5); padding: .85rem; }
   .cal-header { display: flex; align-items: center; justify-content: space-between; margin-bottom: .6rem; }
@@ -131,7 +131,11 @@
     <!-- STUDENTS -->
     <div class="tab-section" id="tab-students">
       <div class="panel" style="margin-bottom:1.5rem;">
-        <h2 style="margin-bottom:.25rem;">Google Drive access</h2>
+        <div class="row-top" style="cursor:pointer;" onclick="toggleDrivePanel()">
+          <h2 style="margin:0;">Google Drive access</h2>
+          <span id="drivePanelChevron" style="transition:transform .15s; display:inline-block; transform:rotate(-90deg);">&#9662;</span>
+        </div>
+        <div id="drivePanelBody" style="display:none; margin-top:1rem;">
         <p style="color:var(--text-muted); font-size:.85rem; margin-bottom:1rem;">One web app URL per Drive account (setup steps are in scripts/drive-access.gs). The passcode must match the SECRET script property in every account. Saved for the admin only — students never see it. "Update Class" always stays at the bottom of the list, however many batches you add.</p>
         <div id="driveAccountEditor"></div>
         <button class="secondary" onclick="addDriveAccount()" style="width:auto; margin:.25rem 0 1rem;">+ Add Drive account</button>
@@ -139,6 +143,7 @@
         <input id="driveSecret" type="password" placeholder="same in every script">
         <button onclick="saveDriveAccessConfig()" style="width:auto; margin-top:1rem;">Save Drive settings</button>
         <p class="msg" id="driveConfigMsg" style="margin:.6rem 0 0;"></p>
+        </div>
       </div>
       <div class="panel">
         <table>
@@ -2333,6 +2338,15 @@ function renderUserRows(list) {
 // account does the sharing. The passcode lives in Firestore under config/
 // driveAccess, which only the admin can read - it must never reach the public
 // site files.
+// The Drive settings are set once and then just sit there, so the panel stays
+// folded away until it is needed.
+function toggleDrivePanel() {
+  const body = document.getElementById('drivePanelBody');
+  const open = body.style.display === 'none';
+  body.style.display = open ? 'block' : 'none';
+  document.getElementById('drivePanelChevron').style.transform = open ? 'rotate(0deg)' : 'rotate(-90deg)';
+}
+
 let driveAccessConfig = null;
 let driveAccountRows = [];
 

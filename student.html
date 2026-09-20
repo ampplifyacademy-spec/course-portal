@@ -9,7 +9,7 @@
 <link rel="preconnect" href="https://firestore.googleapis.com" crossorigin>
 <link rel="preconnect" href="https://lh3.googleusercontent.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@500;600;700;800&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
-<link rel="stylesheet" href="css/style.css?v=8">
+<link rel="stylesheet" href="css/style.css?v=9">
 <style>
   .progress-badge { background: var(--surface); border: 1px solid var(--border); border-radius: var(--radius-sm); padding: .9rem 1.25rem; text-align: right; }
   .progress-badge .label { color: var(--text-muted); font-size: .78rem; margin-bottom: .25rem; }
@@ -95,17 +95,15 @@
         <button onclick="closePlayer()">&times; Close</button>
       </div>
       <div class="player-frame"><iframe id="playerFrame" src="" allow="autoplay; fullscreen" allowfullscreen></iframe></div>
-      <p class="player-help">Video blank or asking for access? It plays with your course email
-        &mdash; <span id="playerEmail"></span>. Sign in to Google with that email in this browser,
-        or use "Open in Google Drive" and pick it there.</p>
+      <p class="player-help">The class plays with your course email &mdash; <span id="playerEmail"></span>.
+        If the player asks you to sign in, sign in to Google with that email once; after that every
+        class opens straight away.</p>
     </div>
 
     <div class="drive-note" id="driveNote" style="display:none;">
       <strong>Class videos open with your course email:</strong>
-      <span id="driveNoteEmail"></span>.
-      If your browser is signed in to a different Google account, the video will say
-      "You need access" &mdash; pick your course email on the Google screen, or open the
-      link in a private/incognito window and sign in with it.
+      <span id="driveNoteEmail"></span>. Sign in to Google with that email once in this browser
+      and every class will open straight away, even if other Google accounts are also signed in.
     </div>
 
     <div class="tab-section active" id="tab-dashboard">
@@ -218,17 +216,18 @@ auth.onAuthStateChanged(user => {
   });
 });
 
-// Course folders are shared with the email the student registered with, but a
-// browser signed in to a different Google account opens Drive as that account
-// and shows "You need access". Sending the link through Google's account
-// chooser with the registered email makes Google switch to (or ask for) the
-// right account first.
-function courseLink(url) {
+// Course folders are shared with the email the student registered with. Drive
+// opens as whichever Google account the browser is signed in to, so every link
+// carries authuser=<their course email>: Google switches to that account by
+// itself when it is signed in, and only asks when it is not - the same as
+// sharing the folder by hand used to behave.
+function withCourseUser(url) {
   if (!url || !currentEmail) return url || '#';
   if (!/^https?:\/\/(drive|docs)\.google\.com/.test(url)) return url;
-  return 'https://accounts.google.com/AccountChooser?Email=' + encodeURIComponent(currentEmail) +
-         '&continue=' + encodeURIComponent(url);
+  return url + (url.indexOf('?') === -1 ? '?' : '&') + 'authuser=' + encodeURIComponent(currentEmail);
 }
+
+function courseLink(url) { return withCourseUser(url); }
 
 // Classes play inside the dashboard. Drive serves a player for a file id at
 // /file/d/<id>/preview and a listing for a folder at /embeddedfolderview, so
@@ -245,9 +244,11 @@ function driveIdOf(url) {
 function drivePlayerUrl(url) {
   const found = driveIdOf(url);
   if (!found) return null;
-  return found.kind === 'file'
+  const base = found.kind === 'file'
     ? 'https://drive.google.com/file/d/' + found.id + '/preview'
-    : 'https://drive.google.com/embeddedfolderview?id=' + found.id + '#grid';
+    : 'https://drive.google.com/embeddedfolderview?id=' + found.id;
+  const withUser = base + '?authuser=' + encodeURIComponent(currentEmail || '');
+  return found.kind === 'file' ? withUser : withUser + '#grid';
 }
 
 function openPlayer(title, url) {

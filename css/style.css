@@ -214,3 +214,7 @@ body.admin-shell { display: block; padding: 0; background: var(--bg); }
 .password-wrap input { padding-right: 2.8rem; }
 .password-toggle { position: absolute; right: .9rem; top: 50%; transform: translateY(-50%); background: none; border: none; width: auto; padding: 0; margin: 0; cursor: pointer; color: var(--text-muted); font-size: .8rem; font-weight: 600; }
 .password-toggle:hover { color: var(--text-soft); }
+
+/* Log in sits beside the enrol button; both hide behind the burger on phones. */
+.cnav-login { width: auto; margin: 0; padding: .6rem 1.15rem; font-size: .88rem; background: var(--surface); color: var(--text); border: 1px solid var(--border-strong); }
+.cnav-login:hover { border-color: var(--accent); color: var(--accent); }
