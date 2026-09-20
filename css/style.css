@@ -155,13 +155,13 @@ body.admin-shell { display: block; padding: 0; background: var(--bg); }
 .nav-social a:hover { color: var(--accent); }
 
 /* ===== Logo: AMPPLIFY with a blue A, ACADEMY tucked under the right side ===== */
-.logo { position: relative; display: inline-grid; line-height: 1; font-family: var(--font-display); color: #1c1d21; font-size: 22px; white-space: nowrap; }
+.logo { position: relative; display: inline-grid; line-height: 1; font-family: var(--font-display); color: #1c1d21; font-size: 18px; white-space: nowrap; }
 .logo-word { font-weight: 800; letter-spacing: .02em; }
 .logo-a { background: linear-gradient(180deg, #34b3ec 0%, #1a8fd6 100%); -webkit-background-clip: text; background-clip: text; color: transparent; }
 .logo-sub { justify-self: end; font-weight: 500; font-size: .42em; letter-spacing: .4em; margin: .4em -.4em 0 0; color: inherit; }
-.brand .logo { font-size: 30px; }
-.sidebar .brand .logo { font-size: 22px; }
-.footer-logo .logo { font-size: 40px; }
+.brand .logo { font-size: 22px; }
+.sidebar .brand .logo { font-size: 18px; }
+.footer-logo .logo { font-size: 28px; }
 
 /* ===== Site footer ===== */
 /* Soft peach band that fades in from the page, bold column titles, plain
@@ -190,8 +190,8 @@ body.admin-shell { display: block; padding: 0; background: var(--bg); }
 @media (max-width: 760px) {
   .site-footer { padding: 3.5rem 1.25rem 1.5rem; }
   .footer-grid { grid-template-columns: 1fr; gap: 2.25rem; text-align: left; }
-  .footer-logo .logo { font-size: 32px; }
-  .brand .logo { font-size: 24px; }
+  .footer-logo .logo { font-size: 24px; }
+  .brand .logo { font-size: 19px; }
   .footer-contact .ficon { width: 36px; height: 36px; }
 }
 
@@ -218,3 +218,9 @@ body.admin-shell { display: block; padding: 0; background: var(--bg); }
 /* Log in sits beside the enrol button; both hide behind the burger on phones. */
 .cnav-login { width: auto; margin: 0; padding: .6rem 1.15rem; font-size: .88rem; background: var(--surface); color: var(--text); border: 1px solid var(--border-strong); }
 .cnav-login:hover { border-color: var(--accent); color: var(--accent); }
+
+/* Sign-in panel: plain selling points instead of the old mascot picture. */
+.brand-points { list-style: none; margin: 2rem 0 0; padding: 0; display: grid; gap: .85rem; }
+.brand-points li { position: relative; padding-left: 1.6rem; font-size: .95rem; line-height: 1.6; opacity: .92; }
+.brand-points li::before { content: '¹3'; position: absolute; left: 0; font-weight: 700; color: var(--accent-orange); }
+.brand-foot { margin-top: 2.5rem; font-size: .8rem; opacity: .65; line-height: 1.6; }

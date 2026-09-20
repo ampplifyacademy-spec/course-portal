@@ -9,7 +9,7 @@
 <link rel="preconnect" href="https://firestore.googleapis.com" crossorigin>
 <link rel="preconnect" href="https://lh3.googleusercontent.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@500;600;700;800&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
-<link rel="stylesheet" href="css/style.css?v=9">
+<link rel="stylesheet" href="css/style.css?v=10">
 <style>
   body.course-page { display: block; padding: 0; position: relative; }
   body.course-page::before, body.course-page::after {
@@ -149,7 +149,7 @@
 <body class="course-page">
 
 <nav class="cnav">
-  <a class="brand" href="course.html"><span class="logo" aria-label="Ampplify Academy"><span class="logo-word"><span class="logo-a">A</span>MPPLIFY</span><span class="logo-sub">ACADEMY</span></span><img src="" alt="" id="siteLogo" style="display:none; height:22px; width:22px; object-fit:contain; border-radius:6px; margin-left:.5rem; vertical-align:middle;"></a>
+  <a class="brand" href="course.html"><span class="logo" aria-label="Ampplify Academy"><span class="logo-word"><span class="logo-a">A</span>MPPLIFY</span><span class="logo-sub">ACADEMY</span></span></a>
   <div class="cnav-links">
     <a href="course.html">Home</a>
     <a onclick="document.getElementById('curriculum').scrollIntoView({behavior:'smooth'}); closeMobileNav()">Curriculum</a>
@@ -411,11 +411,6 @@ loadSiteContent().then(content => {
   document.getElementById('mentorName').textContent = c.mentorName;
   document.getElementById('mentorBio').textContent = c.mentorBio;
   if (c.heroImageUrl) document.getElementById('heroImg').src = driveImgUrl(c.heroImageUrl);
-  if (c.siteLogoUrl) {
-    const siteLogo = document.getElementById('siteLogo');
-    siteLogo.src = driveImgUrl(c.siteLogoUrl);
-    siteLogo.style.display = 'inline-block';
-  }
   renderCoursePrices = () => {
     const p = getCoursePricing(c);
     const priceOldEl = document.getElementById('priceOld');
