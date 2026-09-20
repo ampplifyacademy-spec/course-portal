@@ -13,15 +13,17 @@
  *
  * Setup, in each Drive account:
  *   1. script.google.com -> New project, paste this file.
- *   2. Services (+) -> add "Drive API" (identifier Drive, version v3).
- *   3. Project Settings -> Script properties:
+ *   2. Project Settings -> Script properties:
  *        FOLDER_ID  - the id in the folder's URL (drive.google.com/drive/folders/THIS)
  *        SECRET     - one long passcode, the same in all three accounts
- *   4. Run setUp() once and allow the permissions it asks for. It locks every
+ *   3. Run setUp() once and allow the permissions it asks for. It locks every
  *      file already in the folder and installs the hourly trigger.
- *   5. Deploy -> New deployment -> Web app, "Execute as: Me",
+ *   4. Deploy -> New deployment -> Web app, "Execute as: Me",
  *      "Who has access: Anyone", then copy the /exec URL.
- *   6. Paste the three URLs and the passcode into the admin panel, once.
+ *   5. Paste the URLs and the passcode into the admin panel, once.
+ *
+ * The Drive REST API is called with UrlFetchApp and the script's own OAuth
+ * token, so no advanced service has to be switched on by hand.
  *
  * Requests are POSTs with a JSON body: { secret, action, email }
  * where action is "grant", "revoke" or "status".
@@ -89,16 +91,33 @@ function doPost(e) {
   }
 }
 
+/** Drive REST v3, called with this script's own token. */
+var DRIVE_API = 'https://www.googleapis.com/drive/v3/files/';
+
+function driveCall(path, method, payload) {
+  var options = {
+    method: method,
+    muteHttpExceptions: true,
+    headers: { Authorization: 'Bearer ' + ScriptApp.getOAuthToken() }
+  };
+  if (payload) {
+    options.contentType = 'application/json';
+    options.payload = JSON.stringify(payload);
+  }
+  var res = UrlFetchApp.fetch(DRIVE_API + path, options);
+  var code = res.getResponseCode();
+  var text = res.getContentText();
+  if (code >= 300) throw new Error('Drive API ' + code + ': ' + text.slice(0, 300));
+  return text ? JSON.parse(text) : {};
+}
+
 /**
- * DriveApp's addViewer always emails the person. The Drive API can do the same
+ * DriveApp's addViewer always emails the person. The REST API can do the same
  * share silently, which is what we want: the admin panel tells the student.
  */
 function grantViewer(folderId, email) {
-  Drive.Permissions.create(
-    { role: 'reader', type: 'user', emailAddress: email },
-    folderId,
-    { sendNotificationEmail: false, supportsAllDrives: true }
-  );
+  driveCall(folderId + '/permissions?sendNotificationEmail=false&supportsAllDrives=true', 'post',
+            { role: 'reader', type: 'user', emailAddress: email });
 }
 
 /** Removes the person however they were added - viewer, commenter or editor. */
@@ -106,7 +125,7 @@ function revokeAccess(folderId, email) {
   var removed = 0;
   listPermissions(folderId).forEach(function (p) {
     if ((p.emailAddress || '').toLowerCase() !== email) return;
-    Drive.Permissions.remove(folderId, p.id, { supportsAllDrives: true });
+    driveCall(folderId + '/permissions/' + p.id + '?supportsAllDrives=true', 'delete');
     removed++;
   });
   return removed;
@@ -114,14 +133,13 @@ function revokeAccess(folderId, email) {
 
 function listPermissions(folderId) {
   var out = [];
-  var pageToken = null;
+  var pageToken = '';
   do {
-    var res = Drive.Permissions.list(folderId, {
-      fields: 'nextPageToken,permissions(id,emailAddress,role,type)',
-      pageSize: 100, pageToken: pageToken, supportsAllDrives: true
-    });
+    var res = driveCall(folderId + '/permissions?pageSize=100&supportsAllDrives=true' +
+      '&fields=nextPageToken,permissions(id,emailAddress,role,type)' +
+      (pageToken ? '&pageToken=' + pageToken : ''), 'get');
     out = out.concat(res.permissions || []);
-    pageToken = res.nextPageToken;
+    pageToken = res.nextPageToken || '';
   } while (pageToken);
   return out;
 }
@@ -132,40 +150,7 @@ function listPermissions(folderId) {
  * someone recording their screen.
  */
 function lockFile(fileId) {
-  Drive.Files.update({ copyRequiresWriterPermission: true }, fileId, null, { supportsAllDrives: true });
-}
-
-/** Everything in the folder and its sub-folders. Also the hourly trigger's job. */
-function lockAllDownloads() {
-  var folderId = PROPS.getProperty('FOLDER_ID');
-  var count = walk(DriveApp.getFolderById(folderId));
-  PROPS.setProperty('LOCKED_UNTIL', String(Date.now()));
-  Logger.log('Locked ' + count + ' file(s)');
-  return count;
-}
-
-/** Only files added since the last pass, so granting access stays fast. */
-function lockNewFiles(folder) {
-  var lastRun = Number(PROPS.getProperty('LOCKED_UNTIL') || 0);
-  var files = folder.getFiles();
-  var locked = 0;
-  while (files.hasNext()) {
-    var file = files.next();
-    if (file.getDateCreated().getTime() <= lastRun) continue;
-    try { lockFile(file.getId()); locked++; } catch (err) {}
-  }
-  return locked;
-}
-
-function walk(folder) {
-  var count = 0;
-  var files = folder.getFiles();
-  while (files.hasNext()) {
-    try { lockFile(files.next().getId()); count++; } catch (err) {}
-  }
-  var subs = folder.getFolders();
-  while (subs.hasNext()) count += walk(subs.next());
-  return count;
+  driveCall(fileId + '?supportsAllDrives=true', 'patch', { copyRequiresWriterPermission: true });
 }
 
 function reply(obj) {
