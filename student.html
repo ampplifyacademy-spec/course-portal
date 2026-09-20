@@ -251,6 +251,12 @@ function drivePlayerUrl(url) {
   return found.kind === 'file' ? withUser : withUser + '#grid';
 }
 
+// Values for an inline onclick: JSON quotes the string, then the quotes are
+// escaped so they survive inside a double-quoted HTML attribute.
+function jsArg(value) {
+  return JSON.stringify(String(value == null ? '' : value)).replace(/"/g, '&quot;');
+}
+
 function openPlayer(title, url) {
   const embed = drivePlayerUrl(url);
   if (!embed) { window.open(courseLink(url), '_blank'); return; }
@@ -361,13 +367,13 @@ function renderBatchPanel() {
       ${g.classes.length === 0 ? '<p style="padding:1.25rem 1.6rem; color:var(--text-faint); font-size:.9rem;">No classes available yet.</p>' : g.classes.map(c => {
         const done = completedClasses.includes(c.id);
         return `
-          <div class="class-row" onclick="openPlayer(${JSON.stringify(c.title)}, ${JSON.stringify(c.driveLink || '')})">
+          <div class="class-row" onclick="openPlayer(${jsArg(c.title)}, ${jsArg(c.driveLink)})">
             <div class="class-icon ${done ? 'done' : 'todo'}" title="${done ? 'Mark as not watched' : 'Mark as completed'}" onclick="event.stopPropagation(); toggleClassComplete('${c.id}')" style="cursor:pointer;">${done ? '✓' : '○'}</div>
             <div class="info">
               <div class="title">${c.title}</div>
               <div class="meta">${c.meta}</div>
             </div>
-            <button onclick="event.stopPropagation(); openPlayer(${JSON.stringify(c.title)}, ${JSON.stringify(c.driveLink || '')})" style="width:auto; margin:0; padding:.4rem .9rem; font-size:.8rem;">Watch</button>
+            <button onclick="event.stopPropagation(); openPlayer(${jsArg(c.title)}, ${jsArg(c.driveLink)})" style="width:auto; margin:0; padding:.4rem .9rem; font-size:.8rem;">Watch</button>
             <span class="status ${done ? 'done' : ''}">${done ? 'Completed' : 'Not watched'}</span>
           </div>`;
       }).join('')}
