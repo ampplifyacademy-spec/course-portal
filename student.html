@@ -41,6 +41,9 @@
   .class-row .info .meta { color: var(--text-muted); font-size: .78rem; margin-top: .15rem; }
   .class-row .status { font-size: .82rem; font-weight: 600; color: var(--text-muted); }
   .class-row .status.done { color: var(--success); }
+  .drive-note { background: var(--warning-bg, #fff7e6); border: 1px solid var(--accent-orange); border-radius: var(--radius-sm); padding: .85rem 1rem; margin-bottom: 1.25rem; font-size: .86rem; line-height: 1.6; color: var(--text-soft); }
+  .drive-note strong { color: var(--text); }
+  .drive-note #driveNoteEmail { font-weight: 700; color: var(--accent); }
   .resource-row { display: flex; justify-content: space-between; align-items: center; padding: .9rem 1.1rem; background: var(--surface); border: 1px solid var(--border); border-radius: var(--radius-sm); margin-bottom: .6rem; }
   .resource-row a button { width: auto; margin: 0; padding: .4rem .9rem; font-size: .82rem; }
 </style>
@@ -75,6 +78,14 @@
         <div class="label">Overall progress</div>
         <div class="value" id="overallProgress">0%</div>
       </div>
+    </div>
+
+    <div class="drive-note" id="driveNote" style="display:none;">
+      <strong>Class videos open with your course email:</strong>
+      <span id="driveNoteEmail"></span>.
+      If your browser is signed in to a different Google account, the video will say
+      "You need access" &mdash; pick your course email on the Google screen, or open the
+      link in a private/incognito window and sign in with it.
     </div>
 
     <div class="tab-section active" id="tab-dashboard">
@@ -159,6 +170,8 @@ auth.onAuthStateChanged(user => {
     const displayName = data.name || user.email;
     document.getElementById('studentName').textContent = displayName;
     document.getElementById('welcomeTitle').textContent = 'Welcome back, ' + displayName.split(' ')[0];
+    document.getElementById('driveNoteEmail').textContent = currentEmail;
+    document.getElementById('driveNote').style.display = '';
 
     document.getElementById('studentAvatar').textContent = displayName.charAt(0).toUpperCase();
 
@@ -175,7 +188,7 @@ auth.onAuthStateChanged(user => {
       document.getElementById('toolPanel').innerHTML = `
         <h2 style="margin-bottom:.5rem;">${data.toolName || 'Your Tool'}</h2>
         <p style="color:var(--text-muted); font-size:.85rem; margin-bottom:1.25rem;">${data.toolPrice ? data.toolPrice + ' ' + (data.toolCurrency || '') + ' / month subscription' : ''}</p>
-        <a href="${data.toolLink || '#'}" target="_blank"><button style="width:auto;">Open Tool</button></a>`;
+        <a href="${courseLink(data.toolLink)}" target="_blank"><button style="width:auto;">Open Tool</button></a>`;
     }
 
     loadAllBatches(data.blockedCourses || []);
@@ -184,6 +197,18 @@ auth.onAuthStateChanged(user => {
     watchSession(user.uid, mySession);
   });
 });
+
+// Course folders are shared with the email the student registered with, but a
+// browser signed in to a different Google account opens Drive as that account
+// and shows "You need access". Sending the link through Google's account
+// chooser with the registered email makes Google switch to (or ask for) the
+// right account first.
+function courseLink(url) {
+  if (!url || !currentEmail) return url || '#';
+  if (!/^https?:\/\/(drive|docs)\.google\.com/.test(url)) return url;
+  return 'https://accounts.google.com/AccountChooser?Email=' + encodeURIComponent(currentEmail) +
+         '&continue=' + encodeURIComponent(url);
+}
 
 function loadAllBatches(blockedCourses) {
   db.collection('courseContent').doc('main').get().then(contentDoc => {
@@ -282,7 +307,7 @@ function renderBatchPanel() {
               <div class="title">${c.title}</div>
               <div class="meta">${c.meta}</div>
             </div>
-            <a href="${c.driveLink}" target="_blank" onclick="event.stopPropagation()"><button style="width:auto; margin:0; padding:.4rem .9rem; font-size:.8rem;">Watch</button></a>
+            <a href="${courseLink(c.driveLink)}" target="_blank" onclick="event.stopPropagation()"><button style="width:auto; margin:0; padding:.4rem .9rem; font-size:.8rem;">Watch</button></a>
             <span class="status ${done ? 'done' : ''}">${done ? 'Completed' : 'Upcoming'}</span>
           </div>`;
       }).join('')}
@@ -342,7 +367,7 @@ function loadResources() {
     const resources = (doc.exists && doc.data().resources) || [];
     const wrap = document.getElementById('resourceWrap');
     wrap.innerHTML = resources.length
-      ? resources.map(r => `<div class="resource-row"><span>${r.title}</span><a href="${r.link}" target="_blank"><button>Open</button></a></div>`).join('')
+      ? resources.map(r => `<div class="resource-row"><span>${r.title}</span><a href="${courseLink(r.link)}" target="_blank"><button>Open</button></a></div>`).join('')
       : '<p style="color:var(--text-faint); font-size:.9rem;">No resources shared yet.</p>';
   });
 }
@@ -352,7 +377,7 @@ function loadResourceLinks() {
     const resourceLinks = (doc.exists && doc.data().resourceLinks) || [];
     const wrap = document.getElementById('resourceLinkWrap');
     wrap.innerHTML = resourceLinks.length
-      ? resourceLinks.map(r => `<div class="resource-row"><span>${r.title}</span><a href="${r.link}" target="_blank"><button>Open</button></a></div>`).join('')
+      ? resourceLinks.map(r => `<div class="resource-row"><span>${r.title}</span><a href="${courseLink(r.link)}" target="_blank"><button>Open</button></a></div>`).join('')
       : '<p style="color:var(--text-faint); font-size:.9rem;">No links shared yet.</p>';
   });
 }
