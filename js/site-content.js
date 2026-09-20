@@ -12,6 +12,15 @@ function driveImgUrl(url) {
   return m ? `https://lh3.googleusercontent.com/d/${m[1]}` : url;
 }
 
+// Once offerEndsAt has passed, the promo price no longer applies: charge the regular
+// price (priceOld) and stop showing a strikethrough. No offerEndsAt = promo never expires.
+function getCoursePricing(course) {
+  const endTime = course.offerEndsAt ? new Date(course.offerEndsAt).getTime() : NaN;
+  const expired = !isNaN(endTime) && Date.now() >= endTime;
+  if (expired && course.priceOld) return { current: course.priceOld, strike: '', offerExpired: true };
+  return { current: course.priceNew, strike: course.priceOld, offerExpired: false };
+}
+
 const SITE_CONTENT_DEFAULTS = {
   theme: { accent: '#2563eb', accentOrange: '#fd7d01', bg: '#ffffff' },
   social: { facebook: '', instagram: '', whatsapp: '' },

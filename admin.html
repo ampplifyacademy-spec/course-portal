@@ -2505,7 +2505,7 @@ function setStatus(uid, status) {
     return;
   }
   loadSiteContent().then(content => {
-    const suggested = content.course.priceNew;
+    const suggested = getCoursePricing(content.course).current;
     const input = prompt('Amount paid (' + content.course.currency + ')', suggested);
     if (input === null) return;
     const amount = Number(input);

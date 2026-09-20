@@ -184,7 +184,7 @@ loadSiteContent().then(content => {
     const c = content.course;
     const amountBox = document.getElementById('courseAmountBox');
     amountBox.style.display = 'block';
-    amountBox.innerHTML = `<div class="row"><span>Course price</span><span>${c.priceNew} ${c.currency}</span></div>`;
+    amountBox.innerHTML = `<div class="row"><span>Course price</span><span>${getCoursePricing(c).current} ${c.currency}</span></div>`;
   }
 
   const b = content.bankDetails;
