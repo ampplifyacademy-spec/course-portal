@@ -38,6 +38,7 @@ function setUp() {
   if (!PROPS.getProperty('SECRET')) throw new Error('Set the SECRET script property first');
 
   var folder = DriveApp.getFolderById(folderId);
+  var openedUp = restrictLinkAccess(folderId);
   var locked = lockAllDownloads();
 
   // Only one hourly trigger, however many times this is run.
@@ -47,7 +48,8 @@ function setUp() {
   ScriptApp.newTrigger('lockAllDownloads').timeBased().everyHours(1).create();
 
   var message = 'Folder "' + folder.getName() + '" ready. ' + locked +
-    ' file(s) locked, hourly lock installed.';
+    ' file(s) locked, hourly lock installed. Link sharing removed from ' +
+    openedUp + ' item(s) - only invited emails can open it now.';
   Logger.log(message);
   return message;
 }
@@ -151,6 +153,44 @@ function listPermissions(folderId) {
  */
 function lockFile(fileId) {
   driveCall(fileId + '?supportsAllDrives=true', 'patch', { copyRequiresWriterPermission: true });
+}
+
+/**
+ * "Anyone with the link" would let a forwarded link open the course, so any
+ * such permission is removed from the folder and from every file in it.
+ * Access is then only what this script grants, email by email.
+ */
+function restrictLinkAccess(folderId) {
+  var removed = 0;
+  removed += dropAnyonePermissions(folderId);
+  var folder = DriveApp.getFolderById(folderId);
+  removed += walkRestrict(folder);
+  return removed;
+}
+
+function dropAnyonePermissions(fileId) {
+  var removed = 0;
+  listPermissions(fileId).forEach(function (p) {
+    if (p.type !== 'anyone' && p.type !== 'domain') return;
+    try {
+      driveCall(fileId + '/permissions/' + p.id + '?supportsAllDrives=true', 'delete');
+      removed++;
+    } catch (err) {}
+  });
+  return removed;
+}
+
+function walkRestrict(folder) {
+  var removed = 0;
+  var files = folder.getFiles();
+  while (files.hasNext()) removed += dropAnyonePermissions(files.next().getId());
+  var subs = folder.getFolders();
+  while (subs.hasNext()) {
+    var sub = subs.next();
+    removed += dropAnyonePermissions(sub.getId());
+    removed += walkRestrict(sub);
+  }
+  return removed;
 }
 
 /** Everything in the folder and its sub-folders. Also the hourly trigger's job. */
