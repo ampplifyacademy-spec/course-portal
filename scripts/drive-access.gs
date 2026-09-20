@@ -153,6 +153,39 @@ function lockFile(fileId) {
   driveCall(fileId + '?supportsAllDrives=true', 'patch', { copyRequiresWriterPermission: true });
 }
 
+/** Everything in the folder and its sub-folders. Also the hourly trigger's job. */
+function lockAllDownloads() {
+  var folderId = PROPS.getProperty('FOLDER_ID');
+  var count = walk(DriveApp.getFolderById(folderId));
+  PROPS.setProperty('LOCKED_UNTIL', String(Date.now()));
+  Logger.log('Locked ' + count + ' file(s)');
+  return count;
+}
+
+/** Only files added since the last pass, so granting access stays fast. */
+function lockNewFiles(folder) {
+  var lastRun = Number(PROPS.getProperty('LOCKED_UNTIL') || 0);
+  var files = folder.getFiles();
+  var locked = 0;
+  while (files.hasNext()) {
+    var file = files.next();
+    if (file.getDateCreated().getTime() <= lastRun) continue;
+    try { lockFile(file.getId()); locked++; } catch (err) {}
+  }
+  return locked;
+}
+
+function walk(folder) {
+  var count = 0;
+  var files = folder.getFiles();
+  while (files.hasNext()) {
+    try { lockFile(files.next().getId()); count++; } catch (err) {}
+  }
+  var subs = folder.getFolders();
+  while (subs.hasNext()) count += walk(subs.next());
+  return count;
+}
+
 function reply(obj) {
   return ContentService.createTextOutput(JSON.stringify(obj))
     .setMimeType(ContentService.MimeType.JSON);
