@@ -132,13 +132,11 @@
     <div class="tab-section" id="tab-students">
       <div class="panel" style="margin-bottom:1.5rem;">
         <h2 style="margin-bottom:.25rem;">Google Drive access</h2>
-        <p style="color:var(--text-muted); font-size:.85rem; margin-bottom:1rem;">One web app URL per Drive account (see scripts/drive-access.gs for the setup steps). The passcode must match the SECRET script property in all three accounts. Saved for the admin only — students never see it.</p>
-        <div class="grid-2">
-          <div><label>Batch 1 web app URL</label><input id="driveUrl1" placeholder="https://script.google.com/macros/s/.../exec"></div>
-          <div><label>Batch 2 web app URL</label><input id="driveUrl2" placeholder="https://script.google.com/macros/s/.../exec"></div>
-          <div><label>Batch 3 web app URL</label><input id="driveUrl3" placeholder="https://script.google.com/macros/s/.../exec"></div>
-          <div><label>Passcode (SECRET)</label><input id="driveSecret" type="password" placeholder="same in all three scripts"></div>
-        </div>
+        <p style="color:var(--text-muted); font-size:.85rem; margin-bottom:1rem;">One web app URL per Drive account (setup steps are in scripts/drive-access.gs). The passcode must match the SECRET script property in every account. Saved for the admin only — students never see it. "Update Class" always stays at the bottom of the list, however many batches you add.</p>
+        <div id="driveAccountEditor"></div>
+        <button class="secondary" onclick="addDriveAccount()" style="width:auto; margin:.25rem 0 1rem;">+ Add Drive account</button>
+        <label>Passcode (SECRET)</label>
+        <input id="driveSecret" type="password" placeholder="same in every script">
         <button onclick="saveDriveAccessConfig()" style="width:auto; margin-top:1rem;">Save Drive settings</button>
         <p class="msg" id="driveConfigMsg" style="margin:.6rem 0 0;"></p>
       </div>
@@ -2336,35 +2334,83 @@ function renderUserRows(list) {
 // driveAccess, which only the admin can read - it must never reach the public
 // site files.
 let driveAccessConfig = null;
+let driveAccountRows = [];
+
+// The update-class folder is shared by every batch, so it is kept last in the
+// list; adding Batch 4 later pushes it down rather than past it.
+const UPDATE_CLASS_NAME = 'Update Class';
+
+function isUpdateClass(name) {
+  return (name || '').trim().toLowerCase() === UPDATE_CLASS_NAME.toLowerCase();
+}
+
+function sortDriveAccounts(list) {
+  return list.filter(a => !isUpdateClass(a.name)).concat(list.filter(a => isUpdateClass(a.name)));
+}
 
 function loadDriveAccessConfig() {
   return db.collection('config').doc('driveAccess').get().then(doc => {
-    driveAccessConfig = doc.exists ? doc.data() : { urls: [], secret: '' };
-    const urls = driveAccessConfig.urls || [];
-    for (let i = 0; i < 3; i++) {
-      const box = document.getElementById('driveUrl' + (i + 1));
-      if (box) box.value = urls[i] || '';
+    driveAccessConfig = doc.exists ? doc.data() : {};
+    const saved = driveAccessConfig.accounts
+      || (driveAccessConfig.urls || []).map((url, i) => ({ name: 'Batch ' + (i + 1), url }));
+    driveAccountRows = sortDriveAccounts(saved.map(a => ({ name: a.name || '', url: a.url || '' })));
+    if (!driveAccountRows.length) {
+      driveAccountRows = [{ name: 'Batch 1', url: '' }, { name: 'Batch 2', url: '' }, { name: UPDATE_CLASS_NAME, url: '' }];
     }
+    renderDriveAccountRows();
     const secretBox = document.getElementById('driveSecret');
     if (secretBox) secretBox.value = driveAccessConfig.secret || '';
-  }).catch(() => { driveAccessConfig = { urls: [], secret: '' }; });
+  }).catch(() => { driveAccessConfig = { accounts: [], secret: '' }; });
+}
+
+function renderDriveAccountRows() {
+  const box = document.getElementById('driveAccountEditor');
+  if (!box) return;
+  driveAccountRows = sortDriveAccounts(driveAccountRows);
+  box.innerHTML = driveAccountRows.map((a, i) => `
+    <div class="module-edit-card" style="padding:.9rem;">
+      <div class="grid-2">
+        <div>
+          <label>Folder name</label>
+          <input value="${(a.name || '').replace(/"/g, '&quot;')}" oninput="driveAccountRows[${i}].name = this.value" ${isUpdateClass(a.name) ? 'readonly' : ''}>
+        </div>
+        <div>
+          <label>Web app URL</label>
+          <input value="${(a.url || '').replace(/"/g, '&quot;')}" oninput="driveAccountRows[${i}].url = this.value" placeholder="https://script.google.com/macros/s/.../exec">
+        </div>
+      </div>
+      <button class="danger" onclick="removeDriveAccount(${i})" style="width:auto; margin:.6rem 0 0; padding:.35rem .8rem; font-size:.78rem;">Remove</button>
+    </div>`).join('');
+}
+
+function addDriveAccount() {
+  const batchCount = driveAccountRows.filter(a => !isUpdateClass(a.name)).length;
+  driveAccountRows.push({ name: 'Batch ' + (batchCount + 1), url: '' });
+  renderDriveAccountRows();
+}
+
+function removeDriveAccount(i) {
+  driveAccountRows.splice(i, 1);
+  renderDriveAccountRows();
 }
 
 function saveDriveAccessConfig() {
   const msg = document.getElementById('driveConfigMsg');
-  const urls = [1, 2, 3].map(n => document.getElementById('driveUrl' + n).value.trim()).filter(Boolean);
+  const accounts = sortDriveAccounts(driveAccountRows)
+    .map(a => ({ name: (a.name || '').trim(), url: (a.url || '').trim() }))
+    .filter(a => a.url);
   const secret = document.getElementById('driveSecret').value.trim();
-  if (!urls.length || !secret) {
+  if (!accounts.length || !secret) {
     msg.style.color = 'var(--danger)';
     msg.textContent = 'Add at least one web app URL and the passcode.';
     return;
   }
   msg.style.color = 'var(--text-muted)';
   msg.textContent = 'Saving...';
-  db.collection('config').doc('driveAccess').set({ urls, secret }).then(() => {
-    driveAccessConfig = { urls, secret };
+  db.collection('config').doc('driveAccess').set({ accounts, secret }).then(() => {
+    driveAccessConfig = { accounts, secret };
     msg.style.color = 'var(--success)';
-    msg.textContent = 'Saved. ' + urls.length + ' Drive account(s) connected.';
+    msg.textContent = 'Saved. ' + accounts.length + ' folder(s) connected: ' + accounts.map(a => a.name).join(', ') + '.';
     loadUsers();
   }).catch(err => {
     msg.style.color = 'var(--danger)';
@@ -2372,8 +2418,14 @@ function saveDriveAccessConfig() {
   });
 }
 
+function driveAccounts() {
+  const cfg = driveAccessConfig || {};
+  if (cfg.accounts && cfg.accounts.length) return sortDriveAccounts(cfg.accounts);
+  return (cfg.urls || []).map((url, i) => ({ name: 'Batch ' + (i + 1), url }));
+}
+
 function driveCellHtml(u) {
-  if (!driveAccessConfig || !(driveAccessConfig.urls || []).length) {
+  if (!driveAccessConfig || !driveAccounts().length) {
     return '<span style="color:var(--text-faint); font-size:.75rem;">Not set up</span>';
   }
   if (u.status !== 'approved') {
@@ -2405,7 +2457,8 @@ function callDriveScript(url, payload) {
 
 function setDriveAccess(uid, email, action) {
   const cfg = driveAccessConfig || {};
-  const urls = cfg.urls || [];
+  const accounts = driveAccounts();
+  const urls = accounts.map(a => a.url);
   const msg = document.getElementById('driveMsg-' + uid);
   if (!urls.length || !cfg.secret) {
     msg.style.color = 'var(--danger)';
@@ -2413,7 +2466,7 @@ function setDriveAccess(uid, email, action) {
     return;
   }
   const verb = action === 'grant' ? 'Give' : 'Remove';
-  if (!confirm(verb + ' Drive access for ' + email + ' in all ' + urls.length + ' batch folder(s)?')) return;
+  if (!confirm(verb + ' Drive access for ' + email + ' in: ' + accounts.map(a => a.name).join(', ') + '?')) return;
 
   msg.style.color = 'var(--text-muted)';
   msg.textContent = 'Working...';
@@ -2422,8 +2475,9 @@ function setDriveAccess(uid, email, action) {
       const failed = results.filter(r => !r || !r.ok);
       if (failed.length) {
         msg.style.color = 'var(--danger)';
-        msg.textContent = (results.length - failed.length) + ' of ' + results.length + ' done. ' +
-          (failed[0].error || 'One folder refused the request.');
+        const failedNames = results.map((r, i) => (!r || !r.ok) ? accounts[i].name : null).filter(Boolean);
+        msg.textContent = (results.length - failed.length) + ' of ' + results.length + ' done. Failed: ' +
+          failedNames.join(', ') + ' - ' + (failed[0].error || 'refused the request.');
       } else {
         msg.style.color = 'var(--success)';
         msg.textContent = 'Done in all ' + results.length + ' folder(s).';
