@@ -181,10 +181,25 @@ auth.onAuthStateChanged(user => {
     // The account belongs to the browser that claimed it. A shared password
     // opens nothing anywhere else, and the admin panel hands it over when a
     // student genuinely changes device.
-    if (data.deviceId && data.deviceId !== localStorage.getItem('device_' + user.uid)) {
-      alert('This account is registered to another device or browser. Ask us to reset it if you have changed device.');
-      auth.signOut().then(() => { location.href = 'login.html'; });
-      return;
+    //
+    // The claim is made here as well as at sign-in: a student who is already
+    // signed in never passes through the login page again, and until one
+    // browser claims the account every browser would be let in.
+    if (data.deviceId) {
+      if (data.deviceId !== localStorage.getItem('device_' + user.uid)) {
+        alert('This account is registered to another device or browser. Ask us to reset it if you have changed device.');
+        auth.signOut().then(() => { location.href = 'login.html'; });
+        return;
+      }
+    } else {
+      const mine = localStorage.getItem('device_' + user.uid) ||
+        (crypto.randomUUID ? crypto.randomUUID() : String(Date.now()) + Math.random());
+      localStorage.setItem('device_' + user.uid, mine);
+      db.collection('users').doc(user.uid).update({
+        deviceId: mine,
+        deviceLabel: navigator.userAgent.slice(0, 120),
+        deviceClaimedAt: new Date().toISOString()
+      }).catch(() => {});
     }
 
     document.getElementById('studentBatchLabel').textContent = 'Student';
