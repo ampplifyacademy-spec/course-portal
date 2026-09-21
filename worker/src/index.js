@@ -30,7 +30,7 @@ export default {
     const idToken = url.searchParams.get('token') || bearer(request);
     if (!idToken) return err(401, 'No token', env, origin);
 
-    const student = await approvedStudent(idToken, env);
+    const student = await approvedStudent(idToken, env, url.searchParams.get('device') || '');
     if (!student.ok) return err(403, student.error, env, origin);
 
     // The folder itself is the class list: whatever is uploaded shows up, with
@@ -65,7 +65,7 @@ function bearer(request) {
  * signature for us), and that account is approved in Firestore. The Firestore
  * read is made with the student's own token, so our existing rules apply.
  */
-async function approvedStudent(idToken, env) {
+async function approvedStudent(idToken, env, deviceId) {
   const lookup = await fetch(
     'https://identitytoolkit.googleapis.com/v1/accounts:lookup?key=' + env.FIREBASE_API_KEY,
     { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ idToken: idToken }) }
@@ -81,8 +81,16 @@ async function approvedStudent(idToken, env) {
     { headers: { Authorization: 'Bearer ' + idToken } }
   );
   if (!doc.ok) return { ok: false, error: 'No student record' };
-  const status = (((await doc.json()).fields || {}).status || {}).stringValue;
+  const fields = (await doc.json()).fields || {};
+  const status = (fields.status || {}).stringValue;
   if (status !== 'approved') return { ok: false, error: 'Account not approved yet' };
+
+  // The pages check this too, but a token could be lifted out of one browser and
+  // replayed from another, so the device is what actually gates the video.
+  const claimed = (fields.deviceId || {}).stringValue;
+  if (claimed && claimed !== deviceId) {
+    return { ok: false, error: 'This account is registered to another device. Ask support to reset it.' };
+  }
   return { ok: true, uid: uid };
 }
 

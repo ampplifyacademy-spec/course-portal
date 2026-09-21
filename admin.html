@@ -2399,6 +2399,7 @@ function renderUserRows(list) {
       <td>${accessHtml}</td>
       <td>${driveCellHtml(u)}</td>
       <td>
+        ${deviceCellHtml(u)}
         <button class="secondary" onclick="sendPasswordReset('${u.email}')" style="width:auto; margin:0 0 .3rem; padding:.4rem .7rem; font-size:.78rem; display:block;">Reset Password</button>
         <button class="danger" onclick="deleteStudent('${u.id}','${u.email}')" style="width:auto; margin:0; padding:.4rem .7rem; font-size:.78rem; display:block;">Delete Record</button>
       </td>`;
@@ -2625,6 +2626,33 @@ function setStatus(uid, status) {
       approvedAt: firebase.firestore.FieldValue.serverTimestamp()
     }).then(loadUsers);
   });
+}
+
+// An account opens on the browser that first signed in, so a password passed to
+// a friend is worth nothing. A student who really changes device needs the
+// claim cleared, which is what this button does.
+function deviceCellHtml(u) {
+  if (u.status !== 'approved') return '';
+  if (!u.deviceId) {
+    return '<div style="color:var(--text-muted); font-size:.75rem; margin-bottom:.3rem;">No device yet</div>';
+  }
+  const when = u.deviceClaimedAt ? new Date(u.deviceClaimedAt).toLocaleDateString() : '';
+  const label = (u.deviceLabel || '').replace(/"/g, '&quot;');
+  return `
+    <div style="color:var(--success); font-size:.75rem; margin-bottom:.2rem;" title="${label}">Locked to 1 device${when ? ' · ' + when : ''}</div>
+    <button class="secondary" onclick="resetDevice('${u.id}','${u.email}')" style="width:auto; margin:0 0 .3rem; padding:.4rem .7rem; font-size:.78rem; display:block;">Reset Device</button>`;
+}
+
+function resetDevice(uid, email) {
+  const warning = 'Let ' + email + ' sign in on a new device? The next browser to sign in claims the account, and the current one stops working.';
+  if (!confirm(warning)) return;
+  db.collection('users').doc(uid).update({
+    deviceId: firebase.firestore.FieldValue.delete(),
+    deviceLabel: firebase.firestore.FieldValue.delete(),
+    deviceClaimedAt: firebase.firestore.FieldValue.delete(),
+    currentSessionId: firebase.firestore.FieldValue.delete()
+  }).then(() => { alert('Done. ' + email + ' can sign in on one new device now.'); loadUsers(); })
+    .catch(err => alert('Could not reset: ' + err.message));
 }
 
 function sendPasswordReset(email) {

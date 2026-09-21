@@ -178,6 +178,15 @@ auth.onAuthStateChanged(user => {
       return;
     }
 
+    // The account belongs to the browser that claimed it. A shared password
+    // opens nothing anywhere else, and the admin panel hands it over when a
+    // student genuinely changes device.
+    if (data.deviceId && data.deviceId !== localStorage.getItem('device_' + user.uid)) {
+      alert('This account is registered to another device or browser. Ask us to reset it if you have changed device.');
+      auth.signOut().then(() => { location.href = 'login.html'; });
+      return;
+    }
+
     document.getElementById('studentBatchLabel').textContent = 'Student';
 
     if (data.productType === 'tool') {
@@ -265,8 +274,10 @@ function folderIdOf(url) {
 /** Classes straight out of the Drive folder, in file-name order. */
 function classesFromFolder(folderId, moduleKey) {
   if (!videoProxyUrl || !auth.currentUser) return Promise.resolve(null);
+  const device = localStorage.getItem('device_' + auth.currentUser.uid) || '';
   return auth.currentUser.getIdToken()
-    .then(token => fetch(videoProxyUrl + '/classes/' + folderId + '?token=' + encodeURIComponent(token)))
+    .then(token => fetch(videoProxyUrl + '/classes/' + folderId +
+      '?token=' + encodeURIComponent(token) + '&device=' + encodeURIComponent(device)))
     .then(res => (res.ok ? res.json() : null))
     .then(data => {
       if (!data || !data.classes || !data.classes.length) return null;

@@ -102,6 +102,31 @@ function doLogin() {
 // Google sign-in. A student who enrolled with an email and password keeps the
 // same account: Google is linked onto it after they confirm their password
 // once, so their approval, batch and progress all stay put.
+/**
+ * A course is sold to one student, not to whoever they lend the password to.
+ * The first browser to sign in claims the account; after that only that browser
+ * is let in, and only the admin can hand the account to a new one.
+ *
+ * The mark is a random id in this browser's own storage, so a second browser -
+ * or a second Chrome profile on the same computer - counts as a new device.
+ * Clearing site data or a private window looks new too, which is why the admin
+ * panel has a "Reset device" button.
+ */
+function deviceCheck(uid, data) {
+  let mine = localStorage.getItem('device_' + uid);
+  if (!mine) {
+    mine = (crypto.randomUUID ? crypto.randomUUID() : String(Date.now()) + Math.random());
+  }
+  const claimed = data.deviceId;
+  if (!claimed) return { ok: true, claim: true, deviceId: mine };
+  if (claimed === mine) return { ok: true, claim: false, deviceId: mine };
+  return {
+    ok: false,
+    error: 'This account is already in use on another device or browser. ' +
+           'Your course opens on that one. If it was lost or changed, ask us to reset it.'
+  };
+}
+
 function afterSignIn(user, msg) {
   if (ADMIN_EMAILS.includes(user.email)) { location.href = 'admin.html'; return Promise.resolve(); }
   return db.collection('users').doc(user.uid).get().then(doc => {
@@ -112,9 +137,22 @@ function afterSignIn(user, msg) {
     }
     const status = doc.data().status;
     if (status === 'approved') {
+      const check = deviceCheck(user.uid, doc.data());
+      if (!check.ok) {
+        msg.style.color = 'var(--danger)';
+        msg.innerHTML = check.error;
+        return auth.signOut();
+      }
       const sessionId = crypto.randomUUID();
-      return db.collection('users').doc(user.uid).update({ currentSessionId: sessionId }).then(() => {
+      const update = { currentSessionId: sessionId };
+      if (check.claim) {
+        update.deviceId = check.deviceId;
+        update.deviceLabel = navigator.userAgent.slice(0, 120);
+        update.deviceClaimedAt = new Date().toISOString();
+      }
+      return db.collection('users').doc(user.uid).update(update).then(() => {
         localStorage.setItem('session_' + user.uid, sessionId);
+        localStorage.setItem('device_' + user.uid, check.deviceId);
         location.href = 'student.html';
       });
     }

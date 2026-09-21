@@ -11,10 +11,17 @@ service cloud.firestore {
         && request.resource.data.keys().hasOnly(['name', 'email', 'whatsapp', 'invoiceUrl', 'status', 'createdAt',
              'serviceDocuments', 'selectedServices', 'serviceTotal', 'serviceCurrency', 'preferredCallDate',
              'preferredCallTime', 'productType', 'toolName', 'toolPrice', 'toolCurrency', 'toolLink']);
+      // A student may record their session and progress, and may claim the one
+      // device the account runs on - but only while it is unclaimed. Handing it
+      // to a different browser is the admin's decision, not theirs.
       allow update: if request.auth != null && (
         isAdmin() ||
         (request.auth.uid == userId &&
-         request.resource.data.diff(resource.data).affectedKeys().hasOnly(['currentSessionId', 'completedClasses']))
+         request.resource.data.diff(resource.data).affectedKeys().hasOnly(['currentSessionId', 'completedClasses'])) ||
+        (request.auth.uid == userId &&
+         !('deviceId' in resource.data) &&
+         request.resource.data.diff(resource.data).affectedKeys()
+           .hasOnly(['currentSessionId', 'completedClasses', 'deviceId', 'deviceLabel', 'deviceClaimedAt']))
       );
       allow delete: if request.auth != null && isAdmin();
     }

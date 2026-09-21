@@ -74,7 +74,9 @@
   function showProxyPlayer(proxyUrl, idToken) {
     clearStage();
     const video = document.createElement('video');
-    video.src = proxyUrl + '/v/' + fileId + '?token=' + encodeURIComponent(idToken);
+    const device = localStorage.getItem('device_' + auth.currentUser.uid) || '';
+    video.src = proxyUrl + '/v/' + fileId + '?token=' + encodeURIComponent(idToken) +
+                '&device=' + encodeURIComponent(device);
     video.controls = true;
     video.autoplay = true;
     video.controlsList = 'nodownload';
