@@ -13,6 +13,7 @@
 
 const DRIVE_FILE = 'https://www.googleapis.com/drive/v3/files/';
 const TOKEN_URL = 'https://oauth2.googleapis.com/token';
+const DRIVE_LIST = 'https://www.googleapis.com/drive/v3/files';
 
 export default {
   async fetch(request, env) {
@@ -22,9 +23,9 @@ export default {
     if (request.method === 'OPTIONS') return cors(new Response(null, { status: 204 }), env, origin);
     if (request.method !== 'GET' && request.method !== 'HEAD') return err(405, 'Method not allowed', env, origin);
 
-    const match = url.pathname.match(/^\/v\/([\w-]{10,})$/);
-    if (!match) return err(404, 'Not found', env, origin);
-    const fileId = match[1];
+    const video = url.pathname.match(/^\/v\/([\w-]{10,})$/);
+    const listing = url.pathname.match(/^\/classes\/([\w-]{10,})$/);
+    if (!video && !listing) return err(404, 'Not found', env, origin);
 
     const idToken = url.searchParams.get('token') || bearer(request);
     if (!idToken) return err(401, 'No token', env, origin);
@@ -32,7 +33,16 @@ export default {
     const student = await approvedStudent(idToken, env);
     if (!student.ok) return err(403, student.error, env, origin);
 
-    const upstream = await fetchFromDrive(fileId, request, env);
+    // The folder itself is the class list: whatever is uploaded shows up, with
+    // no link to paste into the admin panel.
+    if (listing) {
+      const classes = await listFolder(listing[1], env);
+      return cors(new Response(JSON.stringify({ classes: classes }), {
+        headers: { 'Content-Type': 'application/json', 'Cache-Control': 'private, max-age=60' }
+      }), env, origin);
+    }
+
+    const upstream = await fetchFromDrive(video[1], request, env);
     if (!upstream) return err(404, 'File not in any course folder', env, origin);
     return cors(upstream, env, origin);
   }
@@ -126,6 +136,50 @@ async function importKey(pem) {
   const der = Uint8Array.from(atob(body), function (c) { return c.charCodeAt(0); });
   return crypto.subtle.importKey('pkcs8', der.buffer,
     { name: 'RSASSA-PKCS1-v1_5', hash: 'SHA-256' }, false, ['sign']);
+}
+
+/**
+ * Every video in a batch folder, and in any sub-folder of it, newest naming
+ * order first. The file name is the class title, so uploading a file is the
+ * whole job of publishing a class.
+ */
+async function listFolder(folderId, env, depth) {
+  const token = await accessToken(env);
+  const out = [];
+  let pageToken = '';
+  do {
+    const q = encodeURIComponent("'" + folderId + "' in parents and trashed = false");
+    const res = await fetch(DRIVE_LIST + '?q=' + q + '&pageSize=200&orderBy=name' +
+      '&fields=nextPageToken,files(id,name,mimeType,size,createdTime)' +
+      (pageToken ? '&pageToken=' + pageToken : ''),
+      { headers: { Authorization: 'Bearer ' + token } });
+    if (!res.ok) break;
+    const data = await res.json();
+    for (const f of data.files || []) {
+      if (f.mimeType === 'application/vnd.google-apps.folder') {
+        // One level of sub-folders is enough for how the batches are arranged.
+        if ((depth || 0) < 2) {
+          const inner = await listFolder(f.id, env, (depth || 0) + 1);
+          inner.forEach(function (c) { out.push(Object.assign({ module: f.name }, c)); });
+        }
+        continue;
+      }
+      if (!f.mimeType.startsWith('video/')) continue;
+      out.push({
+        id: f.id,
+        title: cleanTitle(f.name),
+        sizeMB: f.size ? Math.round(Number(f.size) / 1048576) : null,
+        uploadedAt: f.createdTime
+      });
+    }
+    pageToken = data.nextPageToken || '';
+  } while (pageToken);
+  return out;
+}
+
+/** "  Class 07 Products Research .mp4 " reads better as "Class 07 Products Research". */
+function cleanTitle(name) {
+  return String(name).replace(/\.[a-z0-9]{2,4}$/i, '').replace(/[_]+/g, ' ').replace(/\s+/g, ' ').trim();
 }
 
 async function fetchFromDrive(fileId, request, env) {

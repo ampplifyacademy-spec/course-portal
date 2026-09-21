@@ -259,24 +259,79 @@ function openPlayer(title, url) {
 }
 
 
+// The player's own proxy. With it configured, a batch folder is read live, so
+// a class is published simply by uploading the video - nothing to paste here.
+let videoProxyUrl = '';
+
+function loadVideoProxy() {
+  return db.collection('siteContent').doc('videoProxy').get()
+    .then(doc => { videoProxyUrl = (doc.exists ? doc.data().url : '') || ''; })
+    .catch(() => { videoProxyUrl = ''; });
+}
+
+function folderIdOf(url) {
+  const found = driveIdOf(url);
+  return found && found.kind === 'folder' ? found.id : null;
+}
+
+/** Classes straight out of the Drive folder, in file-name order. */
+function classesFromFolder(folderId, moduleKey) {
+  if (!videoProxyUrl || !auth.currentUser) return Promise.resolve(null);
+  return auth.currentUser.getIdToken()
+    .then(token => fetch(videoProxyUrl + '/classes/' + folderId + '?token=' + encodeURIComponent(token)))
+    .then(res => (res.ok ? res.json() : null))
+    .then(data => {
+      if (!data || !data.classes || !data.classes.length) return null;
+      return data.classes.map((c, j) => ({
+        id: moduleKey + '-drive-' + c.id,
+        title: c.title,
+        meta: [c.module, c.sizeMB ? c.sizeMB + ' MB' : ''].filter(Boolean).join(' · '),
+        driveLink: 'https://drive.google.com/file/d/' + c.id + '/view'
+      }));
+    })
+    .catch(() => null);
+}
+
 function loadAllBatches(blockedCourses) {
-  db.collection('courseContent').doc('main').get().then(contentDoc => {
+  Promise.all([db.collection('courseContent').doc('main').get(), loadVideoProxy()]).then(([contentDoc]) => {
     const allModules = contentDoc.exists ? (contentDoc.data().modules || []) : [];
+    const hidden = (contentDoc.exists ? contentDoc.data().hiddenClasses : null) || [];
 
-    const folders = allModules.map((m, i) => {
-      if (m.published === false) return null;
-      const classes = [];
+    const jobs = allModules.map((m, i) => {
+      if (m.published === false) return Promise.resolve(null);
+      const key = 'mod-' + i;
+      const name = m.title || ('Module ' + (i + 1));
+
+      // A hand-entered lesson list still wins, so anything arranged by hand
+      // keeps working exactly as it did.
       if (m.lessonLinks && m.lessonLinks.length) {
-        m.lessonLinks.forEach((l, j) => {
-          classes.push({ id: 'mod-' + i + '-lesson-' + j, title: l.title, meta: l.duration || '', driveLink: l.driveLink });
-        });
-      } else if (m.driveLink) {
-        classes.push({ id: 'mod-' + i, title: m.title, meta: m.duration || '', driveLink: m.driveLink });
+        const classes = m.lessonLinks.map((l, j) => ({
+          id: key + '-lesson-' + j, title: l.title, meta: l.duration || '', driveLink: l.driveLink
+        }));
+        return Promise.resolve({ key, name, classes });
       }
-      return { key: 'mod-' + i, name: m.title || ('Module ' + (i + 1)), classes: classes.filter(c => !blockedCourses.includes(c.id)) };
-    }).filter(Boolean);
 
-    renderBatches(folders);
+      const folderId = folderIdOf(m.driveLink);
+      if (folderId) {
+        return classesFromFolder(folderId, key).then(classes => ({
+          key, name,
+          classes: classes || [{ id: key, title: m.title, meta: m.duration || '', driveLink: m.driveLink }]
+        }));
+      }
+
+      return Promise.resolve({
+        key, name,
+        classes: m.driveLink ? [{ id: key, title: m.title, meta: m.duration || '', driveLink: m.driveLink }] : []
+      });
+    });
+
+    Promise.all(jobs).then(folders => {
+      renderBatches(folders.filter(Boolean).map(f => ({
+        key: f.key,
+        name: f.name,
+        classes: f.classes.filter(c => !blockedCourses.includes(c.id) && hidden.indexOf(c.id) === -1)
+      })));
+    });
   });
 }
 

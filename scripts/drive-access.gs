@@ -65,7 +65,8 @@ function doPost(e) {
 
     var folder = DriveApp.getFolderById(folderId);
     var email = String(body.email || '').trim().toLowerCase();
-    if (body.action !== 'status' && !email) return reply({ ok: false, error: 'No email given' });
+    var noEmailNeeded = body.action === 'handOverToProxy' || body.action === 'proxyStatus';
+    if (body.action !== 'status' && !noEmailNeeded && !email) return reply({ ok: false, error: 'No email given' });
 
     if (body.action === 'grant') {
       grantViewer(folderId, email);
@@ -84,6 +85,29 @@ function doPost(e) {
         ok: true, folder: folder.getName(),
         hasAccess: email ? emails.indexOf(email) !== -1 : null,
         viewerCount: emails.length
+      });
+    }
+
+    // Classes now reach students through our own player, which reads Drive as
+    // the service account. Their own Drive access is what would let a link be
+    // forwarded, so it goes; the download lock then has nobody to protect the
+    // files from, and it is what blocks the player from reading them.
+    if (body.action === 'handOverToProxy') {
+      var keep = String(body.serviceAccount || '').trim().toLowerCase();
+      if (!keep) return reply({ ok: false, error: 'No serviceAccount given' });
+      var peopleRemoved = removeEveryoneExcept(folderId, keep);
+      var filesOpened = unlockAllDownloads();
+      return reply({
+        ok: true, folder: folder.getName(), action: 'handedOver',
+        peopleRemoved: peopleRemoved, filesUnlocked: filesOpened
+      });
+    }
+
+    if (body.action === 'proxyStatus') {
+      var left = listPermissions(folderId).filter(function (p) { return p.role !== 'owner'; });
+      return reply({
+        ok: true, folder: folder.getName(),
+        stillShared: left.map(function (p) { return (p.emailAddress || p.type) + ':' + p.role; })
       });
     }
 
@@ -193,8 +217,60 @@ function walkRestrict(folder) {
   return removed;
 }
 
+/**
+ * Takes the folder back to just its owner and the player's service account.
+ * Every student viewer goes, so a forwarded Drive link is worth nothing and
+ * the course is reachable only through our portal.
+ */
+function removeEveryoneExcept(folderId, keepEmail) {
+  var removed = 0;
+  listPermissions(folderId).forEach(function (p) {
+    if (p.role === 'owner') return;
+    if ((p.emailAddress || '').toLowerCase() === keepEmail) return;
+    try {
+      driveCall(folderId + '/permissions/' + p.id + '?supportsAllDrives=true', 'delete');
+      removed++;
+    } catch (err) {}
+  });
+  return removed;
+}
+
+/**
+ * While copyRequiresWriterPermission is set, Drive refuses alt=media to anyone
+ * but the owner, which stops the player reading the file at all. Run this only
+ * after removeEveryoneExcept: with no viewers left there is nobody a download
+ * button could appear for.
+ */
+function unlockAllDownloads() {
+  var count = unlockWalk(DriveApp.getFolderById(PROPS.getProperty('FOLDER_ID')));
+  PROPS.setProperty('DOWNLOADS_UNLOCKED', '1');
+  Logger.log('Unlocked ' + count + ' file(s)');
+  return count;
+}
+
+function unlockWalk(folder) {
+  var count = 0;
+  var files = folder.getFiles();
+  while (files.hasNext()) {
+    try {
+      driveCall(files.next().getId() + '?supportsAllDrives=true', 'patch',
+                { copyRequiresWriterPermission: false });
+      count++;
+    } catch (err) {}
+  }
+  var subs = folder.getFolders();
+  while (subs.hasNext()) count += unlockWalk(subs.next());
+  return count;
+}
+
 /** Everything in the folder and its sub-folders. Also the hourly trigger's job. */
 function lockAllDownloads() {
+  // Once the player streams these files, re-locking them every hour would
+  // quietly break every class.
+  if (PROPS.getProperty('DOWNLOADS_UNLOCKED') === '1') {
+    Logger.log('Downloads stay unlocked - the player streams these files');
+    return 0;
+  }
   var folderId = PROPS.getProperty('FOLDER_ID');
   var count = walk(DriveApp.getFolderById(folderId));
   PROPS.setProperty('LOCKED_UNTIL', String(Date.now()));
@@ -204,6 +280,7 @@ function lockAllDownloads() {
 
 /** Only files added since the last pass, so granting access stays fast. */
 function lockNewFiles(folder) {
+  if (PROPS.getProperty('DOWNLOADS_UNLOCKED') === '1') return 0;
   var lastRun = Number(PROPS.getProperty('LOCKED_UNTIL') || 0);
   var files = folder.getFiles();
   var locked = 0;
