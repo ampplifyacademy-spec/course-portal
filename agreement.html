@@ -337,6 +337,13 @@ auth.onAuthStateChanged(function (user) {
   .sigline { font-size: 11pt; margin: 3pt 0; }
   .sealbox { border: 1px solid #999999; color: #999999; font-size: 9pt; height: 60pt; }
   .note-italic { font-size: 10pt; color: #555555; }
+  /* The app's own title bar is screen furniture; paper starts at the agreement. */
+  header.top { display: none !important; }
+  /* Word prints this in black - no slate body text, no navy headings, and
+     placeholders that are still blank print black rather than warning red. */
+  #doc, #doc * { color: #000 !important; }
+  #doc p.docsub, #doc .note-italic { color: #555555 !important; }
+  #doc .sealbox { color: #999999 !important; }
   @page { margin: 19mm 22mm; }
 }
 </style>
