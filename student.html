@@ -540,11 +540,18 @@ function watchSession(uid, mySession) {
 // out - contacting us - on the card.
 function showDeviceBlock() {
   const wa = document.getElementById('deviceWhatsapp');
-  const number = (window.SITE_WHATSAPP || '8801571068040').replace(/[^0-9]/g, '');
-  wa.href = 'https://wa.me/' + number + '?text=' +
-    encodeURIComponent('Hello, I need my Ampplify Academy account moved to my new device.');
+  const note = encodeURIComponent('Hello, I need my Ampplify Academy account moved to my new device.');
   document.getElementById('deviceBlock').classList.add('open');
   document.body.style.overflow = 'hidden';
+
+  // The support number is the one on the site, so it stays right when it changes.
+  db.collection('siteContent').doc('main').get()
+    .then(doc => (doc.exists && doc.data().social && doc.data().social.whatsapp) || '')
+    .catch(() => '')
+    .then(link => {
+      if (!link) { wa.style.display = 'none'; return; }
+      wa.href = link + (link.indexOf('?') === -1 ? '?' : '&') + 'text=' + note;
+    });
 }
 
 function kickOut(uid) {

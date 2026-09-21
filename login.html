@@ -73,30 +73,11 @@ function doLogin() {
   const password = document.getElementById('password').value;
   const msg = document.getElementById('msg');
 
+  // Both ways in - password and Google - go through afterSignIn, so the device
+  // check cannot be skipped by using the older one.
   auth.signInWithEmailAndPassword(email, password)
-    .then(cred => {
-      if (ADMIN_EMAILS.includes(cred.user.email)) {
-        location.href = 'admin.html';
-        return;
-      }
-      return db.collection('users').doc(cred.user.uid).get().then(doc => {
-        const status = doc.exists ? doc.data().status : 'pending';
-        if (status === 'approved') {
-          const sessionId = crypto.randomUUID();
-          return db.collection('users').doc(cred.user.uid).update({ currentSessionId: sessionId }).then(() => {
-            localStorage.setItem('session_' + cred.user.uid, sessionId);
-            location.href = 'student.html';
-          });
-        } else if (status === 'rejected') {
-          msg.textContent = "Your account has been rejected. Please contact the admin.";
-          auth.signOut();
-        } else {
-          msg.textContent = "Your account is still pending approval. Please wait.";
-          auth.signOut();
-        }
-      });
-    })
-    .catch(err => { msg.textContent = err.message; });
+    .then(cred => afterSignIn(cred.user, msg))
+    .catch(err => { msg.style.color = 'var(--danger)'; msg.textContent = err.message; });
 }
 
 // Google sign-in. A student who enrolled with an email and password keeps the
@@ -123,11 +104,7 @@ function deviceCheck(uid, data) {
   return {
     ok: false,
     error: 'This account is already in use on another device or browser. Your course opens on that one. ' +
-           'Changed device, or cleared your browser data? ' +
-           '<a href="https://wa.me/8801571068040?text=' +
-           encodeURIComponent('Hello, I need my Ampplify Academy account moved to my new device.') +
-           '" target="_blank" rel="noopener" style="color:var(--accent); font-weight:600;">Message us</a> ' +
-           'and we will move it across.'
+           'Changed device, or cleared your browser data? Message us and we will move it across.'
   };
 }
 
