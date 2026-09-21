@@ -1169,7 +1169,7 @@ function loadSiteContentIntoForm() {
     return db.collection('courseContent').doc('main').get();
   }).then(doc => {
     moduleRows = ((doc.exists && doc.data().modules) || []).map(m => Object.assign({
-      title: '', duration: '', driveLink: '', batchId: '', published: true, lessonLinks: []
+      title: '', duration: '', driveLink: '', folderLink: '', autoClasses: false, batchId: '', published: true, lessonLinks: []
     }, m));
     renderModuleRows();
   });
@@ -1970,6 +1970,12 @@ function renderModuleRows() {
           <input placeholder="Title" value="${(m.title || '').replace(/"/g, '&quot;')}" oninput="moduleRows[${i}].title = this.value">
           <input placeholder="Duration (e.g. 45 min)" value="${(m.duration || '').replace(/"/g, '&quot;')}" oninput="moduleRows[${i}].duration = this.value">
           <input placeholder="Google Drive link (private, students only — for a single-video class)" value="${(m.driveLink || '').replace(/"/g, '&quot;')}" oninput="moduleRows[${i}].driveLink = this.value">
+          <input placeholder="Drive folder link — every video in it becomes a class on its own" value="${(m.folderLink || '').replace(/"/g, '&quot;')}" oninput="moduleRows[${i}].folderLink = this.value">
+          <label style="display:flex; align-items:center; gap:.4rem; font-size:.85rem; color:var(--text-soft); margin-top:.5rem;">
+            <input type="checkbox" style="width:auto; margin:0;" ${m.autoClasses ? 'checked' : ''} onchange="moduleRows[${i}].autoClasses = this.checked">
+            Take the class list from that folder
+          </label>
+          <p style="color:var(--text-muted); font-size:.78rem; margin:.3rem 0 0;">With this on, uploading a video to the folder publishes it; the file name is the title and the list is in name order. The lessons below are then only a fallback.</p>
           <label style="font-size:.82rem; color:var(--text-soft); margin-top:.6rem; display:block;">Batch (which students see this module)</label>
           <select onchange="moduleRows[${i}].batchId = this.value" style="margin-top:.3rem;">
             <option value="">All batches</option>
@@ -2013,7 +2019,7 @@ function renderModuleRows() {
 }
 
 function addModuleRow() {
-  moduleRows.push({ title: '', duration: '', published: true, driveLink: '', batchId: '', lessonLinks: [] });
+  moduleRows.push({ title: '', duration: '', published: true, driveLink: '', folderLink: '', autoClasses: false, batchId: '', lessonLinks: [] });
   editingModuleIndex = moduleRows.length - 1;
   renderModuleRows();
 }
@@ -2146,6 +2152,8 @@ function saveModules() {
     duration: m.duration || '',
     published: m.published !== false,
     driveLink: m.driveLink || '',
+    folderLink: m.folderLink || '',
+    autoClasses: !!m.autoClasses,
     batchId: m.batchId || '',
     lessonLinks: (m.lessonLinks || []).filter(l => l.title.trim() && l.driveLink.trim()).map(l => ({
       title: l.title, driveLink: l.driveLink, duration: l.duration || ''

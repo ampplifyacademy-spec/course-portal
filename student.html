@@ -302,18 +302,22 @@ function loadAllBatches(blockedCourses) {
       const key = 'mod-' + i;
       const name = m.title || ('Module ' + (i + 1));
 
-      // A hand-entered lesson list still wins, so anything arranged by hand
-      // keeps working exactly as it did.
-      if (m.lessonLinks && m.lessonLinks.length) {
-        const classes = m.lessonLinks.map((l, j) => ({
-          id: key + '-lesson-' + j, title: l.title, meta: l.duration || '', driveLink: l.driveLink
-        }));
-        return Promise.resolve({ key, name, classes });
+      const manual = (m.lessonLinks || []).map((l, j) => ({
+        id: key + '-lesson-' + j, title: l.title, meta: l.duration || '', driveLink: l.driveLink
+      }));
+
+      // A module set to follow its Drive folder is read live, so an upload is
+      // all it takes to publish a class. The hand-entered lessons stay as the
+      // fallback for when the folder cannot be read.
+      const folderId = m.autoClasses ? folderIdOf(m.folderLink || m.driveLink) : null;
+      if (folderId) {
+        return classesFromFolder(folderId, key).then(classes => ({ key, name, classes: classes || manual }));
       }
 
-      const folderId = folderIdOf(m.driveLink);
-      if (folderId) {
-        return classesFromFolder(folderId, key).then(classes => ({
+      if (manual.length) return Promise.resolve({ key, name, classes: manual });
+
+      if (folderIdOf(m.driveLink)) {
+        return classesFromFolder(folderIdOf(m.driveLink), key).then(classes => ({
           key, name,
           classes: classes || [{ id: key, title: m.title, meta: m.duration || '', driveLink: m.driveLink }]
         }));
