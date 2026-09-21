@@ -49,9 +49,6 @@
   .player-frame { flex: 1; background: #000; border-radius: var(--radius-sm); overflow: hidden; }
   .player-frame iframe { width: 100%; height: 100%; border: none; }
   .player-help { color: #d7d9e0; font-size: .8rem; padding: .6rem .25rem 0; line-height: 1.5; }
-  .watch-wrap { display: inline-flex; flex-direction: column; align-items: center; gap: .2rem; }
-  .watch-here { font-size: .72rem; color: var(--text-muted); cursor: pointer; text-decoration: underline; }
-  .watch-here:hover { color: var(--accent); }
   .drive-note { background: var(--warning-bg, #fff7e6); border: 1px solid var(--accent-orange); border-radius: var(--radius-sm); padding: .85rem 1rem; margin-bottom: 1.25rem; font-size: .86rem; line-height: 1.6; color: var(--text-soft); }
   .drive-note strong { color: var(--text); }
   .drive-note #driveNoteEmail { font-weight: 700; color: var(--accent); }
@@ -106,9 +103,8 @@
     <div class="drive-note" id="driveNote" style="display:none;">
       <strong>Class videos open with your course email:</strong>
       <span id="driveNoteEmail"></span>. Sign in to Google with that email once in this browser
-      and every class opens straight away. <em>Watch</em> opens the class in a new tab;
-      <em>play here</em> plays it inside this page, where your browser may first ask you to
-      allow google.com cookies.
+      and every class opens straight away. Classes play inside this page; the first time, your browser may ask you to allow
+      google.com cookies &mdash; choose <em>Allow</em> and it will not ask again.
     </div>
 
     <div class="tab-section active" id="tab-dashboard">
@@ -262,14 +258,6 @@ function jsArg(value) {
   return JSON.stringify(String(value == null ? '' : value)).replace(/"/g, '&quot;');
 }
 
-// Google Drive inside an iframe makes Chrome ask the student to allow
-// google.com cookies. Opening the class in its own tab skips that entirely,
-// so that is what Watch does; "play here" still uses the built-in player.
-function watchClass(title, url) {
-  if (!url) { alert('This class has no video link yet.'); return; }
-  window.open(withCourseUser(url), '_blank');
-}
-
 function openPlayer(title, url) {
   const embed = drivePlayerUrl(url);
   if (!embed) { window.open(courseLink(url), '_blank'); return; }
@@ -380,16 +368,13 @@ function renderBatchPanel() {
       ${g.classes.length === 0 ? '<p style="padding:1.25rem 1.6rem; color:var(--text-faint); font-size:.9rem;">No classes available yet.</p>' : g.classes.map(c => {
         const done = completedClasses.includes(c.id);
         return `
-          <div class="class-row" onclick="watchClass(${jsArg(c.title)}, ${jsArg(c.driveLink)})">
+          <div class="class-row" onclick="openPlayer(${jsArg(c.title)}, ${jsArg(c.driveLink)})">
             <div class="class-icon ${done ? 'done' : 'todo'}" title="${done ? 'Mark as not watched' : 'Mark as completed'}" onclick="event.stopPropagation(); toggleClassComplete('${c.id}')" style="cursor:pointer;">${done ? '✓' : '○'}</div>
             <div class="info">
               <div class="title">${c.title}</div>
               <div class="meta">${c.meta}</div>
             </div>
-            <span class="watch-wrap" onclick="event.stopPropagation()">
-              <button onclick="watchClass(${jsArg(c.title)}, ${jsArg(c.driveLink)})" style="width:auto; margin:0; padding:.4rem .9rem; font-size:.8rem;">Watch</button>
-              <a class="watch-here" onclick="openPlayer(${jsArg(c.title)}, ${jsArg(c.driveLink)})">play here</a>
-            </span>
+            <button onclick="event.stopPropagation(); openPlayer(${jsArg(c.title)}, ${jsArg(c.driveLink)})" style="width:auto; margin:0; padding:.4rem .9rem; font-size:.8rem;">Watch</button>
             <span class="status ${done ? 'done' : ''}">${done ? 'Completed' : 'Not watched'}</span>
           </div>`;
       }).join('')}
