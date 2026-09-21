@@ -88,23 +88,13 @@
       </div>
     </div>
 
-    <div class="player-overlay" id="playerOverlay">
-      <div class="player-bar">
-        <span class="player-title" id="playerTitle"></span>
-        <a id="playerOpenDrive" href="#" target="_blank"><button class="secondary">Open in Google Drive</button></a>
-        <button onclick="closePlayer()">&times; Close</button>
-      </div>
-      <div class="player-frame"><iframe id="playerFrame" src="" allow="autoplay; fullscreen" allowfullscreen></iframe></div>
-      <p class="player-help">The class plays with your course email &mdash; <span id="playerEmail"></span>.
-        If the player asks you to sign in, sign in to Google with that email once; after that every
-        class opens straight away.</p>
-    </div>
 
     <div class="drive-note" id="driveNote" style="display:none;">
       <strong>Class videos open with your course email:</strong>
       <span id="driveNoteEmail"></span>. Sign in to Google with that email once in this browser
-      and every class opens straight away. Classes play inside this page; the first time, your browser may ask you to allow
-      google.com cookies &mdash; choose <em>Allow</em> and it will not ask again.
+      and every class opens straight away. A class opens in our own player tab; if it says the video
+      cannot load, use the <em>Google account</em> buttons at the bottom of that tab to pick the account
+      your course email is signed in as &mdash; it is remembered after that.
     </div>
 
     <div class="tab-section active" id="tab-dashboard">
@@ -259,23 +249,15 @@ function jsArg(value) {
 }
 
 function openPlayer(title, url) {
-  const embed = drivePlayerUrl(url);
-  if (!embed) { window.open(courseLink(url), '_blank'); return; }
-  document.getElementById('playerTitle').textContent = title;
-  document.getElementById('playerEmail').textContent = currentEmail;
-  document.getElementById('playerOpenDrive').href = courseLink(url);
-  document.getElementById('playerFrame').src = embed;
-  document.getElementById('playerOverlay').classList.add('open');
-  document.body.style.overflow = 'hidden';
+  const found = driveIdOf(url);
+  // Our own page carries the video, so the student never lands on a Drive
+  // screen; without an id there is nothing to embed, so fall back to the link.
+  if (!found) { window.open(courseLink(url), '_blank'); return; }
+  const q = 'play.html?id=' + encodeURIComponent(found.id) +
+            '&kind=' + found.kind + '&t=' + encodeURIComponent(title);
+  window.open(q, '_blank');
 }
 
-function closePlayer() {
-  document.getElementById('playerOverlay').classList.remove('open');
-  document.getElementById('playerFrame').src = '';
-  document.body.style.overflow = '';
-}
-
-document.addEventListener('keydown', e => { if (e.key === 'Escape') closePlayer(); });
 
 function loadAllBatches(blockedCourses) {
   db.collection('courseContent').doc('main').get().then(contentDoc => {

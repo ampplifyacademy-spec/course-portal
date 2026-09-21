@@ -1,0 +1,107 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="referrer" content="no-referrer">
+<title>Class · Ampplify Academy</title>
+<link rel="preconnect" href="https://www.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@600;700;800&family=Inter:wght@400;500;600&display=swap" rel="stylesheet">
+<style>
+  :root { --bg:#0b0e17; --panel:#141a26; --line:#26304a; --text:#f3f5f9; --muted:#9aa3b8; --accent:#2f6df6; --orange:#ff8a3d; }
+  * { box-sizing: border-box; }
+  html, body { height: 100%; margin: 0; }
+  body { background: var(--bg); color: var(--text); font-family: Inter, system-ui, sans-serif; display: flex; flex-direction: column; }
+  header { display: flex; align-items: center; gap: 1rem; padding: .7rem 1.1rem; border-bottom: 1px solid var(--line); background: var(--panel); }
+  .logo { font: 800 1rem "Plus Jakarta Sans", sans-serif; letter-spacing: -.01em; white-space: nowrap; }
+  .logo span { color: var(--accent); }
+  .logo em { color: var(--orange); font-style: normal; }
+  h1 { font: 700 .98rem "Plus Jakarta Sans", sans-serif; margin: 0; flex: 1; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+  button, .btn { font: 600 .8rem Inter, sans-serif; border-radius: 8px; border: 1px solid var(--line); background: #1d2637; color: var(--text); padding: .45rem .9rem; cursor: pointer; text-decoration: none; }
+  button:hover, .btn:hover { border-color: var(--accent); }
+  .stage { flex: 1; position: relative; background: #000; }
+  .stage iframe { position: absolute; inset: 0; width: 100%; height: 100%; border: 0; }
+  /* Covers the Drive chrome (its top bar with the file name / popout / download row). */
+  .mask { position: absolute; left: 0; right: 0; top: 0; height: 0; background: #000; pointer-events: none; }
+  footer { padding: .6rem 1.1rem; border-top: 1px solid var(--line); background: var(--panel); color: var(--muted); font-size: .78rem; line-height: 1.5; display: flex; align-items: center; gap: .8rem; flex-wrap: wrap; }
+  footer b { color: var(--text); }
+  .switch { display: flex; align-items: center; gap: .35rem; margin-left: auto; }
+  .switch button { padding: .3rem .6rem; font-size: .75rem; }
+  .switch button.on { border-color: var(--accent); background: var(--accent); }
+  .gate { margin: auto; padding: 2rem; text-align: center; color: var(--muted); }
+</style>
+</head>
+<body>
+<header>
+  <div class="logo">AMP<span>P</span>LIFY <em>·</em> ACADEMY</div>
+  <h1 id="title">Class</h1>
+  <button onclick="window.close()">&times; Close</button>
+</header>
+
+<div class="stage" id="stage"><div class="mask" id="mask"></div></div>
+
+<footer>
+  <span>Plays with your course email &mdash; <b id="email">&hellip;</b>.</span>
+  <span class="switch" id="switch" style="display:none;">
+    <span>Not loading? Google account:</span>
+    <button data-u="0">1st</button><button data-u="1">2nd</button><button data-u="2">3rd</button>
+  </span>
+</footer>
+
+<script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-app-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-auth-compat.js"></script>
+<script src="js/firebase-config.js"></script>
+<script>
+  const params  = new URLSearchParams(location.search);
+  const fileId  = (params.get('id') || '').replace(/[^\w-]/g, '');
+  const kind    = params.get('kind') === 'folder' ? 'folder' : 'file';
+  const title   = params.get('t') || 'Class';
+  document.title = title + ' · Ampplify Academy';
+  document.getElementById('title').textContent = title;
+
+  // Which Google account in this browser owns the course email. The embed
+  // ignores ?authuser=, but it does honour the /u/<n>/ path, so the student
+  // picks their account once and the choice is remembered per browser.
+  const KEY = 'ampplify.driveUser';
+  let userIndex = Number(localStorage.getItem(KEY) || 0) || 0;
+
+  function embedUrl() {
+    if (!fileId) return '';
+    return kind === 'folder'
+      ? 'https://drive.google.com/embeddedfolderview?id=' + fileId + '#grid'
+      : 'https://drive.google.com/u/' + userIndex + '/file/d/' + fileId + '/preview';
+  }
+
+  function render() {
+    const stage = document.getElementById('stage');
+    const old = stage.querySelector('iframe');
+    if (old) old.remove();
+    const frame = document.createElement('iframe');
+    frame.src = embedUrl();
+    frame.setAttribute('allow', 'autoplay; fullscreen; encrypted-media');
+    frame.setAttribute('allowfullscreen', '');
+    stage.insertBefore(frame, document.getElementById('mask'));
+    document.querySelectorAll('#switch button').forEach(b => {
+      b.classList.toggle('on', Number(b.dataset.u) === userIndex);
+    });
+  }
+
+  document.querySelectorAll('#switch button').forEach(b => {
+    b.addEventListener('click', () => {
+      userIndex = Number(b.dataset.u);
+      localStorage.setItem(KEY, String(userIndex));
+      render();
+    });
+  });
+
+  // Only a signed-in student sees the page; the file itself stays protected by
+  // its own Drive sharing, this is just so the tab is ours and not Drive's.
+  auth.onAuthStateChanged(user => {
+    if (!user) { location.replace('login.html'); return; }
+    document.getElementById('email').textContent = user.email || '';
+    document.getElementById('switch').style.display = kind === 'file' ? 'flex' : 'none';
+    render();
+  });
+</script>
+</body>
+</html>
