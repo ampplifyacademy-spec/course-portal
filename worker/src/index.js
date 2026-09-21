@@ -15,7 +15,7 @@ const DRIVE_FILE = 'https://www.googleapis.com/drive/v3/files/';
 const TOKEN_URL = 'https://oauth2.googleapis.com/token';
 
 export default {
-  async fetch(request, env, ctx) {
+  async fetch(request, env) {
     const url = new URL(request.url);
     const origin = request.headers.get('Origin') || '';
 
@@ -32,7 +32,7 @@ export default {
     const student = await approvedStudent(idToken, env);
     if (!student.ok) return err(403, student.error, env, origin);
 
-    const upstream = await fetchFromDrive(fileId, request, env, ctx);
+    const upstream = await fetchFromDrive(fileId, request, env);
     if (!upstream) return err(404, 'File not in any course folder', env, origin);
     return cors(upstream, env, origin);
   }
@@ -69,76 +69,81 @@ async function approvedStudent(idToken, env) {
   return { ok: true, uid: uid };
 }
 
-/** Access tokens live an hour; keep them in module scope between requests. */
-const tokenCache = new Map();
+/**
+ * One service account is a viewer on all three course folders, so there is a
+ * single identity to authenticate as - no refresh tokens that expire, and no
+ * consent screen for anybody to keep alive.
+ */
+let cachedToken = null;
 
-async function accessToken(refreshToken, env) {
-  const cached = tokenCache.get(refreshToken);
-  if (cached && cached.expires > Date.now() + 60000) return cached.value;
+async function accessToken(env) {
+  if (cachedToken && cachedToken.expires > Date.now() + 60000) return cachedToken.value;
+
+  const now = Math.floor(Date.now() / 1000);
+  const claim = {
+    iss: env.SA_CLIENT_EMAIL,
+    scope: 'https://www.googleapis.com/auth/drive.readonly',
+    aud: TOKEN_URL,
+    iat: now,
+    exp: now + 3600
+  };
+  const unsigned = b64url(JSON.stringify({ alg: 'RS256', typ: 'JWT' })) + '.' + b64url(JSON.stringify(claim));
+  const key = await importKey(env.SA_PRIVATE_KEY);
+  const signature = await crypto.subtle.sign('RSASSA-PKCS1-v1_5', key, new TextEncoder().encode(unsigned));
+  const jwt = unsigned + '.' + b64url(signature);
 
   const res = await fetch(TOKEN_URL, {
     method: 'POST',
     headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
     body: new URLSearchParams({
-      client_id: env.GOOGLE_CLIENT_ID,
-      client_secret: env.GOOGLE_CLIENT_SECRET,
-      refresh_token: refreshToken,
-      grant_type: 'refresh_token'
+      grant_type: 'urn:ietf:params:oauth:grant-type:jwt-bearer',
+      assertion: jwt
     })
   });
-  if (!res.ok) throw new Error('Token refresh failed: ' + (await res.text()).slice(0, 200));
+  if (!res.ok) throw new Error('Token request failed: ' + (await res.text()).slice(0, 200));
   const data = await res.json();
-  tokenCache.set(refreshToken, {
-    value: data.access_token,
-    expires: Date.now() + (data.expires_in || 3600) * 1000
+  cachedToken = { value: data.access_token, expires: Date.now() + (data.expires_in || 3600) * 1000 };
+  return cachedToken.value;
+}
+
+function b64url(input) {
+  const bytes = typeof input === 'string' ? new TextEncoder().encode(input) : new Uint8Array(input);
+  let binary = '';
+  bytes.forEach(function (b) { binary += String.fromCharCode(b); });
+  return btoa(binary).replace(/\+/g, '-').replace(/\//g, '_').replace(/=+$/, '');
+}
+
+/** The secret is pasted straight out of the key file, newlines and all. */
+async function importKey(pem) {
+  const body = String(pem || '')
+    .replace(/\\n/g, '\n')
+    .replace(/-----[^-]+-----/g, '')
+    .replace(/\s+/g, '');
+  const der = Uint8Array.from(atob(body), function (c) { return c.charCodeAt(0); });
+  return crypto.subtle.importKey('pkcs8', der.buffer,
+    { name: 'RSASSA-PKCS1-v1_5', hash: 'SHA-256' }, false, ['sign']);
+}
+
+async function fetchFromDrive(fileId, request, env) {
+  const token = await accessToken(env);
+  const headers = { Authorization: 'Bearer ' + token };
+  const range = request.headers.get('Range');
+  if (range) headers.Range = range;
+
+  const res = await fetch(DRIVE_FILE + fileId + '?alt=media&supportsAllDrives=true', {
+    method: request.method,
+    headers: headers
   });
-  return data.access_token;
-}
+  if (res.status === 404 || res.status === 403) return null;
 
-function refreshTokens(env) {
-  return [env.REFRESH_TOKEN_1, env.REFRESH_TOKEN_2, env.REFRESH_TOKEN_3].filter(Boolean);
-}
-
-/**
- * A file lives in exactly one of the course accounts, so the accounts are tried
- * in turn and the winner is remembered - after the first play, every later
- * request goes straight to the right account.
- */
-async function fetchFromDrive(fileId, request, env, ctx) {
-  const cache = caches.default;
-  const ownerKey = new Request('https://owner.invalid/' + fileId);
-  const known = await cache.match(ownerKey);
-  const tokens = refreshTokens(env);
-  const order = [];
-  if (known) order.push(Number(await known.text()));
-  tokens.forEach(function (_, i) { if (order.indexOf(i) === -1) order.push(i); });
-
-  for (const i of order) {
-    const token = await accessToken(tokens[i], env);
-    const headers = { Authorization: 'Bearer ' + token };
-    const range = request.headers.get('Range');
-    if (range) headers.Range = range;
-
-    const res = await fetch(DRIVE_FILE + fileId + '?alt=media&supportsAllDrives=true', {
-      method: request.method,
-      headers: headers
-    });
-    if (res.status === 404 || res.status === 403) continue;
-
-    ctx.waitUntil(cache.put(ownerKey, new Response(String(i), {
-      headers: { 'Cache-Control': 'max-age=86400' }
-    })));
-
-    const out = new Headers();
-    ['content-type', 'content-length', 'content-range', 'accept-ranges', 'etag', 'last-modified']
-      .forEach(function (h) { const v = res.headers.get(h); if (v) out.set(h, v); });
-    if (!out.has('accept-ranges')) out.set('accept-ranges', 'bytes');
-    // Private: a shared cache must not keep a student's video around.
-    out.set('Cache-Control', 'private, max-age=600');
-    out.set('Content-Disposition', 'inline');
-    return new Response(res.body, { status: res.status, headers: out });
-  }
-  return null;
+  const out = new Headers();
+  ['content-type', 'content-length', 'content-range', 'accept-ranges', 'etag', 'last-modified']
+    .forEach(function (h) { const v = res.headers.get(h); if (v) out.set(h, v); });
+  if (!out.has('accept-ranges')) out.set('accept-ranges', 'bytes');
+  // Private: a shared cache must not keep a student's video around.
+  out.set('Cache-Control', 'private, max-age=600');
+  out.set('Content-Disposition', 'inline');
+  return new Response(res.body, { status: res.status, headers: out });
 }
 
 function cors(response, env, origin) {

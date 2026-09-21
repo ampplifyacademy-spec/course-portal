@@ -7,11 +7,8 @@ FIREBASE_PROJECT_ID = "course-portal-4ac4a"
 FIREBASE_API_KEY = "AIzaSyAz08Y5v26aWGzEp1JjiWT2HUkSO0zAhYc"
 ALLOWED_ORIGINS = "https://ampplifyacademy-spec.github.io,http://localhost:8000"
 
-# Secrets never live in this file. Set each one with:
-#   npx wrangler secret put <NAME>
+# Secrets never live in this file. Set them in the Cloudflare dashboard
+# (Worker -> Settings -> Variables -> Encrypt) or with `wrangler secret put`:
 #
-#   GOOGLE_CLIENT_ID
-#   GOOGLE_CLIENT_SECRET
-#   REFRESH_TOKEN_1   Batch 1 Drive account
-#   REFRESH_TOKEN_2   Batch 2 Drive account
-#   REFRESH_TOKEN_3   Update Class Drive account
+#   SA_CLIENT_EMAIL   client_email from the service account key file
+#   SA_PRIVATE_KEY    private_key from the same file, BEGIN/END lines included
