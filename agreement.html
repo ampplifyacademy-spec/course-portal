@@ -1,0 +1,741 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Agreement Generator — Account Access & Profit-Share</title>
+<style>
+  :root {
+    --ink: #1f2937;
+    --ink-soft: #4b5563;
+    --paper: #fbfaf7;
+    --panel: #ffffff;
+    --line: #d8d3c8;
+    --accent: #1f4e79;
+    --accent-soft: #e5edf5;
+    --danger: #8a3324;
+    font-family: Georgia, "Times New Roman", Times, serif;
+  }
+  * { box-sizing: border-box; }
+  html, body {
+    margin: 0; padding: 0;
+    background: var(--paper);
+    color: var(--ink);
+    padding-top: env(safe-area-inset-top, 0px);
+    padding-bottom: env(safe-area-inset-bottom, 0px);
+    -webkit-print-color-adjust: exact;
+    print-color-adjust: exact;
+    color-adjust: exact;
+  }
+  body { font-size: 15px; line-height: 1.5; font-variant-numeric: lining-nums proportional-nums; font-feature-settings: "liga" 0, "onum" 0, "pnum" 1, "lnum" 1; }
+
+  .shell {
+    max-width: 1180px;
+    margin: 0 auto;
+    padding: 28px 20px 80px;
+  }
+
+  header.top {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: baseline;
+    justify-content: space-between;
+    gap: 10px;
+    border-bottom: 2px solid var(--ink);
+    padding-bottom: 16px;
+    margin-bottom: 28px;
+  }
+  header.top h1 {
+    font-family: Georgia, "Times New Roman", Times, serif;
+    font-size: 26px;
+    font-weight: 600;
+    margin: 0;
+    letter-spacing: 0.2px;
+  }
+  header.top p {
+    margin: 4px 0 0;
+    font-family: "Avenir Next", "Segoe UI", sans-serif;
+    font-size: 13px;
+    color: var(--ink-soft);
+  }
+
+  .layout {
+    display: grid;
+    grid-template-columns: minmax(320px, 420px) 1fr;
+    gap: 28px;
+    align-items: start;
+  }
+  @media (max-width: 880px) {
+    .layout { grid-template-columns: 1fr; }
+  }
+
+  .card {
+    background: var(--panel);
+    border: 1px solid var(--line);
+    border-radius: 4px;
+    padding: 22px 22px 26px;
+  }
+
+  .form-card h2, .preview-card h2 {
+    font-family: "Avenir Next", "Segoe UI", sans-serif;
+    text-transform: none;
+    font-size: 13px;
+    font-weight: 700;
+    letter-spacing: 0.04em;
+    color: var(--accent);
+    margin: 0 0 16px;
+    padding-bottom: 8px;
+    border-bottom: 1px solid var(--accent-soft);
+  }
+
+  fieldset {
+    border: none;
+    padding: 0;
+    margin: 0 0 20px;
+  }
+  legend {
+    font-family: "Avenir Next", "Segoe UI", sans-serif;
+    font-size: 12.5px;
+    font-weight: 700;
+    color: var(--ink);
+    margin-bottom: 8px;
+    padding: 0;
+  }
+
+  label.field {
+    display: block;
+    margin-bottom: 12px;
+  }
+  label.field span.lbl {
+    display: block;
+    font-family: "Avenir Next", "Segoe UI", sans-serif;
+    font-size: 12px;
+    color: var(--ink-soft);
+    margin-bottom: 4px;
+  }
+  input[type="text"], input[type="number"], input[type="date"], textarea, select {
+    width: 100%;
+    font-family: "Avenir Next", "Segoe UI", sans-serif;
+    font-size: 14px;
+    padding: 8px 9px;
+    border: 1px solid #c7c1b2;
+    border-radius: 3px;
+    background: #fffefb;
+    color: var(--ink);
+  }
+  textarea { resize: vertical; min-height: 54px; }
+  input:focus, textarea:focus, select:focus {
+    outline: 2px solid var(--accent);
+    outline-offset: 1px;
+    border-color: var(--accent);
+  }
+
+  .engagement-choice {
+    display: grid;
+    gap: 8px;
+  }
+  .engagement-choice label {
+    display: flex;
+    align-items: flex-start;
+    gap: 9px;
+    font-family: "Avenir Next", "Segoe UI", sans-serif;
+    font-size: 13.5px;
+    border: 1px solid var(--line);
+    border-radius: 4px;
+    padding: 9px 11px;
+    cursor: pointer;
+    background: #fff;
+  }
+  .engagement-choice label:has(input:checked) {
+    border-color: var(--accent);
+    background: var(--accent-soft);
+  }
+  .engagement-choice input { margin-top: 2px; }
+  .engagement-choice .sub {
+    display: block;
+    color: var(--ink-soft);
+    font-size: 12px;
+    margin-top: 2px;
+  }
+
+  .service-list { display: grid; gap: 7px; margin-bottom: 6px; }
+  .service-list label {
+    display: flex; align-items: center; gap: 8px;
+    font-family: "Avenir Next", "Segoe UI", sans-serif;
+    font-size: 13.5px;
+  }
+
+  .two-col { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
+  @media (max-width: 480px) { .two-col { grid-template-columns: 1fr; } }
+
+  .pct-row { display: flex; align-items: center; gap: 8px; }
+  .pct-row input { width: 84px; flex: none; }
+  .pct-note {
+    font-family: "Avenir Next", "Segoe UI", sans-serif;
+    font-size: 11.5px;
+    color: var(--ink-soft);
+    margin-top: 4px;
+  }
+  .pct-warn { color: var(--danger); }
+
+  .actions {
+    position: sticky;
+    bottom: 0;
+    background: linear-gradient(to top, var(--paper) 60%, transparent);
+    padding-top: 14px;
+    margin-top: 4px;
+    display: flex;
+    gap: 10px;
+    flex-wrap: wrap;
+  }
+  button {
+    font-family: "Avenir Next", "Segoe UI", sans-serif;
+    font-size: 13.5px;
+    font-weight: 600;
+    border-radius: 4px;
+    padding: 11px 18px;
+    border: 1px solid var(--accent);
+    cursor: pointer;
+  }
+  button.primary { background: var(--accent); color: #fff; }
+  button.primary:hover { background: #253a2f; }
+  button.ghost { background: transparent; color: var(--accent); }
+  button.ghost:hover { background: var(--accent-soft); }
+
+  .preview-card { padding: 0; overflow: hidden; }
+  .preview-toolbar {
+    display: flex; align-items: center; justify-content: space-between;
+    padding: 14px 20px;
+    border-bottom: 1px solid var(--line);
+    font-family: "Avenir Next", "Segoe UI", sans-serif;
+  }
+  .preview-toolbar h2 { margin: 0; border: none; padding: 0; }
+  .preview-toolbar .status {
+    font-size: 12px; color: var(--ink-soft);
+  }
+
+  #doc {
+    padding: 40px 44px 60px;
+    max-width: 760px;
+    margin: 0 auto;
+    -webkit-print-color-adjust: exact;
+    print-color-adjust: exact;
+    color-adjust: exact;
+  }
+  #doc h3.doctitle {
+    text-align: center;
+    font-size: 19px;
+    letter-spacing: 0.02em;
+    margin: 0 0 4px;
+  }
+  #doc p.docsub {
+    text-align: center;
+    font-style: italic;
+    color: var(--ink-soft);
+    font-size: 13px;
+    margin: 0 0 26px;
+  }
+  #doc h4 {
+    font-size: 14.5px;
+    color: var(--accent);
+    border-bottom: 1px solid var(--accent-soft);
+    padding-bottom: 4px;
+    margin: 22px 0 10px;
+  }
+  #doc p { margin: 0 0 10px; text-align: justify; }
+  #doc .fld { margin: 0 0 8px; }
+  #doc .fld b { }
+  #doc .fill { border-bottom: 1px solid #999; padding: 0 2px; }
+  #doc .empty-fill { color: #b0270f; }
+  #doc ol.clauses {
+    margin: 0 0 6px; padding-left: 22px;
+  }
+  #doc ol.clauses li { margin-bottom: 9px; text-align: justify; }
+  #doc table.sched {
+    width: 100%; border-collapse: collapse; margin: 10px 0 4px; font-size: 13px;
+  }
+  #doc table.sched th, #doc table.sched td {
+    border: 1px solid #aaa; padding: 7px 8px; text-align: left;
+  }
+  #doc table.sched th { background: #f1efe8; }
+  .sigblock { margin-top: 26px; }
+  .sigblock h5 { font-size: 13.5px; margin: 0 0 6px; }
+  .sigline { margin: 5px 0; font-size: 13.5px; }
+  .sealbox {
+    border: 1px solid #999; height: 70px; margin: 6px 0 2px;
+    display: flex; align-items: center; justify-content: center;
+    color: #999; font-size: 11.5px; font-style: italic;
+  }
+  .note-italic { font-style: italic; color: var(--ink-soft); font-size: 13px; }
+
+  .empty-state {
+    padding: 60px 30px;
+    text-align: center;
+    color: var(--ink-soft);
+    font-family: "Avenir Next", "Segoe UI", sans-serif;
+    font-size: 14px;
+  }
+
+  @media print {
+    body { background: #fff; }
+    .no-print { display: none !important; }
+    .shell { padding: 0; max-width: none; }
+    .layout { display: block; }
+    .card.form-card { display: none; }
+    .preview-card { border: none; }
+    .preview-toolbar { display: none; }
+    #doc { padding: 0; max-width: none; }
+    @page { margin: 18mm 16mm; }
+  }
+</style>
+</head>
+<body>
+<div class="shell">
+
+  <header class="top">
+    <div>
+      <h1>Agreement Generator</h1>
+      <p>Account access, service &amp; profit-share agreement — fill in, generate, print, then sign &amp; seal.</p>
+    </div>
+  </header>
+
+  <div class="layout">
+
+    <!-- FORM -->
+    <div class="card form-card no-print">
+      <h2>Fill in the details</h2>
+
+      <fieldset>
+        <legend>Client (account owner)</legend>
+        <label class="field"><span class="lbl">Client name</span>
+          <input type="text" id="clientName" placeholder="e.g. Taib Ali Khan"></label>
+        <label class="field"><span class="lbl">Company / registered name</span>
+          <input type="text" id="clientCompany" placeholder="e.g. Vindra Global Ltd"></label>
+        <label class="field"><span class="lbl">Company registration number</span>
+          <input type="text" id="clientRegNo"></label>
+        <label class="field"><span class="lbl">Registered (company) address</span>
+          <textarea id="clientAddress"></textarea></label>
+        <label class="field"><span class="lbl">National Address (per National ID / Passport)</span>
+          <textarea id="clientHomeAddress"></textarea></label>
+        <div class="two-col">
+          <label class="field"><span class="lbl">Nationality ID type</span>
+            <select id="clientIdType">
+              <option>National ID Card</option>
+              <option>Passport</option>
+            </select></label>
+          <label class="field"><span class="lbl">Nationality</span>
+            <input type="text" id="clientIdCountry" placeholder="e.g. Pakistan"></label>
+        </div>
+        <label class="field"><span class="lbl">ID Number</span>
+          <input type="text" id="clientId"></label>
+
+        <label style="display:flex;align-items:center;gap:8px;font-family:'Avenir Next','Segoe UI',sans-serif;font-size:13px;margin:4px 0 12px;">
+          <input type="checkbox" id="clientResidesAbroad">
+          Resides in a different country (e.g. holds an Iqama / residence permit)
+        </label>
+        <div id="clientResidenceFields" style="display:none;">
+          <label class="field"><span class="lbl">Residence country address (per bank statement)</span>
+            <textarea id="clientResidenceAddress"></textarea></label>
+          <div class="two-col">
+            <label class="field"><span class="lbl">Residence ID type</span>
+              <select id="clientResIdType">
+                <option>Residence ID (Iqama)</option>
+                <option>Residence Permit</option>
+                <option>Other</option>
+              </select></label>
+            <label class="field"><span class="lbl">Residence country</span>
+              <input type="text" id="clientResCountry" placeholder="e.g. Saudi Arabia"></label>
+          </div>
+          <label class="field"><span class="lbl">Residence ID number</span>
+            <input type="text" id="clientResId"></label>
+        </div>
+
+        <label class="field"><span class="lbl">Amazon store / account name</span>
+          <input type="text" id="storeName"></label>
+        <label class="field"><span class="lbl">Marketplace(s)</span>
+          <input type="text" id="marketplaces" placeholder="e.g. Amazon.sa, Amazon.ae"></label>
+      </fieldset>
+
+      <fieldset>
+        <legend>Provider (you)</legend>
+        <label class="field"><span class="lbl">Provider name</span>
+          <input type="text" id="providerName" placeholder="e.g. Md Yasin Arafat"></label>
+        <label class="field"><span class="lbl">Company / trading name (if any)</span>
+          <input type="text" id="providerCompany"></label>
+        <label class="field"><span class="lbl">Business address (if any)</span>
+          <textarea id="providerAddress"></textarea></label>
+        <label class="field"><span class="lbl">National Address (per National ID / Passport)</span>
+          <textarea id="providerHomeAddress"></textarea></label>
+        <div class="two-col">
+          <label class="field"><span class="lbl">Nationality ID type</span>
+            <select id="providerIdType">
+              <option>National ID Card</option>
+              <option>Passport</option>
+            </select></label>
+          <label class="field"><span class="lbl">Nationality</span>
+            <input type="text" id="providerIdCountry" placeholder="e.g. Bangladesh"></label>
+        </div>
+        <label class="field"><span class="lbl">ID Number</span>
+          <input type="text" id="providerId"></label>
+
+        <label style="display:flex;align-items:center;gap:8px;font-family:'Avenir Next','Segoe UI',sans-serif;font-size:13px;margin:4px 0 12px;">
+          <input type="checkbox" id="providerResidesAbroad">
+          Resides in a different country (e.g. holds an Iqama / residence permit)
+        </label>
+        <div id="providerResidenceFields" style="display:none;">
+          <label class="field"><span class="lbl">Residence country address (per bank statement)</span>
+            <textarea id="providerResidenceAddress"></textarea></label>
+          <div class="two-col">
+            <label class="field"><span class="lbl">Residence ID type</span>
+              <select id="providerResIdType">
+                <option>Residence ID (Iqama)</option>
+                <option>Residence Permit</option>
+                <option>Other</option>
+              </select></label>
+            <label class="field"><span class="lbl">Residence country</span>
+              <input type="text" id="providerResCountry" placeholder="e.g. Saudi Arabia"></label>
+          </div>
+          <label class="field"><span class="lbl">Residence ID number</span>
+            <input type="text" id="providerResId"></label>
+        </div>
+
+        <label class="field"><span class="lbl">Contact email / phone</span>
+          <input type="text" id="providerContact"></label>
+      </fieldset>
+
+      <fieldset>
+        <legend>What are we agreeing to?</legend>
+        <div class="engagement-choice">
+          <label>
+            <input type="radio" name="engagement" value="service" checked>
+            <span>
+              Service only
+              <span class="sub">Provider manages the account for a fee. No profit-sharing.</span>
+            </span>
+          </label>
+          <label>
+            <input type="radio" name="engagement" value="partnership">
+            <span>
+              Partnership only
+              <span class="sub">Profit-sharing arrangement. No separate service fee.</span>
+            </span>
+          </label>
+          <label>
+            <input type="radio" name="engagement" value="both">
+            <span>
+              Both — service + partnership
+              <span class="sub">Provider is paid a fee for services AND shares in profit.</span>
+            </span>
+          </label>
+        </div>
+      </fieldset>
+
+      <fieldset id="serviceFields">
+        <legend>Services being provided</legend>
+        <div class="service-list">
+          <label><input type="checkbox" class="svc" value="Product listing creation, optimisation, and content management" checked> Listing creation &amp; optimisation</label>
+          <label><input type="checkbox" class="svc" value="Inventory and order management"> Inventory &amp; order management</label>
+          <label><input type="checkbox" class="svc" value="Advertising campaign (PPC/Sponsored Ads) setup and management"> Advertising / PPC management</label>
+          <label><input type="checkbox" class="svc" value="Customer service / buyer-seller messaging support"> Customer service / messaging</label>
+          <label><input type="checkbox" class="svc" value="Account health monitoring and performance reporting"> Account health &amp; reporting</label>
+        </div>
+        <label class="field"><span class="lbl">Other service (optional)</span>
+          <input type="text" id="svcOther"></label>
+        <label class="field"><span class="lbl">Fixed fee (amount &amp; currency, leave blank if none)</span>
+          <input type="text" id="feeAmount" placeholder="e.g. 300 USD / month"></label>
+      </fieldset>
+
+      <fieldset id="partnerFields">
+        <legend>Profit share</legend>
+        <div class="two-col">
+          <label class="field"><span class="lbl">Client's share of net profit</span>
+            <div class="pct-row"><input type="number" id="clientPct" min="0" max="100" value="70"><span>%</span></div></label>
+          <label class="field"><span class="lbl">Provider's share of net profit</span>
+            <div class="pct-row"><input type="number" id="providerPct" min="0" max="100" value="30"><span>%</span></div></label>
+        </div>
+        <p class="pct-note" id="pctNote">Together these should add up to 100%.</p>
+        <label class="field"><span class="lbl">Costs deducted before profit is split</span>
+          <textarea id="deductions">Amazon referral &amp; FBA fees, advertising spend, product cost, inbound shipping, refunds/returns</textarea></label>
+        <label class="field"><span class="lbl">Profit statement issued</span>
+          <select id="reportCadence">
+            <option>Monthly</option>
+            <option>Every two weeks</option>
+            <option>Weekly</option>
+          </select></label>
+        <label class="field"><span class="lbl">Payout within (days of statement)</span>
+          <input type="text" id="payoutDays" value="7"></label>
+      </fieldset>
+
+      <fieldset>
+        <legend>Other terms</legend>
+        <label class="field"><span class="lbl">Effective date (partnership / account start date)</span>
+          <input type="date" id="effectiveDate"></label>
+        <label class="field"><span class="lbl">Account to be handled from (location)</span>
+          <input type="text" id="handlingLocation" placeholder="e.g. Dhaka, Bangladesh"></label>
+        <label class="field"><span class="lbl">Governing law / jurisdiction</span>
+          <input type="text" id="govLaw" placeholder="e.g. Kingdom of Saudi Arabia"></label>
+        <label class="field"><span class="lbl">Notice period to end agreement (days)</span>
+          <input type="text" id="noticeDays" value="30"></label>
+      </fieldset>
+
+      <div class="actions">
+        <button type="button" class="primary" id="genBtn">Generate agreement</button>
+        <button type="button" class="ghost" id="printBtn">Print / Save as PDF</button>
+      </div>
+    </div>
+
+    <!-- PREVIEW -->
+    <div class="card preview-card">
+      <div class="preview-toolbar no-print">
+        <h2>Preview</h2>
+        <span class="status" id="statusLine">Fill the form, then click "Generate agreement".</span>
+      </div>
+      <div id="doc">
+        <div class="empty-state">Your generated agreement will appear here.</div>
+      </div>
+    </div>
+
+  </div>
+</div>
+
+<script>
+function val(id) { return (document.getElementById(id).value || "").trim(); }
+function fillOr(text, placeholder) {
+  if (!text) return '<span class="fill empty-fill">' + placeholder + '</span>';
+  return '<span class="fill">' + escapeHtml(text) + '</span>';
+}
+function escapeHtml(s) {
+  return s.replace(/&/g,"&amp;").replace(/</g,"&lt;").replace(/>/g,"&gt;");
+}
+
+function checkPct() {
+  const c = parseFloat(document.getElementById('clientPct').value) || 0;
+  const p = parseFloat(document.getElementById('providerPct').value) || 0;
+  const note = document.getElementById('pctNote');
+  const sum = c + p;
+  if (Math.abs(sum - 100) > 0.001) {
+    note.textContent = "These add up to " + sum + "% — they should total 100%.";
+    note.classList.add('pct-warn');
+  } else {
+    note.textContent = "Together these add up to 100%.";
+    note.classList.remove('pct-warn');
+  }
+}
+document.getElementById('clientPct').addEventListener('input', checkPct);
+document.getElementById('providerPct').addEventListener('input', checkPct);
+
+document.getElementById('clientResidesAbroad').addEventListener('change', function() {
+  document.getElementById('clientResidenceFields').style.display = this.checked ? '' : 'none';
+});
+document.getElementById('providerResidesAbroad').addEventListener('change', function() {
+  document.getElementById('providerResidenceFields').style.display = this.checked ? '' : 'none';
+});
+
+function updateVisibility() {
+  const mode = document.querySelector('input[name="engagement"]:checked').value;
+  document.getElementById('serviceFields').style.display = (mode === 'service' || mode === 'both') ? '' : 'none';
+  document.getElementById('partnerFields').style.display = (mode === 'partnership' || mode === 'both') ? '' : 'none';
+}
+document.querySelectorAll('input[name="engagement"]').forEach(r => r.addEventListener('change', updateVisibility));
+updateVisibility();
+checkPct();
+
+function buildDoc() {
+  const mode = document.querySelector('input[name="engagement"]:checked').value;
+  const includesService = (mode === 'service' || mode === 'both');
+  const includesPartner = (mode === 'partnership' || mode === 'both');
+
+  const clientName = val('clientName'), clientCompany = val('clientCompany'), clientRegNo = val('clientRegNo'),
+        clientId = val('clientId'), clientIdType = val('clientIdType'), clientIdCountry = val('clientIdCountry'),
+        clientAddress = val('clientAddress'), clientHomeAddress = val('clientHomeAddress'),
+        clientResidesAbroad = document.getElementById('clientResidesAbroad').checked,
+        clientResIdType = val('clientResIdType'), clientResCountry = val('clientResCountry'),
+        clientResId = val('clientResId'), clientResidenceAddress = val('clientResidenceAddress'),
+        storeName = val('storeName'), marketplaces = val('marketplaces');
+  const providerName = val('providerName'), providerCompany = val('providerCompany'), providerAddress = val('providerAddress'),
+        providerHomeAddress = val('providerHomeAddress'),
+        providerId = val('providerId'), providerIdType = val('providerIdType'), providerIdCountry = val('providerIdCountry'),
+        providerResidesAbroad = document.getElementById('providerResidesAbroad').checked,
+        providerResIdType = val('providerResIdType'), providerResCountry = val('providerResCountry'),
+        providerResId = val('providerResId'), providerResidenceAddress = val('providerResidenceAddress'),
+        providerContact = val('providerContact');
+  const govLaw = val('govLaw'), noticeDays = val('noticeDays') || '30';
+  const effectiveDateRaw = val('effectiveDate'), handlingLocation = val('handlingLocation');
+  let effectiveDate = effectiveDateRaw;
+  if (effectiveDateRaw) {
+    const d = new Date(effectiveDateRaw + 'T00:00:00');
+    if (!isNaN(d)) {
+      effectiveDate = d.toLocaleDateString('en-GB', { day: 'numeric', month: 'long', year: 'numeric' });
+    }
+  }
+
+  const services = Array.from(document.querySelectorAll('.svc:checked')).map(x => x.value);
+  const svcOther = val('svcOther');
+  if (svcOther) services.push(svcOther);
+  const feeAmount = val('feeAmount');
+
+  const clientPct = val('clientPct') || '___', providerPct = val('providerPct') || '___';
+  const deductions = val('deductions');
+  const reportCadence = document.getElementById('reportCadence').value;
+  const payoutDays = val('payoutDays') || '___';
+
+  let titleMode = includesService && includesPartner ? "Account Management, Profit-Sharing &amp; Authorised Access Agreement"
+                 : includesPartner ? "Profit-Sharing &amp; Authorised Access Agreement"
+                 : "Marketplace Account Access &amp; Management Services Agreement";
+
+  let subMode = includesService && includesPartner ? "Amazon Seller Account — Service &amp; Profit-Sharing Partnership"
+                : includesPartner ? "Amazon Seller Account — Profit-Sharing Partnership (no separate service fee)"
+                : "Amazon Seller Account — Management Services (fee-based, no profit share)";
+
+  let html = '';
+  html += '<h3 class="doctitle">' + titleMode + '</h3>';
+  html += '<p class="docsub">' + subMode + '</p>';
+
+  html += '<p>This Agreement is made as of the Effective Date stated below, by and between:</p>';
+
+  html += '<div class="fld"><b>Client / Account Owner:</b> ' + fillOr(clientName, '[client name]') + '</div>';
+  html += '<div class="fld"><b>Registered / Company Name:</b> ' + fillOr(clientCompany, '[company name]') + '</div>';
+  html += '<div class="fld"><b>Company Registration No.:</b> ' + fillOr(clientRegNo, '[reg. no.]') + '</div>';
+  html += '<div class="fld"><b>Registered (Company) Address:</b> ' + fillOr(clientAddress, '[company address]') + '</div>';
+  html += '<div class="fld"><b>National Address:</b> ' + fillOr(clientHomeAddress, '[national address]') + '</div>';
+  html += '<div class="fld"><b>' + (clientIdType || 'National ID') + ' (' + fillOr(clientIdCountry, '[nationality]') + '):</b> ' + fillOr(clientId, '[ID no.]') + '</div>';
+  if (clientResidesAbroad) {
+    html += '<div class="fld"><b>Residence Country Address:</b> ' + fillOr(clientResidenceAddress, '[residence address]') + '</div>';
+    html += '<div class="fld"><b>' + (clientResIdType || 'Residence ID') + ' (' + fillOr(clientResCountry, '[residence country]') + '):</b> ' + fillOr(clientResId, '[residence ID no.]') + '</div>';
+  }
+  html += '<div class="fld"><b>Amazon Store / Account Name:</b> ' + fillOr(storeName, '[store name]') + '</div>';
+  html += '<div class="fld"><b>Marketplace(s):</b> ' + fillOr(marketplaces, '[marketplace(s)]') + '</div>';
+  html += '<div class="fld"><b>Effective Date:</b> ' + fillOr(effectiveDate, '[effective date]') + '</div>';
+  html += '<div class="fld"><b>Account to be Handled From (location):</b> ' + fillOr(handlingLocation, '[location]') + '</div>';
+  html += '<p style="margin:10px 0;">and</p>';
+  html += '<div class="fld"><b>Service Provider:</b> ' + fillOr(providerName, '[provider name]') + '</div>';
+  if (providerCompany) html += '<div class="fld"><b>Company / Trading Name:</b> ' + escapeHtml(providerCompany) + '</div>';
+  html += '<div class="fld"><b>Business Address:</b> ' + fillOr(providerAddress, '[business address]') + '</div>';
+  html += '<div class="fld"><b>National Address:</b> ' + fillOr(providerHomeAddress, '[national address]') + '</div>';
+  html += '<div class="fld"><b>' + (providerIdType || 'National ID') + ' (' + fillOr(providerIdCountry, '[nationality]') + '):</b> ' + fillOr(providerId, '[ID no.]') + '</div>';
+  if (providerResidesAbroad) {
+    html += '<div class="fld"><b>Residence Country Address:</b> ' + fillOr(providerResidenceAddress, '[residence address]') + '</div>';
+    html += '<div class="fld"><b>' + (providerResIdType || 'Residence ID') + ' (' + fillOr(providerResCountry, '[residence country]') + '):</b> ' + fillOr(providerResId, '[residence ID no.]') + '</div>';
+  }
+  html += '<div class="fld"><b>Contact:</b> ' + fillOr(providerContact, '[email / phone]') + '</div>';
+  html += '<p>Client and Provider are each a "Party" and together the "Parties".</p>';
+
+  // 1. Background
+  html += '<h4>1. Background</h4><ol class="clauses">';
+  html += '<li>The Client owns and operates the Amazon account named above (the "Account"), used to sell products on the stated marketplace(s).</li>';
+  if (includesService && includesPartner) {
+    html += '<li>The Parties wish to enter into a combined arrangement under which the Provider will (a) provide the account management services described in Section 2, and (b) act as a profit-sharing partner in respect of sales generated through the Account.</li>';
+  } else if (includesPartner) {
+    html += '<li>The Parties wish to enter into a profit-sharing partnership in respect of sales generated through the Account, on the terms set out below.</li>';
+  } else {
+    html += '<li>The Client wishes to engage the Provider to perform the account management services described in Section 2, in exchange for the fee set out in Section 4, and no profit is shared between the Parties under this Agreement.</li>';
+  }
+  html += '<li>This Agreement may be shared with Amazon or its representatives, if requested, as evidence of a legitimate and disclosed business relationship between the Client and the Provider, including the basis on which the Provider has been granted authorised access to the Account.</li>';
+  html += '<li>The Parties acknowledge that Amazon\'s policies prohibit sharing Account login credentials. Any access granted to the Provider shall be through Amazon\'s own "User Permissions" feature, using the Provider\'s own separate login — never the Client\'s own username or password.</li>';
+  html += '</ol>';
+
+  // 2. Scope (only if service involved)
+  if (includesService) {
+    html += '<h4>2. Scope of Services</h4>';
+    html += '<p>The Provider shall perform the following services:</p><ol class="clauses">';
+    if (services.length) {
+      services.forEach(s => html += '<li>' + escapeHtml(s) + '</li>');
+    } else {
+      html += '<li>' + fillOr('', '[no services selected — add at least one]') + '</li>';
+    }
+    html += '</ol>';
+  }
+
+  // 3. Access
+  html += '<h4>' + (includesService ? '3' : '2') + '. Account Access &amp; Authorisation</h4><ol class="clauses">';
+  html += '<li>The Client shall not disclose the primary login email, password, or two-factor credentials of the Account to the Provider at any time.</li>';
+  html += '<li>Access shall be granted solely through Amazon Seller Central\'s "User Permissions" feature, with the Provider (or its named personnel) added as an authorised user with a role-appropriate permission level.</li>';
+  html += '<li>The Client retains full ownership and administrative control of the Account at all times, including the right to modify or revoke the Provider\'s access at any time.</li>';
+  html += '<li>The Provider shall use Account access solely to perform its role under this Agreement, and shall not use it for any other purpose, including operating any other seller account or altering Account business/bank details without the Client\'s written authorisation.</li>';
+  html += '<li>Upon termination of this Agreement, the Client shall revoke the Provider\'s access, and the Provider shall immediately cease all use of the Account.</li>';
+  if (handlingLocation) {
+    html += '<li>The Parties confirm that the Account shall be operated and managed from ' + escapeHtml(handlingLocation) + '.</li>';
+  }
+  html += '</ol>';
+
+  // 4. Fees (if service)
+  let n = includesService ? 4 : 3;
+  if (includesService) {
+    html += '<h4>' + n + '. Fees</h4><ol class="clauses">';
+    if (feeAmount) {
+      html += '<li>In consideration for the Services, the Client shall pay the Provider a fee of ' + fillOr(feeAmount, '[fee amount]') + ', exclusive of applicable taxes, on terms agreed between the Parties.</li>';
+    } else {
+      html += '<li>' + (includesPartner ? 'No separate fixed fee is payable for the Services; the Provider is instead compensated through the profit share in the section below.' : 'The fee payable for the Services shall be agreed and recorded separately by the Parties.') + '</li>';
+    }
+    html += '</ol>';
+    n++;
+  }
+
+  // Profit share
+  if (includesPartner) {
+    html += '<h4>' + n + '. Profit-Sharing Terms</h4><ol class="clauses">';
+    html += '<li>The Parties shall share the Net Profit generated from sales made through the Account as follows: Client — ' + fillOr(clientPct, '[%]') + '%, Provider — ' + fillOr(providerPct, '[%]') + '%.</li>';
+    html += '<li>"Net Profit" means gross sales revenue received through the Account for the relevant period, less: ' + fillOr(deductions, '[cost categories]') + '.</li>';
+    html += '<li>The Client shall provide the Provider with a profit statement ' + reportCadence.toLowerCase() + ', and shall pay the Provider\'s share within ' + fillOr(payoutDays, '[days]') + ' days of each statement.</li>';
+    html += '<li>The Provider may reasonably request supporting Amazon settlement reports or invoices to verify any profit calculation.</li>';
+    html += '<li>Unless the Parties agree otherwise in writing, losses in a given period shall be carried forward and offset against Net Profit in the following period, rather than separately payable by either Party.</li>';
+    html += '<li>The Account and all listings, brand registrations, and customer data shall at all times remain the sole property of the Client. The Provider acquires no ownership interest in the Account under this Agreement.</li>';
+    html += '</ol>';
+    n++;
+  }
+
+  // Confidentiality
+  html += '<h4>' + n + '. Confidentiality &amp; Compliance</h4><ol class="clauses">';
+  html += '<li>Each Party shall keep confidential all non-public business and account information of the other Party, and shall not disclose it to any third party without consent, save as required by law. This obligation survives termination for two (2) years.</li>';
+  html += '<li>Both Parties shall comply with Amazon\'s Business Solutions Agreement and all applicable policies, and shall not take any action likely to cause suspension or deactivation of the Account. The Provider warrants it will not use Account access for any misleading, fraudulent, or illegal purpose.</li>';
+  html += '</ol>';
+  n++;
+
+  // Term
+  html += '<h4>' + n + '. Term &amp; Termination</h4><ol class="clauses">';
+  html += '<li>This Agreement commences on the Effective Date and continues until terminated by either Party on ' + fillOr(noticeDays, '30') + ' days\' written notice, or immediately for uncured material breach, insolvency, or fraudulent/illegal conduct.</li>';
+  html += '<li>' + (includesPartner ? 'Upon termination, any Net Profit accrued but unpaid shall be calculated and settled within a reasonable time, and the confidentiality, access-revocation, and Account-ownership provisions of this Agreement shall survive.' : 'Upon termination, the confidentiality and access-revocation provisions of this Agreement shall survive.') + '</li>';
+  html += '</ol>';
+  n++;
+
+  // Independent contractor / governing law
+  html += '<h4>' + n + '. Independent Status &amp; Governing Law</h4><ol class="clauses">';
+  html += '<li>The Provider is an independent contractor' + (includesPartner ? ' and business partner in respect of profit-sharing only' : '') + ', and not an employee or agent of the Client, except as strictly necessary to reflect the Provider\'s authorised User Permissions role.</li>';
+  html += '<li>This Agreement is governed by the laws of ' + fillOr(govLaw, '[jurisdiction]') + '. Disputes shall first be resolved amicably between the Parties before recourse to the courts or arbitration body of that jurisdiction.</li>';
+  html += '<li>This Agreement may only be amended in writing signed by both Parties, and may be executed in counterparts.</li>';
+  html += '</ol>';
+
+  // Signatures
+  html += '<h4>Signatures</h4>';
+  html += '<p class="note-italic">This Agreement shall be executed in two identical original copies. Each copy shall bear the signature and company seal/stamp of BOTH Parties. One original is retained by each Party.</p>';
+
+  html += '<div class="sigblock"><h5>For and on behalf of the Client / Account Owner:</h5>';
+  html += '<div class="sigline">Signature: ______________________________</div>';
+  html += '<div class="sigline">Name: ' + (clientName || '______________________________') + '</div>';
+  html += '<div class="sigline">Date: ______________________________</div>';
+  html += '<div class="sealbox">affix company seal / stamp here</div></div>';
+
+  html += '<div class="sigblock"><h5>For and on behalf of the Service Provider:</h5>';
+  html += '<div class="sigline">Signature: ______________________________</div>';
+  html += '<div class="sigline">Name: ' + (providerName || '______________________________') + '</div>';
+  html += '<div class="sigline">Date: ______________________________</div>';
+  html += '<div class="sealbox">affix company seal / stamp here</div></div>';
+
+  return html;
+}
+
+document.getElementById('genBtn').addEventListener('click', function() {
+  document.getElementById('doc').innerHTML = buildDoc();
+  document.getElementById('statusLine').textContent = 'Generated — review below, then print.';
+  document.getElementById('doc').scrollIntoView({behavior:'smooth', block:'start'});
+});
+
+document.getElementById('printBtn').addEventListener('click', function() {
+  if (document.querySelector('.empty-state')) {
+    document.getElementById('doc').innerHTML = buildDoc();
+  }
+  window.print();
+});
+</script>
+</body>
+</html>
