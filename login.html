@@ -1,62 +1,3 @@
-
-// Google sign-in. A student who enrolled with an email and password keeps the
-// same account: Google is linked onto it after they confirm their password
-// once, so their approval, batch and progress all stay put.
-function afterSignIn(user, msg) {
-  if (ADMIN_EMAILS.includes(user.email)) { location.href = 'admin.html'; return Promise.resolve(); }
-  return db.collection('users').doc(user.uid).get().then(doc => {
-    if (!doc.exists) {
-      msg.textContent = "No enrolment found for " + user.email + ". Please enrol first.";
-      return auth.signOut();
-    }
-    const status = doc.data().status;
-    if (status === 'approved') {
-      const sessionId = crypto.randomUUID();
-      return db.collection('users').doc(user.uid).update({ currentSessionId: sessionId }).then(() => {
-        localStorage.setItem('session_' + user.uid, sessionId);
-        location.href = 'student.html';
-      });
-    }
-    msg.textContent = status === 'rejected'
-      ? "Your account has been rejected. Please contact the admin."
-      : "Your account is still pending approval. Please wait.";
-    return auth.signOut();
-  });
-}
-
-function doGoogleLogin() {
-  const msg = document.getElementById('msg');
-  msg.style.color = 'var(--text-muted)';
-  msg.textContent = 'Opening Google...';
-  const provider = new firebase.auth.GoogleAuthProvider();
-  provider.setCustomParameters({ prompt: 'select_account' });
-
-  auth.signInWithPopup(provider)
-    .then(result => afterSignIn(result.user, msg))
-    .catch(err => {
-      if (err.code === 'auth/account-exists-with-different-credential') {
-        linkGoogleToPasswordAccount(err, msg);
-        return;
-      }
-      msg.style.color = 'var(--danger)';
-      msg.textContent = err.code === 'auth/popup-closed-by-user'
-        ? 'Google sign-in was closed before it finished.'
-        : err.message;
-    });
-}
-
-function linkGoogleToPasswordAccount(err, msg) {
-  const email = err.email || (err.customData && err.customData.email);
-  const credential = err.credential || (firebase.auth.GoogleAuthProvider.credentialFromError
-    ? firebase.auth.GoogleAuthProvider.credentialFromError(err) : null);
-  const password = prompt('This email already has an account here.
-Enter your Ampplify Academy password once to connect Google to it:');
-  if (!password) { msg.textContent = 'Google sign-in cancelled.'; return; }
-  auth.signInWithEmailAndPassword(email, password)
-    .then(cred => credential ? cred.user.linkWithCredential(credential).then(() => cred.user) : cred.user)
-    .then(user => afterSignIn(user, msg))
-    .catch(e => { msg.style.color = 'var(--danger)'; msg.textContent = e.message; });
-}
 <!DOCTYPE html>
 <html lang="en">
 <head>
@@ -68,7 +9,7 @@ Enter your Ampplify Academy password once to connect Google to it:');
 <link rel="preconnect" href="https://firestore.googleapis.com" crossorigin>
 <link rel="preconnect" href="https://lh3.googleusercontent.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@500;600;700;800&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
-<link rel="stylesheet" href="css/style.css?v=11">
+<link rel="stylesheet" href="css/style.css?v=10">
 </head>
 <body class="split">
 <div class="split-wrap">
@@ -156,6 +97,65 @@ function doLogin() {
       });
     })
     .catch(err => { msg.textContent = err.message; });
+}
+
+// Google sign-in. A student who enrolled with an email and password keeps the
+// same account: Google is linked onto it after they confirm their password
+// once, so their approval, batch and progress all stay put.
+function afterSignIn(user, msg) {
+  if (ADMIN_EMAILS.includes(user.email)) { location.href = 'admin.html'; return Promise.resolve(); }
+  return db.collection('users').doc(user.uid).get().then(doc => {
+    if (!doc.exists) {
+      msg.style.color = 'var(--danger)';
+      msg.textContent = 'No enrolment found for ' + user.email + '. Please enrol first.';
+      return auth.signOut();
+    }
+    const status = doc.data().status;
+    if (status === 'approved') {
+      const sessionId = crypto.randomUUID();
+      return db.collection('users').doc(user.uid).update({ currentSessionId: sessionId }).then(() => {
+        localStorage.setItem('session_' + user.uid, sessionId);
+        location.href = 'student.html';
+      });
+    }
+    msg.style.color = 'var(--danger)';
+    msg.textContent = status === 'rejected'
+      ? 'Your account has been rejected. Please contact the admin.'
+      : 'Your account is still pending approval. Please wait.';
+    return auth.signOut();
+  });
+}
+
+function doGoogleLogin() {
+  const msg = document.getElementById('msg');
+  msg.style.color = 'var(--text-muted)';
+  msg.textContent = 'Opening Google...';
+  const provider = new firebase.auth.GoogleAuthProvider();
+  provider.setCustomParameters({ prompt: 'select_account' });
+
+  auth.signInWithPopup(provider)
+    .then(result => afterSignIn(result.user, msg))
+    .catch(err => {
+      if (err.code === 'auth/account-exists-with-different-credential') { linkGoogleToPasswordAccount(err, msg); return; }
+      msg.style.color = 'var(--danger)';
+      msg.textContent = err.code === 'auth/popup-closed-by-user'
+        ? 'Google sign-in was closed before it finished.'
+        : err.message;
+    });
+}
+
+// Firebase keeps one account per email address, so Google has to be attached to
+// the existing password account rather than making a second one.
+function linkGoogleToPasswordAccount(err, msg) {
+  const email = err.email || (err.customData && err.customData.email);
+  const credential = err.credential ||
+    (firebase.auth.GoogleAuthProvider.credentialFromError ? firebase.auth.GoogleAuthProvider.credentialFromError(err) : null);
+  const password = prompt('This email already has an Ampplify Academy account. Enter its password once to connect Google to it:');
+  if (!password) { msg.textContent = 'Google sign-in cancelled.'; return; }
+  auth.signInWithEmailAndPassword(email, password)
+    .then(cred => credential ? cred.user.linkWithCredential(credential).then(() => cred.user) : cred.user)
+    .then(user => afterSignIn(user, msg))
+    .catch(e => { msg.style.color = 'var(--danger)'; msg.textContent = e.message; });
 }
 </script>
 </body>
