@@ -217,6 +217,29 @@ function walkRestrict(folder) {
   return removed;
 }
 
+/** The player's identity - the one account that keeps access after hand-over. */
+var PROXY_SERVICE_ACCOUNT = 'class-video@ampplify-video.iam.gserviceaccount.com';
+
+/**
+ * Run once by hand, from the Run menu, when classes have moved to our player.
+ *
+ * Students no longer open Drive at all, so their access here is only a way for
+ * a link to be forwarded: it is withdrawn. The per-file download lock is then
+ * pointless - there is nobody left it could hide a button from - and it is the
+ * very thing that stops the player reading the file, so it is dropped too.
+ */
+function handOverNow() {
+  var folderId = PROPS.getProperty('FOLDER_ID');
+  if (!folderId) throw new Error('Set the FOLDER_ID script property first');
+  var folder = DriveApp.getFolderById(folderId);
+  var people = removeEveryoneExcept(folderId, PROXY_SERVICE_ACCOUNT);
+  var files = unlockAllDownloads();
+  var message = 'Folder "' + folder.getName() + '": removed ' + people +
+    ' person(s), ' + files + ' file(s) now readable by the player.';
+  Logger.log(message);
+  return message;
+}
+
 /**
  * Takes the folder back to just its owner and the player's service account.
  * Every student viewer goes, so a forwarded Drive link is worth nothing and
