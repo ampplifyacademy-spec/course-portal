@@ -305,6 +305,41 @@ auth.onAuthStateChanged(function (user) {
   location.replace("login.html");
 });
 </script>
+<!-- Print styling only: on paper the agreement matches the Word original -
+     Calibri, 11pt justified body, 15pt centred title, 13pt headings, and
+     the same page margins. Nothing on screen changes. -->
+<style>
+@media print {
+  #doc, #doc p, #doc div, #doc li, #doc td, #doc th {
+    font-family: Calibri, "Segoe UI", Arial, sans-serif;
+  }
+  #doc { font-size: 11pt; line-height: 1.32; color: #000; }
+  #doc h3.doctitle {
+    font-size: 15pt; font-weight: 700; text-transform: uppercase;
+    letter-spacing: 0; color: #000; margin: 0 0 6pt;
+  }
+  #doc p.docsub { font-size: 10pt; color: #555555; font-style: normal; margin: 0 0 16pt; }
+  #doc h4 {
+    font-size: 13pt; font-weight: 700; color: #000;
+    border-bottom: none; padding-bottom: 0; margin: 14pt 0 6pt;
+    page-break-after: avoid; break-after: avoid;
+  }
+  #doc p, #doc ol.clauses li { text-align: justify; margin: 0 0 6pt; }
+  #doc .fld { margin: 0 0 4pt; }
+  #doc .fill { border-bottom: none; }
+  #doc .empty-fill { color: #000; }
+  #doc ol.clauses { padding-left: 18pt; margin: 0 0 6pt; }
+  #doc table.sched { font-size: 10pt; }
+  #doc table.sched th { background: #D9D9D9; }
+  #doc table.sched th, #doc table.sched td { border: 1px solid #000; }
+  .sigblock { page-break-inside: avoid; break-inside: avoid; margin-top: 16pt; }
+  .sigblock h5 { font-size: 11pt; margin: 0 0 4pt; }
+  .sigline { font-size: 11pt; margin: 3pt 0; }
+  .sealbox { border: 1px solid #999999; color: #999999; font-size: 9pt; height: 60pt; }
+  .note-italic { font-size: 10pt; color: #555555; }
+  @page { margin: 19mm 22mm; }
+}
+</style>
 </head>
 <body>
 <div class="shell">
