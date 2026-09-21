@@ -53,6 +53,31 @@
   </div>
 </div>
 
+<div class="device-block" id="deviceBlock">
+  <div class="device-card">
+    <div class="device-icon">&#128274;</div>
+    <h2>This device is not registered</h2>
+    <p>Your course opens on the browser you first signed in with. We do this so a course
+       stays with the student who bought it.</p>
+    <p class="device-hint">Changed phone or laptop, or cleared your browser data?
+       Message us and we will move your account across in a minute.</p>
+    <a class="device-wa" id="deviceWhatsapp" target="_blank" rel="noopener">Message support on WhatsApp</a>
+    <button class="secondary" onclick="document.getElementById('deviceBlock').classList.remove('open'); document.body.style.overflow='';">Close</button>
+  </div>
+</div>
+
+<style>
+  .device-block { position: fixed; inset: 0; z-index: 400; display: none; align-items: center; justify-content: center; background: rgba(9,12,20,.72); padding: 1.25rem; }
+  .device-block.open { display: flex; }
+  .device-card { background: var(--surface, #fff); border: 1px solid var(--border, #e5e7eb); border-radius: var(--radius, 14px); box-shadow: 0 18px 50px rgba(9,12,20,.25); max-width: 430px; width: 100%; padding: 2rem 1.9rem 1.7rem; text-align: center; }
+  .device-icon { font-size: 2.2rem; line-height: 1; margin-bottom: .9rem; }
+  .device-card h2 { font-size: 1.15rem; margin-bottom: .7rem; }
+  .device-card p { color: var(--text-muted, #6b7280); font-size: .88rem; line-height: 1.6; margin-bottom: .7rem; }
+  .device-wa { display: block; background: var(--accent, #2f6df6); color: #fff; font-weight: 600; font-size: .88rem; padding: .7rem 1rem; border-radius: var(--radius-sm, 10px); text-decoration: none; margin: 1.1rem 0 .6rem; }
+  .device-wa:hover { filter: brightness(1.06); }
+  .device-card button { width: 100%; margin: 0; }
+</style>
+
 <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-app-compat.js"></script>
 <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-auth-compat.js"></script>
 <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore-compat.js"></script>
@@ -108,6 +133,23 @@ function deviceCheck(uid, data) {
   };
 }
 
+// The same card the dashboard shows, so a blocked device is told the same thing
+// in the same way wherever it happens to land.
+function showDeviceBlock() {
+  const wa = document.getElementById('deviceWhatsapp');
+  const note = encodeURIComponent('Hello, I need my Ampplify Academy account moved to my new device.');
+  document.getElementById('deviceBlock').classList.add('open');
+  document.body.style.overflow = 'hidden';
+
+  db.collection('siteContent').doc('main').get()
+    .then(doc => (doc.exists && doc.data().social && doc.data().social.whatsapp) || '')
+    .catch(() => '')
+    .then(link => {
+      if (!link) { wa.style.display = 'none'; return; }
+      wa.href = link + (link.indexOf('?') === -1 ? '?' : '&') + 'text=' + note;
+    });
+}
+
 function afterSignIn(user, msg) {
   if (ADMIN_EMAILS.includes(user.email)) { location.href = 'admin.html'; return Promise.resolve(); }
   return db.collection('users').doc(user.uid).get().then(doc => {
@@ -120,8 +162,8 @@ function afterSignIn(user, msg) {
     if (status === 'approved') {
       const check = deviceCheck(user.uid, doc.data());
       if (!check.ok) {
-        msg.style.color = 'var(--danger)';
-        msg.innerHTML = check.error;
+        showDeviceBlock();
+        msg.textContent = '';
         return auth.signOut();
       }
       const sessionId = crypto.randomUUID();
