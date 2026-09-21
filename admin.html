@@ -1171,7 +1171,7 @@ function loadSiteContentIntoForm() {
     moduleRows = ((doc.exists && doc.data().modules) || []).map(m => Object.assign({
       title: '', duration: '', driveLink: '', folderLink: '', autoClasses: false, batchId: '', published: true, lessonLinks: []
     }, m));
-    renderModuleRows();
+    loadHiddenClasses().then(renderModuleRows);
   });
 }
 
@@ -2000,6 +2000,15 @@ function renderModuleRows() {
               </div>`).join('') || '<p style="color:var(--text-faint); font-size:.82rem;">No lessons added yet.</p>'}
           </div>
 
+          ${m.autoClasses ? `
+          <div style="border-top:1px solid var(--border); margin-top:1rem; padding-top:1rem;">
+            <div class="row-top" style="margin-bottom:.6rem;">
+              <span style="font-size:.85rem;">Classes in the Drive folder</span>
+              <button class="secondary" onclick="loadDriveClasses(${i})" style="width:auto; margin:0; padding:.35rem .8rem; font-size:.78rem;">Load list</button>
+            </div>
+            <div id="driveClassList-${i}"><p style="color:var(--text-faint); font-size:.82rem;">Press "Load list" to see what students see, and to hide a class without touching Drive.</p></div>
+          </div>` : ''}
+
           <button class="danger" onclick="removeModuleRow(${i})">Remove Module</button>
         </div>`;
     }
@@ -2028,6 +2037,59 @@ function removeModuleRow(i) {
   moduleRows.splice(i, 1);
   editingModuleIndex = null;
   renderModuleRows();
+}
+
+// Classes come straight from Drive, so hiding one is the only way to take it
+// off the dashboard without deleting the video. The list of hidden ids lives
+// beside the modules and student.html filters on it.
+let hiddenClasses = [];
+
+function loadHiddenClasses() {
+  return db.collection('courseContent').doc('main').get()
+    .then(doc => { hiddenClasses = (doc.exists && doc.data().hiddenClasses) || []; })
+    .catch(() => { hiddenClasses = []; });
+}
+
+function loadDriveClasses(i) {
+  const box = document.getElementById('driveClassList-' + i);
+  const m = moduleRows[i];
+  const folderId = (String(m.folderLink || m.driveLink || '').match(/\/folders\/([\w-]+)/) || [])[1];
+  if (!folderId) { box.innerHTML = '<p style="color:var(--danger); font-size:.82rem;">No Drive folder link on this module yet.</p>'; return; }
+
+  box.innerHTML = '<p style="color:var(--text-muted); font-size:.82rem;">Reading the folder...</p>';
+  db.collection('siteContent').doc('videoProxy').get()
+    .then(doc => (doc.exists ? doc.data().url : '') || '')
+    .then(proxy => {
+      if (!proxy) throw new Error('Save the video proxy URL first (Google Drive access panel).');
+      return auth.currentUser.getIdToken()
+        .then(token => fetch(proxy + '/classes/' + folderId + '?token=' + encodeURIComponent(token)))
+        .then(res => { if (!res.ok) throw new Error('The player could not read that folder (' + res.status + ').'); return res.json(); });
+    })
+    .then(data => renderDriveClasses(i, data.classes || []))
+    .catch(err => { box.innerHTML = '<p style="color:var(--danger); font-size:.82rem;">' + err.message + '</p>'; });
+}
+
+function renderDriveClasses(i, classes) {
+  const box = document.getElementById('driveClassList-' + i);
+  if (!classes.length) { box.innerHTML = '<p style="color:var(--text-faint); font-size:.82rem;">No videos in that folder.</p>'; return; }
+  box.innerHTML = classes.map(c => {
+    const id = 'mod-' + i + '-drive-' + c.id;
+    const hidden = hiddenClasses.indexOf(id) !== -1;
+    return `
+      <div style="display:flex; align-items:center; gap:.6rem; padding:.4rem 0; border-bottom:1px solid var(--border);">
+        <span style="flex:1; font-size:.85rem; ${hidden ? 'opacity:.5; text-decoration:line-through;' : ''}">${c.title}</span>
+        <span style="color:var(--text-muted); font-size:.75rem;">${c.sizeMB ? c.sizeMB + ' MB' : ''}</span>
+        <button class="secondary" onclick="toggleHiddenClass('${id}', ${i})" style="width:auto; margin:0; padding:.3rem .7rem; font-size:.75rem;">${hidden ? 'Show' : 'Hide'}</button>
+      </div>`;
+  }).join('') + '<p style="color:var(--text-muted); font-size:.78rem; margin:.6rem 0 0;">Hidden classes stay in Drive; students simply do not see them.</p>';
+}
+
+function toggleHiddenClass(id, i) {
+  const at = hiddenClasses.indexOf(id);
+  if (at === -1) hiddenClasses.push(id); else hiddenClasses.splice(at, 1);
+  db.collection('courseContent').doc('main').set({ hiddenClasses }, { merge: true })
+    .then(() => loadDriveClasses(i))
+    .catch(err => alert('Could not save: ' + err.message));
 }
 
 function addLessonLink(i) {

@@ -81,8 +81,20 @@
     video.setAttribute('controlsList', 'nodownload');
     video.setAttribute('disablepictureinpicture', '');
     video.addEventListener('contextmenu', e => e.preventDefault());
+    // The <video> element only ever says "an error occurred", so the reason is
+    // fetched from the same URL and shown as the Worker wrote it.
     video.addEventListener('error', () => {
-      foot.innerHTML = 'This class could not be streamed. <b>Reload the page</b>, or contact support if it keeps failing.';
+      foot.textContent = 'This class could not be played. Checking why…';
+      fetch(video.src, { headers: { Range: 'bytes=0-99' } })
+        .then(r => (r.ok ? null : r.json().catch(() => null)))
+        .then(data => {
+          foot.innerHTML = data && data.error
+            ? '<b>' + data.error + '</b>'
+            : 'This class could not be streamed. <b>Reload the page</b>, or contact support if it keeps failing.';
+        })
+        .catch(() => {
+          foot.innerHTML = 'This class could not be streamed. <b>Reload the page</b>, or contact support if it keeps failing.';
+        });
     });
     stage.appendChild(video);
     document.getElementById('switch').style.display = 'none';

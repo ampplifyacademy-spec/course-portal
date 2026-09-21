@@ -42,9 +42,16 @@ export default {
       }), env, origin);
     }
 
+    // Drive caps how much of a file can be pulled in a day, for everybody at
+    // once, so one account hammering reload would take a class offline for the
+    // whole batch. A student gets a generous but finite number of starts.
+    if (await overRateLimit(student.uid, env)) {
+      return err(429, 'Too many video requests from this account. Wait a minute and try again.', env, origin);
+    }
+
     const upstream = await fetchFromDrive(video[1], request, env);
-    if (!upstream) return err(404, 'File not in any course folder', env, origin);
-    return cors(upstream, env, origin);
+    if (upstream.error) return err(upstream.status, upstream.error, env, origin);
+    return cors(upstream.response, env, origin);
   }
 };
 
@@ -182,6 +189,28 @@ function cleanTitle(name) {
   return String(name).replace(/\.[a-z0-9]{2,4}$/i, '').replace(/[_]+/g, ' ').replace(/\s+/g, ' ').trim();
 }
 
+/**
+ * Requests are counted per student per minute, in the edge cache. It is not a
+ * precise counter - the cache is per location and races - but it is enough to
+ * stop one browser looping on a file and burning the day's Drive quota.
+ */
+const RATE_PER_MINUTE = 60;
+
+async function overRateLimit(uid, env) {
+  if (env.RATE_LIMIT === 'off') return false;
+  const minute = Math.floor(Date.now() / 60000);
+  const key = new Request('https://rate.invalid/' + uid + '/' + minute);
+  const cache = caches.default;
+  const seen = await cache.match(key);
+  const count = seen ? Number(await seen.text()) || 0 : 0;
+  if (count >= RATE_PER_MINUTE) return true;
+  await cache.put(key, new Response(String(count + 1), {
+    headers: { 'Cache-Control': 'max-age=120' }
+  }));
+  return false;
+}
+
+/** Says what went wrong, because "404" tells a student nothing. */
 async function fetchFromDrive(fileId, request, env) {
   const token = await accessToken(env);
   const headers = { Authorization: 'Bearer ' + token };
@@ -192,7 +221,18 @@ async function fetchFromDrive(fileId, request, env) {
     method: request.method,
     headers: headers
   });
-  if (res.status === 404 || res.status === 403) return null;
+
+  if (res.status === 403 || res.status === 404) {
+    const body = await res.text();
+    if (body.indexOf('cannotDownloadFile') !== -1 || body.indexOf('downloadQuota') !== -1) {
+      return {
+        status: 503,
+        error: 'This class has been watched too many times today and Google has paused it. ' +
+               'It comes back within 24 hours - please try another class meanwhile.'
+      };
+    }
+    return { status: 404, error: 'This class is no longer in the course folder. Please tell support.' };
+  }
 
   const out = new Headers();
   ['content-type', 'content-length', 'content-range', 'accept-ranges', 'etag', 'last-modified']
@@ -201,7 +241,7 @@ async function fetchFromDrive(fileId, request, env) {
   // Private: a shared cache must not keep a student's video around.
   out.set('Cache-Control', 'private, max-age=600');
   out.set('Content-Disposition', 'inline');
-  return new Response(res.body, { status: res.status, headers: out });
+  return { response: new Response(res.body, { status: res.status, headers: out }) };
 }
 
 function cors(response, env, origin) {
