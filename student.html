@@ -49,9 +49,6 @@
   .player-frame { flex: 1; background: #000; border-radius: var(--radius-sm); overflow: hidden; }
   .player-frame iframe { width: 100%; height: 100%; border: none; }
   .player-help { color: #d7d9e0; font-size: .8rem; padding: .6rem .25rem 0; line-height: 1.5; }
-  .drive-note { background: var(--warning-bg, #fff7e6); border: 1px solid var(--accent-orange); border-radius: var(--radius-sm); padding: .85rem 1rem; margin-bottom: 1.25rem; font-size: .86rem; line-height: 1.6; color: var(--text-soft); }
-  .drive-note strong { color: var(--text); }
-  .drive-note #driveNoteEmail { font-weight: 700; color: var(--accent); }
   .resource-row { display: flex; justify-content: space-between; align-items: center; padding: .9rem 1.1rem; background: var(--surface); border: 1px solid var(--border); border-radius: var(--radius-sm); margin-bottom: .6rem; }
   .resource-row a button { width: auto; margin: 0; padding: .4rem .9rem; font-size: .82rem; }
 </style>
@@ -89,13 +86,6 @@
     </div>
 
 
-    <div class="drive-note" id="driveNote" style="display:none;">
-      <strong>Class videos open with your course email:</strong>
-      <span id="driveNoteEmail"></span>. Sign in to Google with that email once in this browser
-      and every class opens straight away. A class opens in our own player tab; if it says the video
-      cannot load, use the <em>Google account</em> buttons at the bottom of that tab to pick the account
-      your course email is signed in as &mdash; it is remembered after that.
-    </div>
 
     <div class="tab-section active" id="tab-dashboard">
       <div id="batchWrap"></div>
@@ -179,8 +169,6 @@ auth.onAuthStateChanged(user => {
     const displayName = data.name || user.email;
     document.getElementById('studentName').textContent = displayName;
     document.getElementById('welcomeTitle').textContent = 'Welcome back, ' + displayName.split(' ')[0];
-    document.getElementById('driveNoteEmail').textContent = currentEmail;
-    document.getElementById('driveNote').style.display = '';
 
     document.getElementById('studentAvatar').textContent = displayName.charAt(0).toUpperCase();
 
