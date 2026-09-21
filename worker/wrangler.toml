@@ -1,0 +1,17 @@
+name = "ampplify-class-video"
+main = "src/index.js"
+compatibility_date = "2026-09-01"
+
+[vars]
+FIREBASE_PROJECT_ID = "course-portal-4ac4a"
+FIREBASE_API_KEY = "AIzaSyAz08Y5v26aWGzEp1JjiWT2HUkSO0zAhYc"
+ALLOWED_ORIGINS = "https://ampplifyacademy-spec.github.io,http://localhost:8000"
+
+# Secrets never live in this file. Set each one with:
+#   npx wrangler secret put <NAME>
+#
+#   GOOGLE_CLIENT_ID
+#   GOOGLE_CLIENT_SECRET
+#   REFRESH_TOKEN_1   Batch 1 Drive account
+#   REFRESH_TOKEN_2   Batch 2 Drive account
+#   REFRESH_TOKEN_3   Update Class Drive account

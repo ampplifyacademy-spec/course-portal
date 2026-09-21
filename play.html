@@ -20,15 +20,14 @@
   button, .btn { font: 600 .8rem Inter, sans-serif; border-radius: 8px; border: 1px solid var(--line); background: #1d2637; color: var(--text); padding: .45rem .9rem; cursor: pointer; text-decoration: none; }
   button:hover, .btn:hover { border-color: var(--accent); }
   .stage { flex: 1; position: relative; background: #000; }
-  .stage iframe { position: absolute; inset: 0; width: 100%; height: 100%; border: 0; }
-  /* Covers the Drive chrome (its top bar with the file name / popout / download row). */
-  .mask { position: absolute; left: 0; right: 0; top: 0; height: 0; background: #000; pointer-events: none; }
+  .stage iframe, .stage video { position: absolute; inset: 0; width: 100%; height: 100%; border: 0; background: #000; }
+  .note { position: absolute; left: 50%; top: 50%; transform: translate(-50%, -50%); max-width: 520px; text-align: center; color: var(--muted); font-size: .9rem; line-height: 1.6; padding: 1rem; }
+  .note b { color: var(--text); }
   footer { padding: .6rem 1.1rem; border-top: 1px solid var(--line); background: var(--panel); color: var(--muted); font-size: .78rem; line-height: 1.5; display: flex; align-items: center; gap: .8rem; flex-wrap: wrap; }
   footer b { color: var(--text); }
   .switch { display: flex; align-items: center; gap: .35rem; margin-left: auto; }
   .switch button { padding: .3rem .6rem; font-size: .75rem; }
   .switch button.on { border-color: var(--accent); background: var(--accent); }
-  .gate { margin: auto; padding: 2rem; text-align: center; color: var(--muted); }
 </style>
 </head>
 <body>
@@ -38,10 +37,10 @@
   <button onclick="window.close()">&times; Close</button>
 </header>
 
-<div class="stage" id="stage"><div class="mask" id="mask"></div></div>
+<div class="stage" id="stage"></div>
 
 <footer>
-  <span>Plays with your course email &mdash; <b id="email">&hellip;</b>.</span>
+  <span id="footNote">Loading&hellip;</span>
   <span class="switch" id="switch" style="display:none;">
     <span>Not loading? Google account:</span>
     <button data-u="0">1st</button><button data-u="1">2nd</button><button data-u="2">3rd</button>
@@ -50,37 +49,58 @@
 
 <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-app-compat.js"></script>
 <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-auth-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore-compat.js"></script>
 <script src="js/firebase-config.js"></script>
 <script>
-  const params  = new URLSearchParams(location.search);
-  const fileId  = (params.get('id') || '').replace(/[^\w-]/g, '');
-  const kind    = params.get('kind') === 'folder' ? 'folder' : 'file';
-  const title   = params.get('t') || 'Class';
+  const params = new URLSearchParams(location.search);
+  const fileId = (params.get('id') || '').replace(/[^\w-]/g, '');
+  const kind   = params.get('kind') === 'folder' ? 'folder' : 'file';
+  const title  = params.get('t') || 'Class';
   document.title = title + ' · Ampplify Academy';
   document.getElementById('title').textContent = title;
 
-  // Which Google account in this browser owns the course email. The embed
-  // ignores ?authuser=, but it does honour the /u/<n>/ path, so the student
-  // picks their account once and the choice is remembered per browser.
+  const stage = document.getElementById('stage');
+  const foot  = document.getElementById('footNote');
+
+  // Which Google account in this browser holds the course email. Only used by
+  // the Drive fallback: the embed ignores ?authuser= but honours the /u/<n>/
+  // path, so the student picks once and the choice is kept per browser.
   const KEY = 'ampplify.driveUser';
   let userIndex = Number(localStorage.getItem(KEY) || 0) || 0;
 
-  function embedUrl() {
-    if (!fileId) return '';
-    return kind === 'folder'
-      ? 'https://drive.google.com/embeddedfolderview?id=' + fileId + '#grid'
-      : 'https://drive.google.com/u/' + userIndex + '/file/d/' + fileId + '/preview';
+  function clearStage() { stage.innerHTML = ''; }
+
+  /** Our own proxy: the video is served by us, the student's Google account plays no part. */
+  function showProxyPlayer(proxyUrl, idToken) {
+    clearStage();
+    const video = document.createElement('video');
+    video.src = proxyUrl + '/v/' + fileId + '?token=' + encodeURIComponent(idToken);
+    video.controls = true;
+    video.autoplay = true;
+    video.controlsList = 'nodownload';
+    video.setAttribute('controlsList', 'nodownload');
+    video.setAttribute('disablepictureinpicture', '');
+    video.addEventListener('contextmenu', e => e.preventDefault());
+    video.addEventListener('error', () => {
+      foot.innerHTML = 'This class could not be streamed. <b>Reload the page</b>, or contact support if it keeps failing.';
+    });
+    stage.appendChild(video);
+    document.getElementById('switch').style.display = 'none';
+    foot.textContent = 'Playing from Ampplify Academy.';
   }
 
-  function render() {
-    const stage = document.getElementById('stage');
-    const old = stage.querySelector('iframe');
-    if (old) old.remove();
+  /** Fallback while no proxy is configured: the Drive embed, account and all. */
+  function showDriveEmbed(email) {
+    clearStage();
     const frame = document.createElement('iframe');
-    frame.src = embedUrl();
+    frame.src = kind === 'folder'
+      ? 'https://drive.google.com/embeddedfolderview?id=' + fileId + '#grid'
+      : 'https://drive.google.com/u/' + userIndex + '/file/d/' + fileId + '/preview';
     frame.setAttribute('allow', 'autoplay; fullscreen; encrypted-media');
     frame.setAttribute('allowfullscreen', '');
-    stage.insertBefore(frame, document.getElementById('mask'));
+    stage.appendChild(frame);
+    foot.innerHTML = 'Plays with your course email &mdash; <b>' + email + '</b>.';
+    document.getElementById('switch').style.display = kind === 'file' ? 'flex' : 'none';
     document.querySelectorAll('#switch button').forEach(b => {
       b.classList.toggle('on', Number(b.dataset.u) === userIndex);
     });
@@ -90,17 +110,23 @@
     b.addEventListener('click', () => {
       userIndex = Number(b.dataset.u);
       localStorage.setItem(KEY, String(userIndex));
-      render();
+      showDriveEmbed(document.querySelector('#footNote b') ? document.querySelector('#footNote b').textContent : '');
     });
   });
 
-  // Only a signed-in student sees the page; the file itself stays protected by
-  // its own Drive sharing, this is just so the tab is ours and not Drive's.
   auth.onAuthStateChanged(user => {
     if (!user) { location.replace('login.html'); return; }
-    document.getElementById('email').textContent = user.email || '';
-    document.getElementById('switch').style.display = kind === 'file' ? 'flex' : 'none';
-    render();
+    if (!fileId) { foot.textContent = 'No class was given.'; return; }
+
+    db.collection('siteContent').doc('videoProxy').get()
+      .then(doc => (doc.exists ? doc.data().url : '') || '')
+      .catch(() => '')
+      .then(proxyUrl => {
+        if (!proxyUrl) { showDriveEmbed(user.email || ''); return; }
+        // A folder has no single file to stream, so it stays on the Drive view.
+        if (kind === 'folder') { showDriveEmbed(user.email || ''); return; }
+        return user.getIdToken().then(token => showProxyPlayer(proxyUrl, token));
+      });
   });
 </script>
 </body>

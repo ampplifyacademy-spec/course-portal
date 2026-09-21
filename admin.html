@@ -141,6 +141,9 @@
         <button class="secondary" onclick="addDriveAccount()" style="width:auto; margin:.25rem 0 1rem;">+ Add Drive account</button>
         <label>Passcode (SECRET)</label>
         <input id="driveSecret" type="password" placeholder="same in every script">
+        <label style="margin-top:1rem;">Video proxy URL (Cloudflare Worker)</label>
+        <input id="videoProxyUrl" placeholder="https://ampplify-class-video.xxx.workers.dev">
+        <p style="color:var(--text-muted); font-size:.8rem; margin:.35rem 0 0;">With this set, classes stream through our own player and a student's Google account no longer matters. Leave it empty to fall back to the Drive embed. Setup steps are in worker/README.md.</p>
         <button onclick="saveDriveAccessConfig()" style="width:auto; margin-top:1rem;">Save Drive settings</button>
         <p class="msg" id="driveConfigMsg" style="margin:.6rem 0 0;"></p>
         </div>
@@ -2374,6 +2377,7 @@ function loadDriveAccessConfig() {
     renderDriveAccountRows();
     const secretBox = document.getElementById('driveSecret');
     if (secretBox) secretBox.value = driveAccessConfig.secret || '';
+    loadVideoProxyUrl();
   }).catch(() => { driveAccessConfig = { accounts: [], secret: '' }; });
 }
 
@@ -2408,6 +2412,22 @@ function removeDriveAccount(i) {
   renderDriveAccountRows();
 }
 
+// The proxy URL is not a secret and play.html has to read it, so it lives in
+// siteContent (public read, admin write) rather than in the admin-only config.
+function loadVideoProxyUrl() {
+  const box = document.getElementById('videoProxyUrl');
+  if (!box) return;
+  db.collection('siteContent').doc('videoProxy').get()
+    .then(doc => { box.value = (doc.exists ? doc.data().url : '') || ''; })
+    .catch(() => {});
+}
+
+function saveVideoProxyUrl() {
+  const box = document.getElementById('videoProxyUrl');
+  const url = (box ? box.value : '').trim().replace(/\/+$/, '');
+  return db.collection('siteContent').doc('videoProxy').set({ url });
+}
+
 function saveDriveAccessConfig() {
   const msg = document.getElementById('driveConfigMsg');
   const accounts = sortDriveAccounts(driveAccountRows)
@@ -2421,7 +2441,10 @@ function saveDriveAccessConfig() {
   }
   msg.style.color = 'var(--text-muted)';
   msg.textContent = 'Saving...';
-  db.collection('config').doc('driveAccess').set({ accounts, secret }).then(() => {
+  Promise.all([
+    db.collection('config').doc('driveAccess').set({ accounts, secret }),
+    saveVideoProxyUrl()
+  ]).then(() => {
     driveAccessConfig = { accounts, secret };
     msg.style.color = 'var(--success)';
     msg.textContent = 'Saved. ' + accounts.length + ' folder(s) connected: ' + accounts.map(a => a.name).join(', ') + '.';
