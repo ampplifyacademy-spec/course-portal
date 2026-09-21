@@ -519,6 +519,13 @@ auth.onAuthStateChanged(function (user) {
       </fieldset>
 
       <fieldset>
+        <legend>Authorised personnel (Schedule B)</legend>
+        <p class="pct-note">Who on your side gets User Permissions access. Leave blank rows out.</p>
+        <div id="personnelRows"></div>
+        <button type="button" class="ghost" id="addPersonBtn" style="padding:7px 12px;font-size:12.5px;">+ Add person</button>
+      </fieldset>
+
+      <fieldset>
         <legend>Other terms</legend>
         <label class="field"><span class="lbl">Effective date (partnership / account start date)</span>
           <input type="date" id="effectiveDate"></label>
@@ -528,6 +535,8 @@ auth.onAuthStateChanged(function (user) {
           <input type="text" id="govLaw" placeholder="e.g. Kingdom of Saudi Arabia"></label>
         <label class="field"><span class="lbl">Notice period to end agreement (days)</span>
           <input type="text" id="noticeDays" value="30"></label>
+        <label class="field"><span class="lbl">Non-compete period after termination (months, 0 = none)</span>
+          <input type="text" id="nonCompeteMonths" value="12"></label>
       </fieldset>
 
       <div class="actions">
@@ -591,6 +600,38 @@ function updateVisibility() {
 document.querySelectorAll('input[name="engagement"]').forEach(r => r.addEventListener('change', updateVisibility));
 updateVisibility();
 checkPct();
+
+// Schedule B lists who may hold User Permissions. Rows are added as needed and
+// blank ones are simply left out of the printed schedule.
+function addPersonRow(v) {
+  v = v || {};
+  var wrap = document.getElementById("personnelRows");
+  var row = document.createElement("div");
+  row.className = "two-col";
+  row.style.marginBottom = "6px";
+  row.innerHTML =
+    '<label class="field"><span class="lbl">Full name</span><input type="text" class="pName"></label>' +
+    '<label class="field"><span class="lbl">Role / permission level</span><input type="text" class="pRole"></label>' +
+    '<label class="field"><span class="lbl">Contact email</span><input type="text" class="pEmail"></label>' +
+    '<label class="field"><span class="lbl">Location (city / country)</span><input type="text" class="pLoc"></label>';
+  wrap.appendChild(row);
+}
+document.getElementById("addPersonBtn").addEventListener("click", function () { addPersonRow(); });
+addPersonRow();
+
+function personnelRows() {
+  var out = [];
+  var names = document.querySelectorAll(".pName");
+  var roles = document.querySelectorAll(".pRole");
+  var emails = document.querySelectorAll(".pEmail");
+  var locs = document.querySelectorAll(".pLoc");
+  for (var i = 0; i < names.length; i++) {
+    var n = (names[i].value || "").trim(), r = (roles[i].value || "").trim();
+    var e = (emails[i].value || "").trim(), l = (locs[i].value || "").trim();
+    if (n || r || e || l) out.push({ name: n, role: r, email: e, loc: l });
+  }
+  return out;
+}
 
 function buildDoc() {
   const mode = document.querySelector('input[name="engagement"]:checked').value;
@@ -710,8 +751,14 @@ function buildDoc() {
   }
   html += '</ol>';
 
-  // 4. Fees (if service)
+  // Personnel named for access. The names themselves sit in Schedule B.
+  const personnel = personnelRows();
   let n = includesService ? 4 : 3;
+  html += '<h4>' + n + '. Personnel Named for Access</h4><ol class="clauses">';
+  html += '<li>The Provider\'s personnel authorised to be granted User Permissions access under this Agreement are listed in Schedule B. The Provider shall promptly inform the Client in writing of any change in personnel who require access, so that the Client may update or revoke User Permissions accordingly.</li>';
+  html += '</ol>';
+  n++;
+
   if (includesService) {
     html += '<h4>' + n + '. Fees</h4><ol class="clauses">';
     if (feeAmount) {
@@ -737,9 +784,11 @@ function buildDoc() {
   }
 
   // Confidentiality
-  html += '<h4>' + n + '. Confidentiality &amp; Compliance</h4><ol class="clauses">';
+  html += '<h4>' + n + '. Confidentiality, Data Protection &amp; Compliance</h4><ol class="clauses">';
   html += '<li>Each Party shall keep confidential all non-public business and account information of the other Party, and shall not disclose it to any third party without consent, save as required by law. This obligation survives termination for two (2) years.</li>';
-  html += '<li>Both Parties shall comply with Amazon\'s Business Solutions Agreement and all applicable policies, and shall not take any action likely to cause suspension or deactivation of the Account. The Provider warrants it will not use Account access for any misleading, fraudulent, or illegal purpose.</li>';
+  html += '<li>The Provider shall comply with all applicable data protection and privacy laws in relation to any personal data (including customer data) accessed through the Account, and shall not use such data for any purpose other than performing the Services.</li>';
+  html += '<li>Both Parties shall comply with Amazon\'s Business Solutions Agreement, Seller Code of Conduct, and all applicable Amazon policies in relation to the Account, and neither Party shall take any action that could reasonably be expected to result in suspension, deactivation, or other enforcement action against the Account.</li>';
+  html += '<li>The Provider represents and warrants that it will not use the Account, or any access granted under this Agreement, to engage in any misleading, fraudulent, or illegal activity, or in any manner that would breach Amazon\'s policies.</li>';
   html += '</ol>';
   n++;
 
@@ -747,6 +796,18 @@ function buildDoc() {
   html += '<h4>' + n + '. Term &amp; Termination</h4><ol class="clauses">';
   html += '<li>This Agreement commences on the Effective Date and continues until terminated by either Party on ' + fillOr(noticeDays, '30') + ' days\' written notice, or immediately for uncured material breach, insolvency, or fraudulent/illegal conduct.</li>';
   html += '<li>' + (includesPartner ? 'Upon termination, any Net Profit accrued but unpaid shall be calculated and settled within a reasonable time, and the confidentiality, access-revocation, and Account-ownership provisions of this Agreement shall survive.' : 'Upon termination, the confidentiality and access-revocation provisions of this Agreement shall survive.') + '</li>';
+  const nonCompeteMonths = val('nonCompeteMonths');
+  if (nonCompeteMonths && nonCompeteMonths !== '0') {
+    html += '<li>For a period of ' + escapeHtml(nonCompeteMonths) + ' months following termination of this Agreement, the Provider shall not, without the Client\'s prior written consent, directly solicit or service the same Account, or launch a materially similar or competing product line using the Client\'s confidential business information obtained under this Agreement.</li>';
+  }
+  html += '</ol>';
+  n++;
+
+  // Liability sits between termination and status, as in the drafted document.
+  html += '<h4>' + n + '. Liability &amp; Indemnity</h4><ol class="clauses">';
+  html += '<li>Each Party shall be liable for its own acts and omissions in connection with this Agreement. The Provider shall indemnify and hold the Client harmless from and against any loss, liability, penalty, or account suspension arising directly from the Provider\'s breach of this Agreement, misuse of Account access, or violation of Amazon\'s policies.</li>';
+  html += '<li>Neither Party shall be liable to the other for any indirect, incidental, or consequential loss, including loss of profits or loss of business opportunity, save in cases of fraud, wilful misconduct, or gross negligence.</li>';
+  html += '<li>Nothing in this Agreement shall exclude or limit either Party\'s liability for fraud or for any liability which cannot be excluded or limited under applicable law.</li>';
   html += '</ol>';
   n++;
 
@@ -754,8 +815,45 @@ function buildDoc() {
   html += '<h4>' + n + '. Independent Status &amp; Governing Law</h4><ol class="clauses">';
   html += '<li>The Provider is an independent contractor' + (includesPartner ? ' and business partner in respect of profit-sharing only' : '') + ', and not an employee or agent of the Client, except as strictly necessary to reflect the Provider\'s authorised User Permissions role.</li>';
   html += '<li>This Agreement is governed by the laws of ' + fillOr(govLaw, '[jurisdiction]') + '. Disputes shall first be resolved amicably between the Parties before recourse to the courts or arbitration body of that jurisdiction.</li>';
-  html += '<li>This Agreement may only be amended in writing signed by both Parties, and may be executed in counterparts.</li>';
   html += '</ol>';
+  n++;
+
+  html += '<h4>' + n + '. General Provisions</h4><ol class="clauses">';
+  html += '<li><b>Entire Agreement:</b> This Agreement, together with its Schedules, constitutes the entire agreement between the Parties and supersedes all prior discussions, understandings, or agreements relating to its subject matter.</li>';
+  html += '<li><b>Amendment:</b> This Agreement may only be amended by a written instrument signed by both Parties.</li>';
+  html += '<li><b>Assignment:</b> Neither Party may assign or transfer this Agreement without the prior written consent of the other Party, save that the Client may assign this Agreement to a successor entity in connection with a merger, acquisition, or sale of substantially all of its assets.</li>';
+  html += '<li><b>Severability:</b> If any provision of this Agreement is held invalid or unenforceable, the remaining provisions shall continue in full force and effect.</li>';
+  html += '<li><b>Notices:</b> All notices under this Agreement shall be in writing and delivered to the addresses or emails set out above, or such other address as either Party may notify in writing.</li>';
+  html += '<li><b>Counterparts:</b> This Agreement may be executed in counterparts (including electronically), each of which shall be deemed an original, and all of which together shall constitute one instrument.</li>';
+  html += '</ol>';
+
+  // Schedules carry the commercial detail, so the clauses above can stay general.
+  html += '<h4>Schedule A &mdash; Statement of Work, Fees, Profit-Share &amp; Term</h4>';
+  html += '<table class="sched"><tbody>';
+  html += '<tr><th style="width:44%;">Description of Services</th><td>' + (services.length ? services.map(escapeHtml).join('; ') : '&nbsp;') + '</td></tr>';
+  if (includesPartner) {
+    html += '<tr><th>Profit statement cadence</th><td>' + escapeHtml(reportCadence) + '</td></tr>';
+    html += '<tr><th>Net profit deductible cost categories</th><td>' + (deductions ? escapeHtml(deductions) : '&nbsp;') + '</td></tr>';
+    html += '<tr><th>Profit share</th><td>Client ' + escapeHtml(clientPct) + '% / Provider ' + escapeHtml(providerPct) + '%</td></tr>';
+    html += '<tr><th>Payment due after statement</th><td>' + escapeHtml(payoutDays) + ' days</td></tr>';
+  }
+  if (includesService) {
+    html += '<tr><th>Fixed fee (if any)</th><td>' + (feeAmount ? escapeHtml(feeAmount) : 'None &mdash; see profit share') + '</td></tr>';
+  }
+  html += '<tr><th>Effective date</th><td>' + (effectiveDate ? escapeHtml(effectiveDate) : '&nbsp;') + '</td></tr>';
+  html += '<tr><th>Notice period to terminate</th><td>' + escapeHtml(noticeDays) + ' days</td></tr>';
+  html += '</tbody></table>';
+
+  html += '<h4>Schedule B &mdash; Authorised Personnel for User Permissions Access</h4>';
+  html += '<table class="sched"><thead><tr><th>Full name</th><th>Role / permission level</th><th>Contact email</th><th>Location</th></tr></thead><tbody>';
+  if (personnel.length) {
+    personnel.forEach(function (x) {
+      html += '<tr><td>' + escapeHtml(x.name) + '</td><td>' + escapeHtml(x.role) + '</td><td>' + escapeHtml(x.email) + '</td><td>' + escapeHtml(x.loc) + '</td></tr>';
+    });
+  } else {
+    for (var i = 0; i < 3; i++) html += '<tr><td>&nbsp;</td><td>&nbsp;</td><td>&nbsp;</td><td>&nbsp;</td></tr>';
+  }
+  html += '</tbody></table>';
 
   // Signatures
   html += '<h4>Signatures</h4>';
