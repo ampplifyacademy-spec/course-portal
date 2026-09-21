@@ -722,9 +722,9 @@ function buildDoc() {
   const reportCadence = document.getElementById('reportCadence').value;
   const payoutDays = val('payoutDays') || '___';
 
-  let titleMode = includesService && includesPartner ? "Account Management, Profit-Sharing &amp; Authorised Access Agreement"
-                 : includesPartner ? "Profit-Sharing &amp; Authorised Access Agreement"
-                 : "Marketplace Account Access &amp; Management Services Agreement";
+  // The document keeps one title, as the drafted agreement does; only the line
+  // beneath it says which of the three arrangements this copy covers.
+  let titleMode = "Account Management, Profit-Sharing &amp; Authorised Access Agreement";
 
   let subMode = includesService && includesPartner ? "Amazon Seller Account — Service &amp; Profit-Sharing Partnership"
                 : includesPartner ? "Amazon Seller Account — Profit-Sharing Partnership (no separate service fee)"
