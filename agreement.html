@@ -288,6 +288,22 @@
     @page { margin: 18mm 16mm; }
   }
 </style>
+<!-- Only the admin may open this page. The generator itself is untouched;
+     this hides it until Firebase confirms the signed-in account is ours. -->
+<script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-app-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-auth-compat.js"></script>
+<script src="js/firebase-config.js"></script>
+<style id="adminGate">body > .shell { visibility: hidden; }</style>
+<script>
+auth.onAuthStateChanged(function (user) {
+  if (user && ADMIN_EMAILS.includes(user.email)) {
+    var gate = document.getElementById("adminGate");
+    if (gate) gate.remove();
+    return;
+  }
+  location.replace("login.html");
+});
+</script>
 </head>
 <body>
 <div class="shell">
