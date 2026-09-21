@@ -122,8 +122,12 @@ function deviceCheck(uid, data) {
   if (claimed === mine) return { ok: true, claim: false, deviceId: mine };
   return {
     ok: false,
-    error: 'This account is already in use on another device or browser. ' +
-           'Your course opens on that one. If it was lost or changed, ask us to reset it.'
+    error: 'This account is already in use on another device or browser. Your course opens on that one. ' +
+           'Changed device, or cleared your browser data? ' +
+           '<a href="https://wa.me/8801571068040?text=' +
+           encodeURIComponent('Hello, I need my Ampplify Academy account moved to my new device.') +
+           '" target="_blank" rel="noopener" style="color:var(--accent); font-weight:600;">Message us</a> ' +
+           'and we will move it across.'
   };
 }
 

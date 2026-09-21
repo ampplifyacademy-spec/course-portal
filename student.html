@@ -49,6 +49,16 @@
   .player-frame { flex: 1; background: #000; border-radius: var(--radius-sm); overflow: hidden; }
   .player-frame iframe { width: 100%; height: 100%; border: none; }
   .player-help { color: #d7d9e0; font-size: .8rem; padding: .6rem .25rem 0; line-height: 1.5; }
+  .device-block { position: fixed; inset: 0; z-index: 400; display: none; align-items: center; justify-content: center; background: rgba(9,12,20,.72); padding: 1.25rem; }
+  .device-block.open { display: flex; }
+  .device-card { background: var(--surface); border: 1px solid var(--border); border-radius: var(--radius); box-shadow: var(--shadow-md); max-width: 430px; width: 100%; padding: 2rem 1.9rem 1.7rem; text-align: center; }
+  .device-icon { font-size: 2.2rem; line-height: 1; margin-bottom: .9rem; }
+  .device-card h2 { font-size: 1.15rem; margin-bottom: .7rem; }
+  .device-card p { color: var(--text-muted); font-size: .88rem; line-height: 1.6; margin-bottom: .7rem; }
+  .device-card .device-hint { color: var(--text-soft); }
+  .device-wa { display: block; background: var(--accent); color: #fff; font-weight: 600; font-size: .88rem; padding: .7rem 1rem; border-radius: var(--radius-sm); text-decoration: none; margin: 1.1rem 0 .6rem; }
+  .device-wa:hover { filter: brightness(1.06); }
+  .device-card button { width: 100%; margin: 0; }
   .resource-row { display: flex; justify-content: space-between; align-items: center; padding: .9rem 1.1rem; background: var(--surface); border: 1px solid var(--border); border-radius: var(--radius-sm); margin-bottom: .6rem; }
   .resource-row a button { width: auto; margin: 0; padding: .4rem .9rem; font-size: .82rem; }
 </style>
@@ -86,6 +96,19 @@
     </div>
 
 
+
+    <div class="device-block" id="deviceBlock">
+      <div class="device-card">
+        <div class="device-icon">&#128274;</div>
+        <h2>This device is not registered</h2>
+        <p>Your course opens on the browser you first signed in with. We do this so a course
+           stays with the student who bought it.</p>
+        <p class="device-hint">Changed phone or laptop, or cleared your browser data?
+           Message us and we will move your account across in a minute.</p>
+        <a class="device-wa" id="deviceWhatsapp" target="_blank" rel="noopener">Message support on WhatsApp</a>
+        <button class="secondary" onclick="location.href='login.html'">Back to sign in</button>
+      </div>
+    </div>
 
     <div class="tab-section active" id="tab-dashboard">
       <div id="batchWrap"></div>
@@ -187,8 +210,8 @@ auth.onAuthStateChanged(user => {
     // browser claims the account every browser would be let in.
     if (data.deviceId) {
       if (data.deviceId !== localStorage.getItem('device_' + user.uid)) {
-        alert('This account is registered to another device or browser. Ask us to reset it if you have changed device.');
-        auth.signOut().then(() => { location.href = 'login.html'; });
+        showDeviceBlock();
+        auth.signOut();
         return;
       }
     } else {
@@ -510,6 +533,18 @@ function watchSession(uid, mySession) {
       kickOut(uid);
     }
   });
+}
+
+// A browser dialog says "ampplifyacademy-spec.github.io says", which reads like
+// an error. This is the same message in the site's own clothes, with the way
+// out - contacting us - on the card.
+function showDeviceBlock() {
+  const wa = document.getElementById('deviceWhatsapp');
+  const number = (window.SITE_WHATSAPP || '8801571068040').replace(/[^0-9]/g, '');
+  wa.href = 'https://wa.me/' + number + '?text=' +
+    encodeURIComponent('Hello, I need my Ampplify Academy account moved to my new device.');
+  document.getElementById('deviceBlock').classList.add('open');
+  document.body.style.overflow = 'hidden';
 }
 
 function kickOut(uid) {
