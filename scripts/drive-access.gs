@@ -241,6 +241,53 @@ function handOverNow() {
 }
 
 /**
+ * A file that was once shared on its own keeps that sharing even inside a
+ * shared folder - Drive shows it as "Limited access". Clearing the folder
+ * therefore leaves those students in place, and leaves the player locked out
+ * of files whose own list never had it. This walks every file and makes each
+ * one match the folder: owner and player only.
+ */
+function fixFilePermissions() {
+  var folder = DriveApp.getFolderById(PROPS.getProperty('FOLDER_ID'));
+  var tally = { files: 0, removed: 0, granted: 0 };
+  fixWalk(folder, tally);
+  var message = 'Checked ' + tally.files + ' file(s): removed ' + tally.removed +
+    ' stale share(s), gave the player access to ' + tally.granted + '.';
+  Logger.log(message);
+  return message;
+}
+
+function fixWalk(folder, tally) {
+  var files = folder.getFiles();
+  while (files.hasNext()) {
+    var id = files.next().getId();
+    tally.files++;
+    var hasProxy = false;
+    try {
+      listPermissions(id).forEach(function (p) {
+        if (p.role === 'owner') return;
+        if ((p.emailAddress || '').toLowerCase() === PROXY_SERVICE_ACCOUNT) {
+          hasProxy = p.role === 'writer';
+          if (hasProxy) return;
+        }
+        try {
+          driveCall(id + '/permissions/' + p.id + '?supportsAllDrives=true', 'delete');
+          tally.removed++;
+        } catch (err) {}
+      });
+      if (!hasProxy) {
+        driveCall(id + '/permissions?sendNotificationEmail=false&supportsAllDrives=true', 'post',
+                  { role: 'writer', type: 'user', emailAddress: PROXY_SERVICE_ACCOUNT });
+        tally.granted++;
+      }
+      driveCall(id + '?supportsAllDrives=true', 'patch', { copyRequiresWriterPermission: false });
+    } catch (err) {}
+  }
+  var subs = folder.getFolders();
+  while (subs.hasNext()) fixWalk(subs.next(), tally);
+}
+
+/**
  * Takes the folder back to just its owner and the player's service account.
  * Every student viewer goes, so a forwarded Drive link is worth nothing and
  * the course is reachable only through our portal.
