@@ -321,7 +321,7 @@ auth.onAuthStateChanged(function (user) {
   }
   #doc p.docsub { font-size: 10pt; color: #555555; font-style: normal; margin: 0 0 16pt; }
   #doc h4 {
-    font-size: 13pt; font-weight: 700; color: #000;
+    font-size: 13pt; font-weight: 700; color: #2E74B5;
     border-bottom: none; padding-bottom: 0; margin: 14pt 0 6pt;
     page-break-after: avoid; break-after: avoid;
   }
@@ -343,6 +343,8 @@ auth.onAuthStateChanged(function (user) {
   /* Word prints this in black - no slate body text, no navy headings, and
      placeholders that are still blank print black rather than warning red. */
   #doc, #doc * { color: #000 !important; }
+  /* Word's Heading 1 style is this blue, so the printed headings keep it. */
+  #doc h4, #doc h4 * { color: #2E74B5 !important; }
   #doc p.docsub, #doc .note-italic { color: #555555 !important; }
   #doc .sealbox { color: #999999 !important; }
   @page { margin: 19mm 22mm; }
@@ -763,139 +765,185 @@ function buildDoc() {
   html += '<div class="fld"><b>Contact:</b> ' + fillOr(providerContact, '[email / phone]') + '</div>';
   html += '<p>Client and Provider are each a "Party" and together the "Parties".</p>';
 
-  // 1. Background
-  html += '<h4>1. Background</h4><ol class="clauses">';
-  html += '<li>The Client owns and operates the Amazon account named above (the "Account"), used to sell products on the stated marketplace(s).</li>';
+  // Clause text follows the drafted agreement word for word. Which sections
+  // appear depends on the arrangement: a service-only copy carries no
+  // profit-share terms, a partnership-only copy carries no fee section, and
+  // "both" carries the lot - so one generator covers all three deals.
+  let n = 0;
+  function section(title) { n++; html += '<h4>' + n + '. ' + title + '</h4>'; return n; }
+
+  // --- Background -----------------------------------------------------------
+  section('Background &amp; Nature of Relationship');
+  html += '<ol class="clauses">';
+  html += '<li>The Client owns and operates an Amazon Seller Central / Vendor Central account (the "Account") used to sell products on one or more Amazon marketplaces.</li>';
   if (includesService && includesPartner) {
-    html += '<li>The Parties wish to enter into a combined arrangement under which the Provider will (a) provide the account management services described in Section 2, and (b) act as a profit-sharing partner in respect of sales generated through the Account.</li>';
+    html += '<li>The Parties wish to enter into a combined arrangement under which the Provider will (a) provide account management and operational services in connection with the Account, and (b) act as a profit-sharing business partner in respect of the sales generated through the Account, on the terms set out in this Agreement.</li>';
   } else if (includesPartner) {
-    html += '<li>The Parties wish to enter into a profit-sharing partnership in respect of sales generated through the Account, on the terms set out below.</li>';
+    html += '<li>The Parties wish to enter into an arrangement under which the Provider will act as a profit-sharing business partner in respect of the sales generated through the Account, on the terms set out in this Agreement.</li>';
   } else {
-    html += '<li>The Client wishes to engage the Provider to perform the account management services described in Section 2, in exchange for the fee set out in Section 4, and no profit is shared between the Parties under this Agreement.</li>';
+    html += '<li>The Parties wish to enter into an arrangement under which the Provider will provide account management and operational services in connection with the Account, in consideration for the fees set out in this Agreement, and under which no profit is shared between the Parties.</li>';
   }
-  html += '<li>This Agreement may be shared with Amazon or its representatives, if requested, as evidence of a legitimate and disclosed business relationship between the Client and the Provider, including the basis on which the Provider has been granted authorised access to the Account.</li>';
-  html += '<li>The Parties acknowledge that Amazon\'s policies prohibit sharing Account login credentials. Any access granted to the Provider shall be through Amazon\'s own "User Permissions" feature, using the Provider\'s own separate login — never the Client\'s own username or password.</li>';
+  html += '<li>This Agreement is intended, among other things, to serve as documentary evidence &mdash; for Amazon or any other relevant authority &mdash; of a legitimate, disclosed, and mutually-authorised business relationship between the Client (Account owner) and the Provider (the party operating/assisting with the Account), including the basis on which the Provider has been granted authorised access to the Account. Both Parties agree that this Agreement, or an extract of it, may be shared with Amazon or its representatives if requested in connection with account verification, ownership confirmation, or account health review.</li>';
+  html += '<li>The Parties acknowledge that Amazon\'s Business Solutions Agreement and related policies prohibit the sharing of Account login credentials, and that any access granted to the Provider must be through Amazon\'s own authorised multi-user access mechanism (the "User Permissions" feature) rather than by disclosure of the Client\'s own username or password.</li>';
   html += '</ol>';
 
-  // 2. Scope (only if service involved)
+  // --- Scope of services ----------------------------------------------------
   if (includesService) {
-    html += '<h4>2. Scope of Services</h4>';
-    html += '<p>The Provider shall perform the following services:</p><ol class="clauses">';
+    section('Scope of Services');
+    html += '<p>The Provider shall perform the following Services:</p><ol class="clauses">';
     if (services.length) {
-      services.forEach(s => html += '<li>' + escapeHtml(s) + '</li>');
+      services.forEach(function (x) { html += '<li>' + escapeHtml(x) + '</li>'; });
     } else {
-      html += '<li>' + fillOr('', '[no services selected — add at least one]') + '</li>';
+      html += '<li>' + fillOr('', '[no services selected &mdash; add at least one]') + '</li>';
     }
     html += '</ol>';
+    html += '<p>The specific scope, deliverables, and reporting cadence for the Services shall be as set out in Schedule A (Statement of Work) attached to this Agreement, which forms an integral part hereof.</p>';
   }
 
-  // 3. Access
-  html += '<h4>' + (includesService ? '3' : '2') + '. Account Access &amp; Authorisation</h4><ol class="clauses">';
-  html += '<li>The Client shall not disclose the primary login email, password, or two-factor credentials of the Account to the Provider at any time.</li>';
-  html += '<li>Access shall be granted solely through Amazon Seller Central\'s "User Permissions" feature, with the Provider (or its named personnel) added as an authorised user with a role-appropriate permission level.</li>';
-  html += '<li>The Client retains full ownership and administrative control of the Account at all times, including the right to modify or revoke the Provider\'s access at any time.</li>';
-  html += '<li>The Provider shall use Account access solely to perform its role under this Agreement, and shall not use it for any other purpose, including operating any other seller account or altering Account business/bank details without the Client\'s written authorisation.</li>';
-  html += '<li>Upon termination of this Agreement, the Client shall revoke the Provider\'s access, and the Provider shall immediately cease all use of the Account.</li>';
+  // --- Account access -------------------------------------------------------
+  const accessSection = section('Account Access &amp; Authorisation');
+  html += '<ol class="clauses">';
+  html += '<li>The Client shall not, and shall not be required to, disclose the primary login email, password, or two-factor authentication credentials of the Account to the Provider at any time.</li>';
+  html += '<li>Access to the Account shall be granted exclusively through Amazon Seller Central\'s built-in "User Permissions" feature, under which the Provider (or the Provider\'s designated personnel named in Schedule B) shall be added as an authorised user with their own separate login credentials and a defined, role-appropriate permission level (e.g., listings, orders, advertising) as determined by the Client.</li>';
+  html += '<li>The Client retains full and exclusive ownership, control, and administrative rights over the Account at all times, including the unrestricted right to modify, restrict, or revoke the Provider\'s access at any time, with or without cause, and with or without prior notice.</li>';
+  html += '<li>The Provider shall access and use the Account solely for the purpose of performing its role under this Agreement, and for no other purpose whatsoever, including but not limited to: creating or operating any other seller account; accessing, copying, or disclosing Account data for the Provider\'s own commercial benefit; or making any change to Account settings, bank/deposit details, business information, or registered documents without the Client\'s prior written authorisation.</li>';
+  html += '<li>Where the Provider\'s personnel access the Account remotely (including via screen-sharing or remote-desktop tools), such access shall at all times be under the Provider\'s own authorised User Permissions login, and never under the Client\'s owner-level credentials.</li>';
   if (handlingLocation) {
     html += '<li>The Parties confirm that the Account shall be operated and managed from ' + escapeHtml(handlingLocation) + '.</li>';
   }
+  html += '<li>The Provider shall promptly notify the Client of any actual or suspected unauthorised access to, or security incident affecting, the Account.</li>';
+  html += '<li>Upon termination or expiry of this Agreement, the Client shall revoke the Provider\'s User Permissions access within a reasonable time, and the Provider shall immediately cease all use of, and shall not attempt to regain access to, the Account.</li>';
   html += '</ol>';
 
-  // Personnel named for access. The names themselves sit in Schedule B.
+  // --- Personnel ------------------------------------------------------------
   const personnel = personnelRows();
-  let n = includesService ? 4 : 3;
-  html += '<h4>' + n + '. Personnel Named for Access</h4><ol class="clauses">';
-  html += '<li>The Provider\'s personnel authorised to be granted User Permissions access under this Agreement are listed in Schedule B. The Provider shall promptly inform the Client in writing of any change in personnel who require access, so that the Client may update or revoke User Permissions accordingly.</li>';
+  section('Personnel Named for Access');
+  html += '<p>The Provider\'s personnel authorised to be granted User Permissions access under this Agreement are listed in Schedule B. The Provider shall promptly inform the Client in writing of any change in personnel who require access, so that the Client may update or revoke User Permissions accordingly.</p>';
+
+  // --- Confidentiality ------------------------------------------------------
+  const confidentialitySection = section('Confidentiality');
+  html += '<ol class="clauses">';
+  html += '<li>Each Party shall keep confidential all non-public business, financial, technical, and account information of the other Party obtained in connection with this Agreement ("Confidential Information"), and shall not disclose such information to any third party except as required by law or with the prior written consent of the disclosing Party.</li>';
+  html += '<li>This obligation shall survive termination of this Agreement for a period of two (2) years.</li>';
+  html += '<li>Confidential Information shall not include information that is or becomes publicly available through no breach of this Agreement, or that is independently developed without reference to the other Party\'s Confidential Information.</li>';
   html += '</ol>';
-  n++;
 
-  if (includesService) {
-    html += '<h4>' + n + '. Fees</h4><ol class="clauses">';
-    if (feeAmount) {
-      html += '<li>In consideration for the Services, the Client shall pay the Provider a fee of ' + fillOr(feeAmount, '[fee amount]') + ', exclusive of applicable taxes, on terms agreed between the Parties.</li>';
-    } else {
-      html += '<li>' + (includesPartner ? 'No separate fixed fee is payable for the Services; the Provider is instead compensated through the profit share in the section below.' : 'The fee payable for the Services shall be agreed and recorded separately by the Parties.') + '</li>';
-    }
-    html += '</ol>';
-    n++;
-  }
-
-  // Profit share
-  if (includesPartner) {
-    html += '<h4>' + n + '. Profit-Sharing Terms</h4><ol class="clauses">';
-    html += '<li>The Parties shall share the Net Profit generated from sales made through the Account as follows: Client — ' + fillOr(clientPct, '[%]') + '%, Provider — ' + fillOr(providerPct, '[%]') + '%.</li>';
-    html += '<li>"Net Profit" means gross sales revenue received through the Account for the relevant period, less: ' + fillOr(deductions, '[cost categories]') + '.</li>';
-    html += '<li>The Client shall provide the Provider with a profit statement ' + reportCadence.toLowerCase() + ', and shall pay the Provider\'s share within ' + fillOr(payoutDays, '[days]') + ' days of each statement.</li>';
-    html += '<li>The Provider may reasonably request supporting Amazon settlement reports or invoices to verify any profit calculation.</li>';
-    html += '<li>Unless the Parties agree otherwise in writing, losses in a given period shall be carried forward and offset against Net Profit in the following period, rather than separately payable by either Party.</li>';
-    html += '<li>The Account and all listings, brand registrations, and customer data shall at all times remain the sole property of the Client. The Provider acquires no ownership interest in the Account under this Agreement.</li>';
-    html += '</ol>';
-    n++;
-  }
-
-  // Confidentiality
-  html += '<h4>' + n + '. Confidentiality, Data Protection &amp; Compliance</h4><ol class="clauses">';
-  html += '<li>Each Party shall keep confidential all non-public business and account information of the other Party, and shall not disclose it to any third party without consent, save as required by law. This obligation survives termination for two (2) years.</li>';
-  html += '<li>The Provider shall comply with all applicable data protection and privacy laws in relation to any personal data (including customer data) accessed through the Account, and shall not use such data for any purpose other than performing the Services.</li>';
+  // --- Data protection ------------------------------------------------------
+  const dataSection = section('Data Protection &amp; Compliance');
+  html += '<ol class="clauses">';
+  html += '<li>The Provider shall comply with all applicable data protection and privacy laws in relation to any personal data (including customer data) accessed through the Account, and shall not use such data for any purpose other than performing its role under this Agreement.</li>';
   html += '<li>Both Parties shall comply with Amazon\'s Business Solutions Agreement, Seller Code of Conduct, and all applicable Amazon policies in relation to the Account, and neither Party shall take any action that could reasonably be expected to result in suspension, deactivation, or other enforcement action against the Account.</li>';
   html += '<li>The Provider represents and warrants that it will not use the Account, or any access granted under this Agreement, to engage in any misleading, fraudulent, or illegal activity, or in any manner that would breach Amazon\'s policies.</li>';
   html += '</ol>';
-  n++;
 
-  // Term
-  html += '<h4>' + n + '. Term &amp; Termination</h4><ol class="clauses">';
-  html += '<li>This Agreement commences on the Effective Date and continues until terminated by either Party on ' + fillOr(noticeDays, '30') + ' days\' written notice, or immediately for uncured material breach, insolvency, or fraudulent/illegal conduct.</li>';
-  html += '<li>' + (includesPartner ? 'Upon termination, any Net Profit accrued but unpaid shall be calculated and settled within a reasonable time, and the confidentiality, access-revocation, and Account-ownership provisions of this Agreement shall survive.' : 'Upon termination, the confidentiality and access-revocation provisions of this Agreement shall survive.') + '</li>';
+  // --- Fees -----------------------------------------------------------------
+  if (includesService) {
+    section('Fees &amp; Payment');
+    html += '<ol class="clauses">';
+    if (feeAmount) {
+      html += '<li>In consideration for the Services, the Client shall pay the Provider a fee of ' + escapeHtml(feeAmount) + (includesPartner ? ', separate from the profit share set out below' : '') + ', on the payment terms set out in Schedule A.</li>';
+    } else if (includesPartner) {
+      html += '<li>No separate fixed fee is payable for the Services; the Provider is compensated through the profit share set out below and any amounts recorded in Schedule A.</li>';
+    } else {
+      html += '<li>In consideration for the Services described above, the Client shall pay the Provider the fees set out in Schedule A, on the payment terms specified therein.</li>';
+    }
+    html += '<li>All fees are exclusive of applicable taxes, which shall be borne as required by applicable law.</li>';
+    html += '<li>Late payments may accrue interest or be subject to suspension of Services, as set out in Schedule A.</li>';
+    html += '</ol>';
+  }
+
+  // --- Profit share ---------------------------------------------------------
+  let profitSection = 0;
+  if (includesPartner) {
+    profitSection = section('Profit-Sharing Partnership Terms');
+    html += '<ol class="clauses">';
+    html += '<li>' + (includesService ? 'In addition to any fixed Service fee, the' : 'The') + ' Parties agree to share the Net Profit generated from sales made through the Account as follows: Client &mdash; ' + fillOr(clientPct, '[%]') + '%, Provider &mdash; ' + fillOr(providerPct, '[%]') + '%.</li>';
+    html += '<li>"Net Profit" means gross sales revenue received through the Account for the relevant period, less: ' + fillOr(deductions, '[cost categories]') + '. The precise cost categories deductible in calculating Net Profit shall be as agreed and itemised in Schedule A.</li>';
+    html += '<li>The Client (or its designated bookkeeper) shall maintain accurate sales and expense records for the Account and shall provide the Provider with a profit statement ' + escapeHtml(reportCadence.toLowerCase()) + ', no later than the date specified in Schedule A.</li>';
+    html += '<li>The Provider shall have the right, on reasonable prior notice, to request supporting documents (e.g., Amazon settlement/payment reports, invoices) to verify the profit calculation for any given period.</li>';
+    html += '<li>Profit share payments shall be made to the Provider within ' + fillOr(payoutDays, '[days]') + ' days following issuance of each profit statement, by the payment method specified in Schedule A.</li>';
+    html += '<li>Unless otherwise agreed in Schedule A, losses (where expenses exceed revenue in a given period) shall be carried forward and offset against Net Profit in the following period(s), rather than being separately payable by either Party, except where a Party has separately agreed in writing to fund losses in a different proportion.</li>';
+    html += '<li>Contribution of capital/investment (e.g., product purchase cost, advertising budget) by each Party, if any, shall be recorded in Schedule A and may be a factor in determining the profit-share percentage.</li>';
+    html += '</ol>';
+  }
+
+  // --- Term & termination ---------------------------------------------------
+  const termSection = section('Term &amp; Termination');
+  html += '<ol class="clauses">';
+  html += '<li>This Agreement shall commence on the Effective Date and continue until terminated in accordance with this Section, or as otherwise specified in Schedule A.</li>';
+  html += '<li>Either Party may terminate this Agreement for convenience upon ' + fillOr(noticeDays, '30') + ' days\' prior written notice to the other Party.</li>';
+  html += '<li>Either Party may terminate this Agreement immediately upon written notice if the other Party materially breaches this Agreement and fails to remedy such breach within fourteen (14) days of receiving written notice thereof, or if the other Party becomes insolvent, ceases business, or engages in fraudulent or illegal activity in connection with the Account.</li>';
+  html += '<li>Upon termination, the provisions on access revocation, confidentiality, data protection' + (includesPartner ? ', accrued but unpaid profit share, exit and Account ownership' : '') + ', liability, and governing law shall survive.</li>';
+  html += '</ol>';
+
+  // --- Exit, ownership, non-compete ----------------------------------------
+  section('Exit, Account Ownership &amp; Non-Compete');
+  html += '<ol class="clauses">';
+  html += '<li>The Account, all listings, brand registrations, and customer data associated with it shall at all times remain, and upon termination of this Agreement shall continue to remain, the sole property of the Client. The Provider shall have no ownership claim over the Account itself, regardless of the level of operational involvement' + (includesPartner ? ' or profit share received' : '') + ' under this Agreement.</li>';
+  if (includesPartner) {
+    html += '<li>Upon termination, any Net Profit accrued but not yet paid as of the termination date shall be calculated and settled between the Parties within the period specified in Schedule A.</li>';
+  } else {
+    html += '<li>Upon termination, any fees accrued but not yet paid as of the termination date shall be calculated and settled between the Parties within the period specified in Schedule A.</li>';
+  }
   const nonCompeteMonths = val('nonCompeteMonths');
   if (nonCompeteMonths && nonCompeteMonths !== '0') {
-    html += '<li>For a period of ' + escapeHtml(nonCompeteMonths) + ' months following termination of this Agreement, the Provider shall not, without the Client\'s prior written consent, directly solicit or service the same Account, or launch a materially similar or competing product line using the Client\'s confidential business information obtained under this Agreement.</li>';
+    html += '<li>For a period of ' + escapeHtml(nonCompeteMonths) + ' months following termination of this Agreement, the Provider shall not, without the Client\'s prior written consent, directly solicit or service the same Account, or launch a materially similar/competing product line using the Client\'s confidential business information obtained under this Agreement.</li>';
   }
   html += '</ol>';
-  n++;
 
-  // Liability sits between termination and status, as in the drafted document.
-  html += '<h4>' + n + '. Liability &amp; Indemnity</h4><ol class="clauses">';
+  // --- Liability ------------------------------------------------------------
+  section('Liability &amp; Indemnity');
+  html += '<ol class="clauses">';
   html += '<li>Each Party shall be liable for its own acts and omissions in connection with this Agreement. The Provider shall indemnify and hold the Client harmless from and against any loss, liability, penalty, or account suspension arising directly from the Provider\'s breach of this Agreement, misuse of Account access, or violation of Amazon\'s policies.</li>';
   html += '<li>Neither Party shall be liable to the other for any indirect, incidental, or consequential loss, including loss of profits or loss of business opportunity, save in cases of fraud, wilful misconduct, or gross negligence.</li>';
   html += '<li>Nothing in this Agreement shall exclude or limit either Party\'s liability for fraud or for any liability which cannot be excluded or limited under applicable law.</li>';
   html += '</ol>';
-  n++;
 
-  // Independent contractor / governing law
-  html += '<h4>' + n + '. Independent Status &amp; Governing Law</h4><ol class="clauses">';
-  html += '<li>The Provider is an independent contractor' + (includesPartner ? ' and business partner in respect of profit-sharing only' : '') + ', and not an employee or agent of the Client, except as strictly necessary to reflect the Provider\'s authorised User Permissions role.</li>';
-  html += '<li>This Agreement is governed by the laws of ' + fillOr(govLaw, '[jurisdiction]') + '. Disputes shall first be resolved amicably between the Parties before recourse to the courts or arbitration body of that jurisdiction.</li>';
+  // --- Status ---------------------------------------------------------------
+  section('Independent Contractor Status');
+  html += '<p>The Provider is an independent contractor and not an employee, agent, partner, or joint venturer of the Client' + (includesPartner ? ', save in respect of the profit-sharing arrangement described above' : '') + '. Nothing in this Agreement shall be construed to create an employment, partnership, or agency relationship between the Parties, except as strictly necessary to reflect the Provider\'s authorised User Permissions role within the Amazon Account.</p>';
+
+  // --- Governing law --------------------------------------------------------
+  section('Governing Law &amp; Dispute Resolution');
+  html += '<ol class="clauses">';
+  html += '<li>This Agreement is governed by the laws of ' + fillOr(govLaw, '[jurisdiction]') + '.</li>';
+  html += '<li>Any dispute arising out of or in connection with this Agreement shall first be attempted to be resolved amicably between the Parties. If not resolved within thirty (30) days, the dispute shall be referred to the courts / arbitration body of that jurisdiction, whose decision shall be final and binding.</li>';
   html += '</ol>';
-  n++;
 
-  html += '<h4>' + n + '. General Provisions</h4><ol class="clauses">';
+  // --- General provisions ---------------------------------------------------
+  section('General Provisions');
+  html += '<ol class="clauses">';
   html += '<li><b>Entire Agreement:</b> This Agreement, together with its Schedules, constitutes the entire agreement between the Parties and supersedes all prior discussions, understandings, or agreements relating to its subject matter.</li>';
   html += '<li><b>Amendment:</b> This Agreement may only be amended by a written instrument signed by both Parties.</li>';
   html += '<li><b>Assignment:</b> Neither Party may assign or transfer this Agreement without the prior written consent of the other Party, save that the Client may assign this Agreement to a successor entity in connection with a merger, acquisition, or sale of substantially all of its assets.</li>';
   html += '<li><b>Severability:</b> If any provision of this Agreement is held invalid or unenforceable, the remaining provisions shall continue in full force and effect.</li>';
-  html += '<li><b>Notices:</b> All notices under this Agreement shall be in writing and delivered to the addresses or emails set out above, or such other address as either Party may notify in writing.</li>';
+  html += '<li><b>Notices:</b> All notices under this Agreement shall be in writing and delivered to the addresses/emails set out above, or such other address as either Party may notify in writing.</li>';
   html += '<li><b>Counterparts:</b> This Agreement may be executed in counterparts (including electronically), each of which shall be deemed an original, and all of which together shall constitute one instrument.</li>';
   html += '</ol>';
 
-  // Schedules carry the commercial detail, so the clauses above can stay general.
-  html += '<h4>Schedule A &mdash; Statement of Work, Fees, Profit-Share &amp; Term</h4>';
+  // --- Schedules ------------------------------------------------------------
+  html += '<h4>Schedule A &mdash; Statement of Work' + (includesService ? ', Fees' : '') + (includesPartner ? ', Profit-Share' : '') + ' &amp; Term</h4>';
   html += '<table class="sched"><tbody>';
-  html += '<tr><th style="width:44%;">Description of Services</th><td>' + (services.length ? services.map(escapeHtml).join('; ') : '&nbsp;') + '</td></tr>';
-  if (includesPartner) {
-    html += '<tr><th>Profit statement cadence</th><td>' + escapeHtml(reportCadence) + '</td></tr>';
-    html += '<tr><th>Net profit deductible cost categories</th><td>' + (deductions ? escapeHtml(deductions) : '&nbsp;') + '</td></tr>';
-    html += '<tr><th>Profit share</th><td>Client ' + escapeHtml(clientPct) + '% / Provider ' + escapeHtml(providerPct) + '%</td></tr>';
-    html += '<tr><th>Payment due after statement</th><td>' + escapeHtml(payoutDays) + ' days</td></tr>';
-  }
+  html += '<tr><th style="width:44%;">Description of Services</th><td>' + (services.length && includesService ? services.map(escapeHtml).join('; ') : '&nbsp;') + '</td></tr>';
   if (includesService) {
-    html += '<tr><th>Fixed fee (if any)</th><td>' + (feeAmount ? escapeHtml(feeAmount) : 'None &mdash; see profit share') + '</td></tr>';
+    html += '<tr><th>Fixed fee (if any) &mdash; structure &amp; amount</th><td>' + (feeAmount ? escapeHtml(feeAmount) : (includesPartner ? 'None &mdash; profit share only' : '&nbsp;')) + '</td></tr>';
+  }
+  if (includesPartner) {
+    html += '<tr><th>Profit share</th><td>Client ' + escapeHtml(clientPct) + '% / Provider ' + escapeHtml(providerPct) + '%</td></tr>';
+    html += '<tr><th>Net profit deductible cost categories</th><td>' + (deductions ? escapeHtml(deductions) : '&nbsp;') + '</td></tr>';
+    html += '<tr><th>Profit statement issued</th><td>' + escapeHtml(reportCadence) + '</td></tr>';
+    html += '<tr><th>Profit share payment &mdash; days after statement</th><td>' + escapeHtml(payoutDays) + '</td></tr>';
+    html += '<tr><th>Capital / investment contribution &mdash; Client</th><td>&nbsp;</td></tr>';
+    html += '<tr><th>Capital / investment contribution &mdash; Provider</th><td>&nbsp;</td></tr>';
+    html += '<tr><th>Loss handling</th><td>Carried forward and offset against Net Profit in following periods</td></tr>';
   }
   html += '<tr><th>Effective date</th><td>' + (effectiveDate ? escapeHtml(effectiveDate) : '&nbsp;') + '</td></tr>';
   html += '<tr><th>Notice period to terminate</th><td>' + escapeHtml(noticeDays) + ' days</td></tr>';
+  html += '<tr><th>Post-termination settlement period</th><td>&nbsp;</td></tr>';
   html += '</tbody></table>';
 
   html += '<h4>Schedule B &mdash; Authorised Personnel for User Permissions Access</h4>';
-  html += '<table class="sched"><thead><tr><th>Full name</th><th>Role / permission level</th><th>Contact email</th><th>Location</th></tr></thead><tbody>';
+  html += '<table class="sched"><thead><tr><th>Full name</th><th>Role / permission level</th><th>Contact email</th><th>Location (city/country)</th></tr></thead><tbody>';
   if (personnel.length) {
     personnel.forEach(function (x) {
       html += '<tr><td>' + escapeHtml(x.name) + '</td><td>' + escapeHtml(x.role) + '</td><td>' + escapeHtml(x.email) + '</td><td>' + escapeHtml(x.loc) + '</td></tr>';
@@ -904,6 +952,7 @@ function buildDoc() {
     for (var i = 0; i < 3; i++) html += '<tr><td>&nbsp;</td><td>&nbsp;</td><td>&nbsp;</td><td>&nbsp;</td></tr>';
   }
   html += '</tbody></table>';
+
 
   // Signatures
   html += '<h4>Signatures</h4>';
