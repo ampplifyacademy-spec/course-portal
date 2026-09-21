@@ -113,12 +113,16 @@ function b64url(input) {
   return btoa(binary).replace(/\+/g, '-').replace(/\//g, '_').replace(/=+$/, '');
 }
 
-/** The secret is pasted straight out of the key file, newlines and all. */
+/**
+ * The secret is pasted by hand out of the key file, so it can arrive with
+ * escaped newlines, surrounding quotes or a trailing comma. Everything outside
+ * the BEGIN/END block is dropped, then anything that is not base64.
+ */
 async function importKey(pem) {
-  const body = String(pem || '')
-    .replace(/\\n/g, '\n')
-    .replace(/-----[^-]+-----/g, '')
-    .replace(/\s+/g, '');
+  const raw = String(pem || '').replace(/\\n/g, '\n');
+  const block = raw.match(/-----BEGIN[^-]*-----([\s\S]*?)-----END/);
+  const body = (block ? block[1] : raw).replace(/[^A-Za-z0-9+/=]/g, '');
+  if (!body) throw new Error('SA_PRIVATE_KEY is empty or not a PEM key');
   const der = Uint8Array.from(atob(body), function (c) { return c.charCodeAt(0); });
   return crypto.subtle.importKey('pkcs8', der.buffer,
     { name: 'RSASSA-PKCS1-v1_5', hash: 'SHA-256' }, false, ['sign']);
