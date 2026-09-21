@@ -249,11 +249,11 @@ function driveIdOf(url) {
 function drivePlayerUrl(url) {
   const found = driveIdOf(url);
   if (!found) return null;
-  const base = found.kind === 'file'
+  // No authuser here: the embedded player refuses it and closes the connection.
+  // The account hint only belongs on links that open in a tab of their own.
+  return found.kind === 'file'
     ? 'https://drive.google.com/file/d/' + found.id + '/preview'
-    : 'https://drive.google.com/embeddedfolderview?id=' + found.id;
-  const withUser = base + '?authuser=' + encodeURIComponent(currentEmail || '');
-  return found.kind === 'file' ? withUser : withUser + '#grid';
+    : 'https://drive.google.com/embeddedfolderview?id=' + found.id + '#grid';
 }
 
 // Values for an inline onclick: JSON quotes the string, then the quotes are
