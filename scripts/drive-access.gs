@@ -37,6 +37,10 @@ function setUp() {
   if (!folderId) throw new Error('Set the FOLDER_ID script property first');
   if (!PROPS.getProperty('SECRET')) throw new Error('Set the SECRET script property first');
 
+  // Once classes stream through the player, running setUp means "put this
+  // folder back the way the player needs it", not "lock it down again".
+  if (PROPS.getProperty('DOWNLOADS_UNLOCKED') === '1') return fixFilePermissions();
+
   var folder = DriveApp.getFolderById(folderId);
   var openedUp = restrictLinkAccess(folderId);
   var locked = lockAllDownloads();
@@ -247,44 +251,89 @@ function handOverNow() {
  * of files whose own list never had it. This walks every file and makes each
  * one match the folder: owner and player only.
  */
+/**
+ * A folder of course videos can carry a few hundred old shares per file, far
+ * more than one six-minute run can delete, so the work is done in slices: each
+ * run stops before Apps Script cuts it off, remembers the file it reached and
+ * books another run a minute later. It keeps going by itself until done.
+ */
 function fixFilePermissions() {
-  var folder = DriveApp.getFolderById(PROPS.getProperty('FOLDER_ID'));
-  var tally = { files: 0, removed: 0, granted: 0 };
-  fixWalk(folder, tally);
-  var message = 'Checked ' + tally.files + ' file(s): removed ' + tally.removed +
-    ' stale share(s), gave the player access to ' + tally.granted + '.';
+  var started = Date.now();
+  var done = Number(PROPS.getProperty('FIX_DONE') || 0);
+  var ids = fileIdsToFix();
+  var removed = 0, granted = 0;
+
+  while (done < ids.length && Date.now() - started < 4.5 * 60 * 1000) {
+    var result = fixOneFile(ids[done]);
+    removed += result.removed;
+    granted += result.granted;
+    done++;
+    PROPS.setProperty('FIX_DONE', String(done));
+  }
+
+  clearFixTrigger();
+  if (done < ids.length) {
+    ScriptApp.newTrigger('fixFilePermissions').timeBased().after(60 * 1000).create();
+    var more = 'Fixed ' + done + ' of ' + ids.length + ' file(s) so far (removed ' + removed +
+      ', granted ' + granted + '). Carrying on in a minute.';
+    Logger.log(more);
+    return more;
+  }
+
+  PROPS.deleteProperty('FIX_DONE');
+  PROPS.deleteProperty('FIX_IDS');
+  var message = 'All ' + ids.length + ' file(s) done. Last pass removed ' + removed +
+    ' stale share(s) and granted the player access to ' + granted + '.';
   Logger.log(message);
   return message;
 }
 
-function fixWalk(folder, tally) {
+/** The file list is settled once, so the slices all walk the same order. */
+function fileIdsToFix() {
+  var saved = PROPS.getProperty('FIX_IDS');
+  if (saved) return JSON.parse(saved);
+  var ids = [];
+  collectFiles(DriveApp.getFolderById(PROPS.getProperty('FOLDER_ID')), ids);
+  PROPS.setProperty('FIX_IDS', JSON.stringify(ids));
+  PROPS.setProperty('FIX_DONE', '0');
+  return ids;
+}
+
+function collectFiles(folder, ids) {
   var files = folder.getFiles();
-  while (files.hasNext()) {
-    var id = files.next().getId();
-    tally.files++;
-    var hasProxy = false;
-    try {
-      listPermissions(id).forEach(function (p) {
-        if (p.role === 'owner') return;
-        if ((p.emailAddress || '').toLowerCase() === PROXY_SERVICE_ACCOUNT) {
-          hasProxy = p.role === 'writer';
-          if (hasProxy) return;
-        }
-        try {
-          driveCall(id + '/permissions/' + p.id + '?supportsAllDrives=true', 'delete');
-          tally.removed++;
-        } catch (err) {}
-      });
-      if (!hasProxy) {
-        driveCall(id + '/permissions?sendNotificationEmail=false&supportsAllDrives=true', 'post',
-                  { role: 'writer', type: 'user', emailAddress: PROXY_SERVICE_ACCOUNT });
-        tally.granted++;
-      }
-      driveCall(id + '?supportsAllDrives=true', 'patch', { copyRequiresWriterPermission: false });
-    } catch (err) {}
-  }
+  while (files.hasNext()) ids.push(files.next().getId());
   var subs = folder.getFolders();
-  while (subs.hasNext()) fixWalk(subs.next(), tally);
+  while (subs.hasNext()) collectFiles(subs.next(), ids);
+}
+
+function fixOneFile(id) {
+  var removed = 0, granted = 0, hasProxy = false;
+  try {
+    listPermissions(id).forEach(function (p) {
+      if (p.role === 'owner') return;
+      if ((p.emailAddress || '').toLowerCase() === PROXY_SERVICE_ACCOUNT && p.role === 'writer') {
+        hasProxy = true;
+        return;
+      }
+      try {
+        driveCall(id + '/permissions/' + p.id + '?supportsAllDrives=true', 'delete');
+        removed++;
+      } catch (err) {}
+    });
+    if (!hasProxy) {
+      driveCall(id + '/permissions?sendNotificationEmail=false&supportsAllDrives=true', 'post',
+                { role: 'writer', type: 'user', emailAddress: PROXY_SERVICE_ACCOUNT });
+      granted++;
+    }
+    driveCall(id + '?supportsAllDrives=true', 'patch', { copyRequiresWriterPermission: false });
+  } catch (err) {}
+  return { removed: removed, granted: granted };
+}
+
+function clearFixTrigger() {
+  ScriptApp.getProjectTriggers().forEach(function (t) {
+    if (t.getHandlerFunction() === 'fixFilePermissions') ScriptApp.deleteTrigger(t);
+  });
 }
 
 /**
