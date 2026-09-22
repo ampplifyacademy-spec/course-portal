@@ -193,7 +193,7 @@
 <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-auth-compat.js"></script>
 <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore-compat.js"></script>
 <script src="js/firebase-config.js"></script>
-<script src="js/site-content.js?v=6"></script>
+<script src="js/site-content.js?v=7"></script>
 <script>
 function toggleMobileNav() {
   document.querySelector('.cnav-links').classList.toggle('open');
@@ -211,7 +211,7 @@ function itemCard(p, i) {
   const hasText = p.title || p.desc || meta || p.result;
   return `
     <div class="portfolio-card" onclick="openLightbox(${i})">
-      ${p.imageUrl ? `<div class="img-wrap"><img src="${driveImgUrl(p.imageUrl)}" alt="${p.title || 'Portfolio image'}">${p.videoUrl ? '<span class="video-badge">▶ Video</span>' : ''}</div>` : (p.videoUrl ? `<div class="img-wrap"><div style="position:absolute; inset:0; display:flex; align-items:center; justify-content:center; font-size:2.5rem; background:var(--surface-alt);">▶</div></div>` : '')}
+      ${p.imageUrl ? `<div class="img-wrap"><img src="${driveImgUrl(p.imageUrl, 600)}" alt="${p.title || 'Portfolio image'}" loading="lazy" decoding="async">${p.videoUrl ? '<span class="video-badge">▶ Video</span>' : ''}</div>` : (p.videoUrl ? `<div class="img-wrap"><div style="position:absolute; inset:0; display:flex; align-items:center; justify-content:center; font-size:2.5rem; background:var(--surface-alt);">▶</div></div>` : '')}
       ${hasText ? `<div class="body">
         ${p.title ? `<h4>${p.title}</h4>` : ''}
         ${meta ? `<p class="meta">${meta}</p>` : ''}
@@ -239,7 +239,7 @@ loadSiteContent().then(content => {
         const count = (f.items || []).length;
         return `
         <div class="folder-card" onclick="openFolder(${fi})">
-          ${cover ? `<div class="img-wrap"><img src="${driveImgUrl(cover.imageUrl)}" alt="${f.name}"></div>` : ''}
+          ${cover ? `<div class="img-wrap"><img src="${driveImgUrl(cover.imageUrl, 600)}" alt="${f.name}" loading="lazy" decoding="async"></div>` : ''}
           <div class="body">
             <h4>${f.name}</h4>
             <p>${count} image${count === 1 ? '' : 's'}</p>

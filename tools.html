@@ -133,7 +133,7 @@
 <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-auth-compat.js"></script>
 <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore-compat.js"></script>
 <script src="js/firebase-config.js"></script>
-<script src="js/site-content.js?v=6"></script>
+<script src="js/site-content.js?v=7"></script>
 <script>
 function toggleMobileNav() {
   document.querySelector('.cnav-links').classList.toggle('open');
@@ -156,7 +156,7 @@ loadSiteContent().then(content => {
   document.getElementById('toolGrid').innerHTML = allTools.length
     ? allTools.map((t, i) => `
       <div class="tool-card" ${t.link ? `onclick="openTool(${i})" style="cursor:pointer;"` : ''}>
-        ${t.imageUrl ? `<img src="${driveImgUrl(t.imageUrl)}" alt="${t.name}">` : ''}
+        ${t.imageUrl ? `<img src="${driveImgUrl(t.imageUrl, 600)}" alt="${t.name}" loading="lazy" decoding="async">` : ''}
         <div class="body">
           <h4>${t.name}</h4>
           <p class="desc">${t.desc || ''}</p>

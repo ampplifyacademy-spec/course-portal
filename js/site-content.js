@@ -6,10 +6,13 @@ function formatMoney(val) {
   return toNum(val).toLocaleString('en-US');
 }
 
-function driveImgUrl(url) {
+// Drive serves a resized copy when the width is asked for, so grids load a
+// thumbnail instead of the full-size original. No width = the original.
+function driveImgUrl(url, width) {
   if (!url) return url;
   const m = url.match(/drive\.google\.com\/file\/d\/([^/]+)/) || url.match(/[?&]id=([^&]+)/);
-  return m ? `https://lh3.googleusercontent.com/d/${m[1]}` : url;
+  if (!m) return url;
+  return `https://lh3.googleusercontent.com/d/${m[1]}` + (width ? `=w${width}` : '');
 }
 
 // Once offerEndsAt has passed, the promo price no longer applies: charge the regular

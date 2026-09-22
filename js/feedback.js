@@ -40,7 +40,7 @@ function fbCard(f) {
   const stars = '★★★★★'.slice(0, Number(f.rating) || 5);
   return `
     <div class="testimonial-card">
-      ${f.imageUrl ? `<img src="${driveImgUrl(f.imageUrl)}" alt="${f.name}" style="width:100%; height:160px; object-fit:cover; border-radius:10px; margin-bottom:1rem;">` : ''}
+      ${f.imageUrl ? `<img src="${driveImgUrl(f.imageUrl, 600)}" alt="${f.name}" loading="lazy" decoding="async" style="width:100%; height:160px; object-fit:cover; border-radius:10px; margin-bottom:1rem;">` : ''}
       <div class="stars">${stars}</div>
       <p>"${f.quote}"</p>
       <div class="tname">${f.name}</div>
