@@ -248,9 +248,14 @@
   #doc .fill { border-bottom: 1px solid #999; padding: 0 2px; }
   #doc .empty-fill { color: #b0270f; }
   #doc ol.clauses {
-    margin: 0 0 6px; padding-left: 22px;
+    margin: 0 0 6px; padding-left: 40px; list-style: none;
   }
-  #doc ol.clauses li { margin-bottom: 9px; text-align: justify; }
+  #doc ol.clauses li { margin-bottom: 9px; text-align: justify; position: relative; }
+  /* Clause numbers read 3.7, the way the agreement refers to them. */
+  #doc ol.clauses li > span.cn { position: absolute; left: -40px; width: 36px; }
+  /* The letter stands alone, so its points are simply 1 to 5. */
+  #doc ol.clauses.letter-list { list-style: decimal; padding-left: 22px; }
+  #doc ol.clauses.letter-list li > span.cn { display: none; }
   #doc table.sched {
     width: 100%; border-collapse: collapse; margin: 10px 0 4px; font-size: 13px;
   }
@@ -1019,7 +1024,7 @@ function buildDoc() {
   html += '<div class="fld"><b>Contact:</b> ' + fillOr(providerContact, '[email / phone]') + '</div>';
   html += '<div class="fld"><b>Account operated from:</b> ' + fillOr(handlingLocation, '[location]') + '</div>';
   if (accessGranted) html += '<div class="fld"><b>Access granted on:</b> ' + escapeHtml(accessGranted) + '</div>';
-  html += '<p>I further confirm that:</p><ol class="clauses">';
+  html += '<p>I further confirm that:</p><ol class="clauses letter-list">';
   html += '<li>Access was granted solely through Amazon Seller Central\'s User Permissions feature. No login credentials, password, or two-factor code of mine has been shared with the third party.</li>';
   html += '<li>The individuals holding that access are listed in the schedule below. The permission level granted is ' + escapeHtml(levelLabel) + ', set by me as the account owner.</li>';
   html += '<li>I retain sole ownership and administrative control of the account and may revoke this access at any time.</li>';
@@ -1078,6 +1083,32 @@ function splitProblem() {
   return '';
 }
 
+/**
+ * Numbers every clause as section.clause - 3.7 rather than a running count -
+ * so a clause keeps its number when a service is added or the arrangement
+ * changes, and so the cross-references in the text can be followed.
+ */
+function numberClauses(root) {
+  var current = '';
+  Array.prototype.forEach.call(root.children, function (el) {
+    if (el.tagName === 'H4') {
+      var m = el.textContent.match(/^\s*(\d+)\./);
+      current = m ? m[1] : '';
+      return;
+    }
+    if (el.tagName === 'OL' && el.classList.contains('clauses') && current) {
+      Array.prototype.forEach.call(el.children, function (li, i) {
+        if (li.querySelector('span.cn')) return;
+        var tag = document.createElement('span');
+        tag.className = 'cn';
+        tag.textContent = current + '.' + (i + 1);
+        li.insertBefore(tag, li.firstChild);
+      });
+    }
+    if (el.classList && el.classList.contains('loa')) numberClauses(el);
+  });
+}
+
 document.getElementById('genBtn').addEventListener('click', function() {
   const problem = splitProblem();
   const status = document.getElementById('statusLine');
@@ -1088,7 +1119,9 @@ document.getElementById('genBtn').addEventListener('click', function() {
     return;
   }
   status.style.color = '';
-  document.getElementById('doc').innerHTML = buildDoc();
+  const docEl = document.getElementById('doc');
+  docEl.innerHTML = buildDoc();
+  numberClauses(docEl);
   status.textContent = 'Generated — review below, then print.';
   document.getElementById('doc').scrollIntoView({behavior:'smooth', block:'start'});
 });
@@ -1103,7 +1136,9 @@ document.getElementById('printBtn').addEventListener('click', function() {
     return;
   }
   if (document.querySelector('.empty-state')) {
-    document.getElementById('doc').innerHTML = buildDoc();
+    const docEl = document.getElementById('doc');
+    docEl.innerHTML = buildDoc();
+    numberClauses(docEl);
   }
   window.print();
 });
