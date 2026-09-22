@@ -541,9 +541,9 @@ auth.onAuthStateChanged(function (user) {
         <legend>Profit share</legend>
         <div class="two-col">
           <label class="field"><span class="lbl">Client's share of net profit</span>
-            <div class="pct-row"><input type="number" id="clientPct" min="0" max="100" value="65"><span>%</span></div></label>
+            <div class="pct-row"><input type="number" id="clientPct" min="0" max="100" placeholder="e.g. 65"><span>%</span></div></label>
           <label class="field"><span class="lbl">Provider's share of net profit</span>
-            <div class="pct-row"><input type="number" id="providerPct" min="0" max="100" value="35"><span>%</span></div></label>
+            <div class="pct-row"><input type="number" id="providerPct" min="0" max="100" placeholder="e.g. 35"><span>%</span></div></label>
         </div>
         <p class="pct-note" id="pctNote">Together these should add up to 100%.</p>
         <label class="field"><span class="lbl">Costs deducted before profit is split</span>
@@ -619,6 +619,13 @@ function checkPct() {
   const p = parseFloat(document.getElementById('providerPct').value) || 0;
   const note = document.getElementById('pctNote');
   const sum = c + p;
+  // Nothing typed yet is not a mistake - the split differs per client.
+  if (!document.getElementById('clientPct').value.trim() &&
+      !document.getElementById('providerPct').value.trim()) {
+    note.textContent = "Enter the split agreed with this client - together they should total 100%.";
+    note.classList.remove('pct-warn');
+    return;
+  }
   if (Math.abs(sum - 100) > 0.001) {
     note.textContent = "These add up to " + sum + "% — they should total 100%.";
     note.classList.add('pct-warn');
@@ -1099,8 +1106,12 @@ function buildDoc() {
 function splitProblem() {
   const mode = document.querySelector('input[name="engagement"]:checked').value;
   if (mode !== 'partnership' && mode !== 'both') return '';
-  const sum = (parseFloat(document.getElementById('clientPct').value) || 0) +
-              (parseFloat(document.getElementById('providerPct').value) || 0);
+  const clientRaw = document.getElementById('clientPct').value.trim();
+  const providerRaw = document.getElementById('providerPct').value.trim();
+  if (!clientRaw || !providerRaw) {
+    return 'Enter the profit split agreed with this client - the two shares must total 100%.';
+  }
+  const sum = (parseFloat(clientRaw) || 0) + (parseFloat(providerRaw) || 0);
   if (Math.abs(sum - 100) > 0.001) {
     return 'The profit split adds up to ' + sum + '%. Fix it to 100% before generating.';
   }
