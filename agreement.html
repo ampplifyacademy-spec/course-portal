@@ -347,6 +347,8 @@ auth.onAuthStateChanged(function (user) {
   #doc h4, #doc h4 * { color: #2E74B5 !important; }
   #doc p.docsub, #doc .note-italic { color: #555555 !important; }
   #doc .sealbox { color: #999999 !important; }
+  /* The letter is handed over on its own, so it starts a fresh sheet. */
+  #doc .loa { page-break-before: always; break-before: page; }
   @page { margin: 19mm 22mm; }
 }
 </style>
@@ -416,6 +418,12 @@ auth.onAuthStateChanged(function (user) {
           <input type="text" id="storeName"></label>
         <label class="field"><span class="lbl">Marketplace(s)</span>
           <input type="text" id="marketplaces" placeholder="e.g. Amazon.sa, Amazon.ae"></label>
+        <label class="field"><span class="lbl">Amazon Merchant Token / Seller ID</span>
+          <input type="text" id="sellerId" placeholder="e.g. A2XXXXXXXXXXXX"></label>
+        <label class="field"><span class="lbl">Account registered email (owner login &mdash; never a password)</span>
+          <input type="text" id="accountEmail"></label>
+        <label class="field"><span class="lbl">Date access was first granted</span>
+          <input type="date" id="accessGrantedDate"></label>
       </fieldset>
 
       <fieldset>
@@ -705,6 +713,13 @@ function buildDoc() {
         providerResId = val('providerResId'), providerResidenceAddress = val('providerResidenceAddress'),
         providerContact = val('providerContact');
   const govLaw = val('govLaw'), noticeDays = val('noticeDays') || '30';
+  const sellerId = val('sellerId'), accountEmail = val('accountEmail');
+  const accessGrantedRaw = val('accessGrantedDate');
+  let accessGranted = accessGrantedRaw;
+  if (accessGrantedRaw) {
+    const ag = new Date(accessGrantedRaw + 'T00:00:00');
+    if (!isNaN(ag)) accessGranted = ag.toLocaleDateString('en-GB', { day: 'numeric', month: 'long', year: 'numeric' });
+  }
   const effectiveDateRaw = val('effectiveDate'), handlingLocation = val('handlingLocation');
   let effectiveDate = effectiveDateRaw;
   if (effectiveDateRaw) {
@@ -750,6 +765,8 @@ function buildDoc() {
   }
   html += '<div class="fld"><b>Amazon Store / Account Name:</b> ' + fillOr(storeName, '[store name]') + '</div>';
   html += '<div class="fld"><b>Marketplace(s):</b> ' + fillOr(marketplaces, '[marketplace(s)]') + '</div>';
+  html += '<div class="fld"><b>Amazon Merchant Token / Seller ID:</b> ' + fillOr(sellerId, '[seller ID]') + '</div>';
+  html += '<div class="fld"><b>Account Registered Email:</b> ' + fillOr(accountEmail, '[account email]') + '</div>';
   html += '<div class="fld"><b>Effective Date:</b> ' + fillOr(effectiveDate, '[effective date]') + '</div>';
   html += '<div class="fld"><b>Account to be Handled From (location):</b> ' + fillOr(handlingLocation, '[location]') + '</div>';
   html += '<p style="margin:10px 0;">and</p>';
@@ -810,6 +827,10 @@ function buildDoc() {
   html += '<li>Where the Provider\'s personnel access the Account remotely (including via screen-sharing or remote-desktop tools), such access shall at all times be under the Provider\'s own authorised User Permissions login, and never under the Client\'s owner-level credentials.</li>';
   if (handlingLocation) {
     html += '<li>The Parties confirm that the Account shall be operated and managed from ' + escapeHtml(handlingLocation) + '.</li>';
+  }
+  html += '<li>The Provider holds no authority over Account funds. The Provider shall not initiate, alter, or redirect any disbursement, and shall not change the bank, deposit, or tax details held on the Account. All sales proceeds are disbursed by Amazon to the Client\'s own bank account only.</li>';
+  if (accessGranted) {
+    html += '<li>User Permissions access was first granted to the Provider on ' + escapeHtml(accessGranted) + '.</li>';
   }
   html += '<li>The Provider shall promptly notify the Client of any actual or suspected unauthorised access to, or security incident affecting, the Account.</li>';
   html += '<li>Upon termination or expiry of this Agreement, the Client shall revoke the Provider\'s User Permissions access within a reasonable time, and the Provider shall immediately cease all use of, and shall not attempt to regain access to, the Account.</li>';
@@ -953,6 +974,49 @@ function buildDoc() {
   }
   html += '</tbody></table>';
 
+
+  // A one-page letter the Client can hand to Amazon on its own, without sending
+  // the whole agreement with its commercial terms.
+  html += '<div class="loa">';
+  html += '<h4>Annex &mdash; Letter of Authorisation (for Amazon)</h4>';
+  html += '<p class="note-italic">This page may be submitted to Amazon on its own as confirmation of authorised third-party access. It repeats only what Amazon asks for and discloses no commercial terms.</p>';
+  html += '<p><b>To:</b> Amazon Seller Performance / Account Verification</p>';
+  html += '<div class="fld"><b>Seller of record:</b> ' + fillOr(clientCompany || clientName, '[company name]') + '</div>';
+  html += '<div class="fld"><b>Store name:</b> ' + fillOr(storeName, '[store name]') + '</div>';
+  html += '<div class="fld"><b>Merchant Token / Seller ID:</b> ' + fillOr(sellerId, '[seller ID]') + '</div>';
+  html += '<div class="fld"><b>Account registered email:</b> ' + fillOr(accountEmail, '[account email]') + '</div>';
+  html += '<div class="fld"><b>Marketplace(s):</b> ' + fillOr(marketplaces, '[marketplace(s)]') + '</div>';
+  html += '<p>I confirm that I am the owner of the Amazon selling account identified above, and that I have knowingly authorised the third party named below to access and operate that account on my behalf' + (includesService ? ', in the capacity of an account management service provider' : '') + (includesPartner ? (includesService ? ' and as a profit-sharing business partner' : ', in the capacity of a profit-sharing business partner') : '') + '.</p>';
+  html += '<div class="fld"><b>Authorised third party:</b> ' + fillOr(providerCompany || providerName, '[provider name]') + '</div>';
+  if (providerCompany && providerName) html += '<div class="fld"><b>Represented by:</b> ' + escapeHtml(providerName) + '</div>';
+  html += '<div class="fld"><b>Business address:</b> ' + fillOr(providerAddress || providerHomeAddress, '[business address]') + '</div>';
+  html += '<div class="fld"><b>' + (providerIdType || 'National ID') + ' (' + fillOr(providerIdCountry, '[nationality]') + '):</b> ' + fillOr(providerId, '[ID no.]') + '</div>';
+  html += '<div class="fld"><b>Contact:</b> ' + fillOr(providerContact, '[email / phone]') + '</div>';
+  html += '<div class="fld"><b>Account operated from:</b> ' + fillOr(handlingLocation, '[location]') + '</div>';
+  if (accessGranted) html += '<div class="fld"><b>Access granted on:</b> ' + escapeHtml(accessGranted) + '</div>';
+  html += '<p>I further confirm that:</p><ol class="clauses">';
+  html += '<li>Access was granted solely through Amazon Seller Central\'s User Permissions feature. No login credentials, password, or two-factor code of mine has been shared with the third party.</li>';
+  html += '<li>The individuals holding that access, and their permission levels, are listed in the schedule below.</li>';
+  html += '<li>I retain sole ownership and administrative control of the account and may revoke this access at any time.</li>';
+  html += '<li>The third party holds no authority over account funds, and no bank, deposit, or tax details have been changed by them.</li>';
+  html += '<li>A signed agreement recording this relationship is in place and can be provided on request.</li>';
+  html += '</ol>';
+  html += '<table class="sched"><thead><tr><th>Authorised individual</th><th>Permission level</th><th>Login email used on the account</th><th>Location</th></tr></thead><tbody>';
+  if (personnel.length) {
+    personnel.forEach(function (x) {
+      html += '<tr><td>' + escapeHtml(x.name) + '</td><td>' + escapeHtml(x.role) + '</td><td>' + escapeHtml(x.email) + '</td><td>' + escapeHtml(x.loc) + '</td></tr>';
+    });
+  } else {
+    for (var j = 0; j < 3; j++) html += '<tr><td>&nbsp;</td><td>&nbsp;</td><td>&nbsp;</td><td>&nbsp;</td></tr>';
+  }
+  html += '</tbody></table>';
+  html += '<div class="sigblock"><h5>Signed by the account owner:</h5>';
+  html += '<div class="sigline">Signature: ______________________________</div>';
+  html += '<div class="sigline">Name: ' + (clientName || '______________________________') + '</div>';
+  html += '<div class="sigline">Position: ______________________________</div>';
+  html += '<div class="sigline">Date: ______________________________</div>';
+  html += '<div class="sealbox">affix company seal / stamp here</div></div>';
+  html += '</div>';
 
   // Signatures
   html += '<h4>Signatures</h4>';
