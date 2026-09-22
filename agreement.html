@@ -291,6 +291,8 @@
     .layout { display: block; }
     .card.form-card { display: none; }
     .preview-card { border: none; }
+    /* Paper is white: no screen tint reaches the print. */
+    html, body, .shell, .card, .preview-card { background: #fff !important; }
     .preview-toolbar { display: none; }
     #doc { padding: 0; max-width: none; }
     @page { margin: 18mm 16mm; }
@@ -1019,7 +1021,6 @@ function buildDoc() {
   // the whole agreement with its commercial terms.
   html += '<div class="loa">';
   html += '<h4>Annex &mdash; Letter of Authorisation (for Amazon)</h4>';
-  html += '<p class="note-italic">This page may be submitted to Amazon on its own as confirmation of authorised third-party access. It repeats only what Amazon asks for and discloses no commercial terms.</p>';
   html += '<p><b>To:</b> Amazon Seller Performance / Account Verification</p>';
   html += '<div class="fld"><b>Seller of record:</b> ' + fillOr(clientCompany || clientName, '[company name]') + '</div>';
   html += '<div class="fld"><b>Store name:</b> ' + fillOr(storeName, '[store name]') + '</div>';
