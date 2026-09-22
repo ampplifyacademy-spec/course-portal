@@ -557,6 +557,11 @@ auth.onAuthStateChanged(function (user) {
           <input type="text" id="noticeDays" value="30"></label>
         <label class="field"><span class="lbl">Non-compete period after termination (months, 0 = none)</span>
           <input type="text" id="nonCompeteMonths" value="12"></label>
+        <label style="display:flex;align-items:center;gap:8px;font-family:'Avenir Next','Segoe UI',sans-serif;font-size:13px;margin:4px 0 4px;">
+          <input type="checkbox" id="useSeal">
+          Parties will stamp a company seal
+        </label>
+        <p class="pct-note">Leave unticked when either party has no seal &mdash; signatures alone are enough, and no empty seal box is printed.</p>
       </fieldset>
 
       <div class="actions">
@@ -1015,24 +1020,28 @@ function buildDoc() {
   html += '<div class="sigline">Name: ' + (clientName || '______________________________') + '</div>';
   html += '<div class="sigline">Position: ______________________________</div>';
   html += '<div class="sigline">Date: ______________________________</div>';
-  html += '<div class="sealbox">affix company seal / stamp here</div></div>';
+  if (useSeal) html += '<div class="sealbox">affix company seal / stamp here (if used)</div>';
+  html += '</div>';
   html += '</div>';
 
   // Signatures
   html += '<h4>Signatures</h4>';
-  html += '<p class="note-italic">This Agreement shall be executed in two identical original copies. Each copy shall bear the signature and company seal/stamp of BOTH Parties. One original is retained by each Party.</p>';
+  const useSeal = document.getElementById('useSeal').checked;
+  html += '<p class="note-italic">This Agreement shall be executed in two identical original copies, each signed by both Parties' + (useSeal ? ' and bearing the company seal or stamp of each Party that uses one' : '') + '. One original is retained by each Party. A signature is sufficient to bind a Party; a seal or stamp is not required for this Agreement to take effect.</p>';
 
   html += '<div class="sigblock"><h5>For and on behalf of the Client / Account Owner:</h5>';
   html += '<div class="sigline">Signature: ______________________________</div>';
   html += '<div class="sigline">Name: ' + (clientName || '______________________________') + '</div>';
   html += '<div class="sigline">Date: ______________________________</div>';
-  html += '<div class="sealbox">affix company seal / stamp here</div></div>';
+  if (useSeal) html += '<div class="sealbox">affix company seal / stamp here (if used)</div>';
+  html += '</div>';
 
   html += '<div class="sigblock"><h5>For and on behalf of the Service Provider:</h5>';
   html += '<div class="sigline">Signature: ______________________________</div>';
   html += '<div class="sigline">Name: ' + (providerName || '______________________________') + '</div>';
   html += '<div class="sigline">Date: ______________________________</div>';
-  html += '<div class="sealbox">affix company seal / stamp here</div></div>';
+  if (useSeal) html += '<div class="sealbox">affix company seal / stamp here (if used)</div>';
+  html += '</div>';
 
   return html;
 }
