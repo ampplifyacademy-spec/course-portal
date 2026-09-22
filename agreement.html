@@ -541,9 +541,9 @@ auth.onAuthStateChanged(function (user) {
         <legend>Profit share</legend>
         <div class="two-col">
           <label class="field"><span class="lbl">Client's share of net profit</span>
-            <div class="pct-row"><input type="number" id="clientPct" min="0" max="100" value="70"><span>%</span></div></label>
+            <div class="pct-row"><input type="number" id="clientPct" min="0" max="100" value="65"><span>%</span></div></label>
           <label class="field"><span class="lbl">Provider's share of net profit</span>
-            <div class="pct-row"><input type="number" id="providerPct" min="0" max="100" value="30"><span>%</span></div></label>
+            <div class="pct-row"><input type="number" id="providerPct" min="0" max="100" value="35"><span>%</span></div></label>
         </div>
         <p class="pct-note" id="pctNote">Together these should add up to 100%.</p>
         <label class="field"><span class="lbl">Costs deducted before profit is split</span>
@@ -659,6 +659,10 @@ function addPersonRow(v) {
     '<label class="field"><span class="lbl">Role / permission level</span><input type="text" class="pRole"></label>' +
     '<label class="field"><span class="lbl">Contact email</span><input type="text" class="pEmail"></label>' +
     '<label class="field"><span class="lbl">Location (city / country)</span><input type="text" class="pLoc"></label>';
+  row.querySelector('.pName').value = v.name || '';
+  row.querySelector('.pRole').value = v.role || '';
+  row.querySelector('.pEmail').value = v.email || '';
+  row.querySelector('.pLoc').value = v.loc || '';
   wrap.appendChild(row);
 }
 document.getElementById("addPersonBtn").addEventListener("click", function () { addPersonRow(); });
@@ -685,9 +689,10 @@ var PROVIDER_SEAL = '<img class="sealimg" src="assets/company-seal.png" alt="Rak
 // The provider side of every agreement is the same business, so it is kept in
 // Firestore and filled in on load. Editing the fields and saving replaces it,
 // which is how these details are changed later.
-var PROVIDER_FIELDS =['providerName', 'providerCompany', 'providerAddress', 'providerHomeAddress',
+var PROVIDER_FIELDS = ['providerName', 'providerCompany', 'providerAddress', 'providerHomeAddress',
   'providerIdType', 'providerIdCountry', 'providerId', 'providerContact',
-  'providerResIdType', 'providerResCountry', 'providerResId', 'providerResidenceAddress'];
+  'providerResIdType', 'providerResCountry', 'providerResId', 'providerResidenceAddress',
+  'handlingLocation'];
 
 function loadProviderDetails() {
   db.collection('config').doc('agreementProvider').get().then(function (doc) {
@@ -697,6 +702,10 @@ function loadProviderDetails() {
       var el = document.getElementById(id);
       if (el && data[id] && !el.value) el.value = data[id];
     });
+    if (data.personnel && data.personnel.length) {
+      document.getElementById('personnelRows').innerHTML = '';
+      data.personnel.forEach(addPersonRow);
+    }
     if (data.providerResidesAbroad) {
       var box = document.getElementById('providerResidesAbroad');
       box.checked = true;
@@ -707,7 +716,10 @@ function loadProviderDetails() {
 
 document.getElementById('saveProviderBtn').addEventListener('click', function () {
   var note = document.getElementById('providerSaveNote');
-  var data = { providerResidesAbroad: document.getElementById('providerResidesAbroad').checked };
+  var data = {
+    providerResidesAbroad: document.getElementById('providerResidesAbroad').checked,
+    personnel: personnelRows()
+  };
   PROVIDER_FIELDS.forEach(function (id) {
     var el = document.getElementById(id);
     if (el) data[id] = el.value || '';
