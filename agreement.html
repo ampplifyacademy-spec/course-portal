@@ -424,6 +424,13 @@ auth.onAuthStateChanged(function (user) {
           <input type="text" id="accountEmail"></label>
         <label class="field"><span class="lbl">Date access was first granted</span>
           <input type="date" id="accessGrantedDate"></label>
+        <label class="field"><span class="lbl">User Permissions level granted</span>
+          <select id="permissionLevel">
+            <option value="admin">Admin &mdash; full access to all sections</option>
+            <option value="limited">Limited &mdash; only the sections listed below</option>
+          </select></label>
+        <label class="field"><span class="lbl">Sections granted (only for limited access)</span>
+          <input type="text" id="permissionSections" placeholder="e.g. Inventory, Orders, Advertising, Performance"></label>
       </fieldset>
 
       <fieldset>
@@ -719,6 +726,9 @@ function buildDoc() {
         providerContact = val('providerContact');
   const govLaw = val('govLaw'), noticeDays = val('noticeDays') || '30';
   const sellerId = val('sellerId'), accountEmail = val('accountEmail');
+  const permissionLevel = document.getElementById('permissionLevel').value;
+  const permissionSections = val('permissionSections');
+  const isAdminAccess = permissionLevel === 'admin';
   const accessGrantedRaw = val('accessGrantedDate');
   let accessGranted = accessGrantedRaw;
   if (accessGrantedRaw) {
@@ -826,7 +836,12 @@ function buildDoc() {
   const accessSection = section('Account Access &amp; Authorisation');
   html += '<ol class="clauses">';
   html += '<li>The Client shall not, and shall not be required to, disclose the primary login email, password, or two-factor authentication credentials of the Account to the Provider at any time.</li>';
-  html += '<li>Access to the Account shall be granted exclusively through Amazon Seller Central\'s built-in "User Permissions" feature, under which the Provider (or the Provider\'s designated personnel named in Schedule B) shall be added as an authorised user with their own separate login credentials and a defined, role-appropriate permission level (e.g., listings, orders, advertising) as determined by the Client.</li>';
+  html += '<li>Access to the Account shall be granted exclusively through Amazon Seller Central\'s built-in "User Permissions" feature, under which the Provider (or the Provider\'s designated personnel named in Schedule B) shall be added as an authorised user with their own separate login credentials, at the permission level recorded in Schedule B and determined by the Client.</li>';
+  if (isAdminAccess) {
+    html += '<li>The Client has elected to grant the Provider Admin-level User Permissions, covering all sections of the Account, so that the Provider can carry out its role without repeated permission changes. The Client may reduce that level to specific sections at any time, and the restrictions in this Section apply in full regardless of the level granted &mdash; in particular, the Provider shall make no change to bank, deposit, or tax details, nor to the Account\'s legal entity or registered information, at any time.</li>';
+  } else if (permissionSections) {
+    html += '<li>The Provider\'s access is limited to the following sections of the Account: ' + escapeHtml(permissionSections) + '. The Provider shall not request or use access to any other section without the Client\'s prior written authorisation.</li>';
+  }
   html += '<li>The Client retains full and exclusive ownership, control, and administrative rights over the Account at all times, including the unrestricted right to modify, restrict, or revoke the Provider\'s access at any time, with or without cause, and with or without prior notice.</li>';
   html += '<li>The Provider shall access and use the Account solely for the purpose of performing its role under this Agreement, and for no other purpose whatsoever, including but not limited to: creating or operating any other seller account; accessing, copying, or disclosing Account data for the Provider\'s own commercial benefit; or making any change to Account settings, bank/deposit details, business information, or registered documents without the Client\'s prior written authorisation.</li>';
   html += '<li>Where the Provider\'s personnel access the Account remotely (including via screen-sharing or remote-desktop tools), such access shall at all times be under the Provider\'s own authorised User Permissions login, and never under the Client\'s owner-level credentials.</li>';
@@ -968,11 +983,13 @@ function buildDoc() {
   html += '<tr><th>Post-termination settlement period</th><td>&nbsp;</td></tr>';
   html += '</tbody></table>';
 
+  const levelLabel = isAdminAccess ? 'Admin (all sections)' : (permissionSections || 'Limited');
   html += '<h4>Schedule B &mdash; Authorised Personnel for User Permissions Access</h4>';
+  html += '<p>Permission level granted by the Client: <b>' + escapeHtml(levelLabel) + '</b>.</p>';
   html += '<table class="sched"><thead><tr><th>Full name</th><th>Role / permission level</th><th>Contact email</th><th>Location (city/country)</th></tr></thead><tbody>';
   if (personnel.length) {
     personnel.forEach(function (x) {
-      html += '<tr><td>' + escapeHtml(x.name) + '</td><td>' + escapeHtml(x.role) + '</td><td>' + escapeHtml(x.email) + '</td><td>' + escapeHtml(x.loc) + '</td></tr>';
+      html += '<tr><td>' + escapeHtml(x.name) + '</td><td>' + escapeHtml(x.role || levelLabel) + '</td><td>' + escapeHtml(x.email) + '</td><td>' + escapeHtml(x.loc) + '</td></tr>';
     });
   } else {
     for (var i = 0; i < 3; i++) html += '<tr><td>&nbsp;</td><td>&nbsp;</td><td>&nbsp;</td><td>&nbsp;</td></tr>';
@@ -1001,7 +1018,7 @@ function buildDoc() {
   if (accessGranted) html += '<div class="fld"><b>Access granted on:</b> ' + escapeHtml(accessGranted) + '</div>';
   html += '<p>I further confirm that:</p><ol class="clauses">';
   html += '<li>Access was granted solely through Amazon Seller Central\'s User Permissions feature. No login credentials, password, or two-factor code of mine has been shared with the third party.</li>';
-  html += '<li>The individuals holding that access, and their permission levels, are listed in the schedule below.</li>';
+  html += '<li>The individuals holding that access are listed in the schedule below. The permission level granted is ' + escapeHtml(levelLabel) + ', set by me as the account owner.</li>';
   html += '<li>I retain sole ownership and administrative control of the account and may revoke this access at any time.</li>';
   html += '<li>The third party holds no authority over account funds, and no bank, deposit, or tax details have been changed by them.</li>';
   html += '<li>A signed agreement recording this relationship is in place and can be provided on request.</li>';
@@ -1009,7 +1026,7 @@ function buildDoc() {
   html += '<table class="sched"><thead><tr><th>Authorised individual</th><th>Permission level</th><th>Login email used on the account</th><th>Location</th></tr></thead><tbody>';
   if (personnel.length) {
     personnel.forEach(function (x) {
-      html += '<tr><td>' + escapeHtml(x.name) + '</td><td>' + escapeHtml(x.role) + '</td><td>' + escapeHtml(x.email) + '</td><td>' + escapeHtml(x.loc) + '</td></tr>';
+      html += '<tr><td>' + escapeHtml(x.name) + '</td><td>' + escapeHtml(x.role || levelLabel) + '</td><td>' + escapeHtml(x.email) + '</td><td>' + escapeHtml(x.loc) + '</td></tr>';
     });
   } else {
     for (var j = 0; j < 3; j++) html += '<tr><td>&nbsp;</td><td>&nbsp;</td><td>&nbsp;</td><td>&nbsp;</td></tr>';
