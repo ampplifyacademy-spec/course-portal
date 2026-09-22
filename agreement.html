@@ -726,6 +726,7 @@ function buildDoc() {
         providerContact = val('providerContact');
   const govLaw = val('govLaw'), noticeDays = val('noticeDays') || '30';
   const sellerId = val('sellerId'), accountEmail = val('accountEmail');
+  const useSeal = document.getElementById('useSeal').checked;
   const permissionLevel = document.getElementById('permissionLevel').value;
   const permissionSections = val('permissionSections');
   const isAdminAccess = permissionLevel === 'admin';
@@ -1043,7 +1044,6 @@ function buildDoc() {
 
   // Signatures
   html += '<h4>Signatures</h4>';
-  const useSeal = document.getElementById('useSeal').checked;
   html += '<p class="note-italic">This Agreement shall be executed in two identical original copies, each signed by both Parties' + (useSeal ? ' and bearing the company seal or stamp of each Party that uses one' : '') + '. One original is retained by each Party. A signature is sufficient to bind a Party; a seal or stamp is not required for this Agreement to take effect.</p>';
 
   html += '<div class="sigblock"><h5>For and on behalf of the Client / Account Owner:</h5>';
