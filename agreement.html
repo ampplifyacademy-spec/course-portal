@@ -966,7 +966,9 @@ function buildDoc() {
   // --- Schedules ------------------------------------------------------------
   html += '<h4>Schedule A &mdash; Statement of Work' + (includesService ? ', Fees' : '') + (includesPartner ? ', Profit-Share' : '') + ' &amp; Term</h4>';
   html += '<table class="sched"><tbody>';
-  html += '<tr><th style="width:44%;">Description of Services</th><td>' + (services.length && includesService ? services.map(escapeHtml).join('; ') : '&nbsp;') + '</td></tr>';
+  if (includesService) {
+    html += '<tr><th style="width:44%;">Description of Services</th><td>' + (services.length ? services.map(escapeHtml).join('; ') : '&nbsp;') + '</td></tr>';
+  }
   if (includesService) {
     html += '<tr><th>Fixed fee (if any) &mdash; structure &amp; amount</th><td>' + (feeAmount ? escapeHtml(feeAmount) : (includesPartner ? 'None &mdash; profit share only' : '&nbsp;')) + '</td></tr>';
   }
@@ -1063,13 +1065,43 @@ function buildDoc() {
   return html;
 }
 
+// A profit split that does not total 100% would go out as a contradiction, so
+// it is caught before anything is generated or printed.
+function splitProblem() {
+  const mode = document.querySelector('input[name="engagement"]:checked').value;
+  if (mode !== 'partnership' && mode !== 'both') return '';
+  const sum = (parseFloat(document.getElementById('clientPct').value) || 0) +
+              (parseFloat(document.getElementById('providerPct').value) || 0);
+  if (Math.abs(sum - 100) > 0.001) {
+    return 'The profit split adds up to ' + sum + '%. Fix it to 100% before generating.';
+  }
+  return '';
+}
+
 document.getElementById('genBtn').addEventListener('click', function() {
+  const problem = splitProblem();
+  const status = document.getElementById('statusLine');
+  if (problem) {
+    status.textContent = problem;
+    status.style.color = 'var(--danger)';
+    document.getElementById('clientPct').focus();
+    return;
+  }
+  status.style.color = '';
   document.getElementById('doc').innerHTML = buildDoc();
-  document.getElementById('statusLine').textContent = 'Generated — review below, then print.';
+  status.textContent = 'Generated — review below, then print.';
   document.getElementById('doc').scrollIntoView({behavior:'smooth', block:'start'});
 });
 
 document.getElementById('printBtn').addEventListener('click', function() {
+  const problem = splitProblem();
+  if (problem) {
+    const status = document.getElementById('statusLine');
+    status.textContent = problem;
+    status.style.color = 'var(--danger)';
+    document.getElementById('clientPct').focus();
+    return;
+  }
   if (document.querySelector('.empty-state')) {
     document.getElementById('doc').innerHTML = buildDoc();
   }
