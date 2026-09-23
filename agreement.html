@@ -530,9 +530,17 @@ auth.onAuthStateChanged(function (user) {
           <label><input type="checkbox" class="svc" value="Advertising campaign (PPC/Sponsored Ads) setup and management"> Advertising / PPC management</label>
           <label><input type="checkbox" class="svc" value="Customer service / buyer-seller messaging support"> Customer service / messaging</label>
           <label><input type="checkbox" class="svc" value="Account health monitoring and performance reporting"> Account health &amp; reporting</label>
+          <label><input type="checkbox" class="svc" value="Account reactivation: review of the enforcement notice, preparation of the appeal and Plan of Action, and correspondence with Amazon Seller Performance until a decision is issued"> Account reactivation / appeal</label>
+          <label><input type="checkbox" class="svc" value="Identity and business verification support, including video-call verification and changes to registered business information"> Verification support</label>
+          <label><input type="checkbox" class="svc" value="Brand Registry enrolment and trade mark filing support"> Brand Registry / trade mark</label>
+          <label><input type="checkbox" class="svc" value="Product research, supplier sourcing and shipment planning"> Product research &amp; sourcing</label>
         </div>
         <label class="field"><span class="lbl">Other service (optional)</span>
           <input type="text" id="svcOther"></label>
+        <!-- Amazon asks what the third party was engaged to do. A written scope
+             answers that in the seller's own words instead of "see Schedule A". -->
+        <label class="field"><span class="lbl">Scope, deliverables &amp; reporting (printed as Schedule A)</span>
+          <textarea id="svcDetail" rows="4" placeholder="e.g. Draft and submit the appeal for the 24 July deactivation; weekly progress update by email; work ends when Amazon issues its decision."></textarea></label>
         <label class="field"><span class="lbl">Fixed fee (amount &amp; currency, leave blank if none)</span>
           <input type="text" id="feeAmount" placeholder="e.g. 300 USD / month"></label>
       </fieldset>
@@ -569,6 +577,8 @@ auth.onAuthStateChanged(function (user) {
         <legend>Other terms</legend>
         <label class="field"><span class="lbl">Effective date (partnership / account start date)</span>
           <input type="date" id="effectiveDate"></label>
+        <label class="field"><span class="lbl">End date (leave blank if ongoing)</span>
+          <input type="date" id="endDate"></label>
         <label class="field"><span class="lbl">Account to be handled from (location)</span>
           <input type="text" id="handlingLocation" placeholder="e.g. Dhaka, Bangladesh"></label>
         <label class="field"><span class="lbl">Governing law / jurisdiction</span>
@@ -773,6 +783,12 @@ function buildDoc() {
     if (!isNaN(ag)) accessGranted = ag.toLocaleDateString('en-GB', { day: 'numeric', month: 'long', year: 'numeric' });
   }
   const effectiveDateRaw = val('effectiveDate'), handlingLocation = val('handlingLocation');
+  const endDateRaw = val('endDate');
+  let endDate = endDateRaw;
+  if (endDateRaw) {
+    const e = new Date(endDateRaw + 'T00:00:00');
+    if (!isNaN(e)) endDate = e.toLocaleDateString('en-GB', { day: 'numeric', month: 'long', year: 'numeric' });
+  }
   let effectiveDate = effectiveDateRaw;
   if (effectiveDateRaw) {
     const d = new Date(effectiveDateRaw + 'T00:00:00');
@@ -782,6 +798,7 @@ function buildDoc() {
   }
 
   const services = Array.from(document.querySelectorAll('.svc:checked')).map(x => x.value);
+  const svcDetail = val('svcDetail');
   const svcOther = val('svcOther');
   if (svcOther) services.push(svcOther);
   const feeAmount = val('feeAmount');
@@ -866,7 +883,11 @@ function buildDoc() {
       html += '<li>' + fillOr('', '[no services selected &mdash; add at least one]') + '</li>';
     }
     html += '</ol>';
-    html += '<p>The specific scope, deliverables, and reporting cadence for the Services shall be as set out in Schedule A (Statement of Work) attached to this Agreement, which forms an integral part hereof.</p>';
+    if (svcDetail) {
+      html += '<p>The specific scope, deliverables, and reporting cadence for the Services are set out in Schedule A (Statement of Work) at the end of this Agreement, which forms an integral part hereof.</p>';
+    } else {
+      html += '<p>The Services listed above are the whole of the Services engaged under this Agreement. Any additional work shall be agreed by the Parties in writing before it is carried out.</p>';
+    }
   }
 
   // --- Account access -------------------------------------------------------
@@ -948,7 +969,9 @@ function buildDoc() {
   // --- Term & termination ---------------------------------------------------
   const termSection = section('Term &amp; Termination');
   html += '<ol class="clauses">';
-  html += '<li>This Agreement shall commence on the Effective Date and continue until terminated in accordance with this Section, or as otherwise specified in Schedule A.</li>';
+  html += endDate
+    ? '<li>This Agreement shall commence on the Effective Date and, unless terminated earlier in accordance with this Section, shall end on ' + escapeHtml(endDate) + '. It may be extended only by written agreement of both Parties.</li>'
+    : '<li>This Agreement shall commence on the Effective Date and shall continue on an ongoing basis until terminated in accordance with this Section.</li>';
   html += '<li>Either Party may terminate this Agreement for convenience upon ' + fillOr(noticeDays, '30') + ' days\' prior written notice to the other Party.</li>';
   html += '<li>Either Party may terminate this Agreement immediately upon written notice if the other Party materially breaches this Agreement and fails to remedy such breach within fourteen (14) days of receiving written notice thereof, or if the other Party becomes insolvent, ceases business, or engages in fraudulent or illegal activity in connection with the Account.</li>';
   html += '<li>Upon termination, the provisions on access revocation, confidentiality, data protection' + (includesPartner ? ', accrued but unpaid profit share, exit and Account ownership' : '') + ', liability, and governing law shall survive.</li>';
@@ -967,6 +990,19 @@ function buildDoc() {
   if (nonCompeteMonths && nonCompeteMonths !== '0') {
     html += '<li>For a period of ' + escapeHtml(nonCompeteMonths) + ' months following termination of this Agreement, the Provider shall not, without the Client\'s prior written consent, directly solicit or service the same Account, or launch a materially similar/competing product line using the Client\'s confidential business information obtained under this Agreement.</li>';
   }
+  html += '</ol>';
+
+  // --- No change of ownership ----------------------------------------------
+  // Written for an Amazon investigator reading this document: the Provider is
+  // engaged help, not a hidden owner of the selling account.
+  section('No Change of Ownership or Control');
+  html += '<ol class="clauses">';
+  html += "<li>The Provider is engaged as an external service provider only. The Provider is not an owner, shareholder, director, or beneficial owner of the Client or of the Account, and this Agreement transfers no ownership of, or beneficial interest in, the Client's business or the Account" + (includesPartner ? ". The profit share set out above is contractual consideration for the Provider's work and confers no ownership of the Account, its listings, or its brand" : "") + ".</li>";
+  html += "<li>The Account remains registered to, and under the ultimate control of, the Client. The Client may revoke the Provider's access at any time through Amazon's User Permissions feature without notice.</li>";
+  html += "<li>The disbursement bank account and all sales proceeds of the Account remain the Client's. The Provider has no access to, and shall not request access to, the Client's bank account, deposit method, or tax details, and shall not change them.</li>";
+  html += "<li>The Provider shall not open, register, or operate any other Amazon selling account in the name of the Client, nor use the Account to sell on behalf of any other seller, nor transfer, sell, or lease the Account or any part of it.</li>";
+  html += "<li>The Provider accesses the Account solely through its own credentials issued under Amazon's User Permissions feature, and shall not share those credentials with anyone outside the personnel named in this Agreement.</li>";
+  html += "<li>Each Party shall, on request, provide Amazon with a copy of this Agreement and any information Amazon requires about the relationship between the Parties, including the services performed, the level of access granted, and the period of the engagement.</li>";
   html += '</ol>';
 
   // --- Liability ------------------------------------------------------------
@@ -1018,6 +1054,7 @@ function buildDoc() {
     html += '<tr><th>Loss handling</th><td>Carried forward and offset against Net Profit in following periods</td></tr>';
   }
   html += '<tr><th>Effective date</th><td>' + (effectiveDate ? escapeHtml(effectiveDate) : '&nbsp;') + '</td></tr>';
+  html += '<tr><th>End date</th><td>' + (endDate ? escapeHtml(endDate) : 'Ongoing until terminated') + '</td></tr>';
   html += '<tr><th>Notice period to terminate</th><td>' + escapeHtml(noticeDays) + ' days</td></tr>';
   html += '<tr><th>Post-termination settlement period</th><td>&nbsp;</td></tr>';
   html += '</tbody></table>';
@@ -1078,6 +1115,12 @@ function buildDoc() {
   if (useSeal) html += '<div class="sealbox">affix company seal / stamp here (if used)</div>';
   html += '</div>';
   html += '</div>';
+
+  // Schedule A - the scope in the Client's own words, when one was written.
+  if (includesService && svcDetail) {
+    html += '<h4>Schedule A &mdash; Statement of Work</h4>';
+    html += '<p>' + escapeHtml(svcDetail).split(String.fromCharCode(10)).join('<br>') + '</p>';
+  }
 
   // Signatures
   html += '<h4>Signatures</h4>';
