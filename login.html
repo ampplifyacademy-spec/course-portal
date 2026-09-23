@@ -108,7 +108,25 @@ function doLogin() {
   // check cannot be skipped by using the older one.
   auth.signInWithEmailAndPassword(email, password)
     .then(cred => afterSignIn(cred.user, msg))
-    .catch(err => { msg.style.color = 'var(--danger)'; msg.textContent = err.message; });
+    .catch(err => { msg.style.color = 'var(--danger)'; msg.textContent = signInProblem(err); });
+
+/**
+ * Firebase will not say whether an address is registered, so one code covers a
+ * wrong password, an unknown address, and an account that only has Google on
+ * it. The student needs to be told all three, in their own words.
+ */
+function signInProblem(err) {
+  const soft = ['auth/invalid-credential', 'auth/wrong-password', 'auth/user-not-found',
+                'auth/invalid-login-credentials'];
+  if (soft.indexOf(err.code) !== -1) {
+    return 'That email and password do not match. If you enrolled with Google, use ' +
+           '"Continue with Google" above. Otherwise reset your password below.';
+  }
+  if (err.code === 'auth/too-many-requests') {
+    return 'Too many attempts. Wait a few minutes, or reset your password below.';
+  }
+  return err.message;
+}
 }
 
 // Google sign-in. A student who enrolled with an email and password keeps the
@@ -162,6 +180,10 @@ function afterSignIn(user, msg) {
     if (!doc.exists) {
       msg.style.color = 'var(--danger)';
       msg.textContent = 'No enrolment found for ' + user.email + '. Please enrol first.';
+      const m = user.metadata || {};
+      const brandNew = m.creationTime && m.lastSignInTime &&
+        Math.abs(new Date(m.lastSignInTime) - new Date(m.creationTime)) < 60000;
+      if (brandNew) return user.delete().catch(() => auth.signOut());
       return auth.signOut();
     }
     const status = doc.data().status;

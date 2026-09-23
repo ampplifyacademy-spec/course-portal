@@ -360,7 +360,12 @@ function doSignup() {
       }
       sendAdminAlert(alertTitle, alertBody);
     })
-    .catch(err => { msg.style.color = 'var(--danger)'; msg.textContent = err.message; });
+    .catch(err => {
+      msg.style.color = 'var(--danger)';
+      msg.textContent = err.code === 'auth/email-already-in-use'
+        ? 'This email already has an account. Log in instead, or use "Forgot your password?" on the login page. Your receipt is saved - message us if you are stuck.'
+        : err.message;
+    });
 }
 </script>
 </body>
