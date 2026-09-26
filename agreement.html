@@ -266,6 +266,9 @@
   .sigblock { margin-top: 26px; }
   .sigblock h5 { font-size: 13.5px; margin: 0 0 6px; }
   .sigline { margin: 5px 0; font-size: 13.5px; }
+  .signline-img { display: inline-block; border-bottom: 1px solid #333333; width: 240px; vertical-align: bottom; line-height: 0; }
+  .signline-img img { width: 150px; height: auto; margin-bottom: -6px; }
+  .handwritten { font-family: 'Segoe Script', 'Bradley Hand', 'Comic Sans MS', cursive; font-size: 1.15em; }
   .sealbox {
     border: 1px solid #999; height: 70px; margin: 6px 0 2px;
     display: flex; align-items: center; justify-content: center;
@@ -275,7 +278,7 @@
   .sealbox.own { border: none; height: auto; justify-content: flex-start; }
   .sealimg { width: 108px; height: 108px; }
   .sealwrap { position: relative; display: inline-block; }
-  .signimg { position: absolute; left: 46%; top: -14%; width: 132px; height: auto; transform: rotate(-6deg); mix-blend-mode: multiply; pointer-events: none; }
+  .signimg { position: absolute; left: 52%; top: -6%; width: 96px; height: auto; transform: rotate(-6deg); mix-blend-mode: multiply; pointer-events: none; }
   .note-italic { font-style: italic; color: var(--ink-soft); font-size: 13px; }
 
   .empty-state {
@@ -348,6 +351,8 @@ auth.onAuthStateChanged(function (user) {
   .sigblock { page-break-inside: avoid; break-inside: avoid; margin-top: 16pt; }
   .sigblock h5 { font-size: 11pt; margin: 0 0 4pt; }
   .sigline { font-size: 11pt; margin: 3pt 0; }
+  #doc .signline-img { width: 62mm; }
+  #doc .signline-img img { width: 40mm; margin-bottom: -2mm; }
   .sealbox { border: 1px solid #999999; color: #999999; font-size: 9pt; height: 60pt; }
   .note-italic { font-size: 10pt; color: #555555; }
   /* The app's own title bar is screen furniture; paper starts at the agreement. */
@@ -362,7 +367,7 @@ auth.onAuthStateChanged(function (user) {
   /* The provider seal prints as the seal itself, at stamp size, no frame. */
   #doc .sealbox.own { border: none; height: auto; }
   #doc .sealimg { width: 34mm; height: 34mm; }
-  #doc .signimg { width: 42mm; left: 46%; top: -14%; }
+  #doc .signimg { width: 30mm; left: 52%; top: -6%; }
   /* The letter is handed over on its own, so it starts a fresh sheet. */
   #doc .loa { page-break-before: always; break-before: page; }
   @page { margin: 19mm 22mm; }
@@ -582,6 +587,10 @@ auth.onAuthStateChanged(function (user) {
           <input type="date" id="effectiveDate"></label>
         <label class="field"><span class="lbl">End date (leave blank if ongoing)</span>
           <input type="date" id="endDate"></label>
+        <!-- Printed in a handwriting face on our own signature line, so the
+             date reads as written by hand. Blank leaves a line to write on. -->
+        <label class="field"><span class="lbl">Date we signed (blank = leave a blank line)</span>
+          <input type="text" id="signDate" placeholder="e.g. 26 September 2026"></label>
         <label class="field"><span class="lbl">Account to be handled from (location)</span>
           <input type="text" id="handlingLocation" placeholder="e.g. Dhaka, Bangladesh"></label>
         <label class="field"><span class="lbl">Governing law / jurisdiction</span>
@@ -806,6 +815,7 @@ function buildDoc() {
     }
   }
 
+  const signDate = val('signDate');
   const services = Array.from(document.querySelectorAll('.svc:checked')).map(x => x.value);
   const svcDetail = val('svcDetail');
   const svcOther = val('svcOther');
@@ -1143,9 +1153,11 @@ function buildDoc() {
   html += '</div>';
 
   html += '<div class="sigblock"><h5>For and on behalf of the Service Provider:</h5>';
-  html += '<div class="sigline">Signature: ______________________________</div>';
+  html += '<div class="sigline">Signature: <span class="signline-img"><img src="assets/provider-signature.png" alt="signature" onerror="this.style.display=&quot;none&quot;"></span></div>';
   html += '<div class="sigline">Name: ' + (providerName || '______________________________') + '</div>';
-  html += '<div class="sigline">Date: ______________________________</div>';
+  // A typed date prints in the handwriting face; an empty one leaves a blank
+  // line to write on.
+  html += '<div class="sigline">Date: ' + (signDate ? '<span class="handwritten">' + escapeHtml(signDate) + '</span>' : '______________________________') + '</div>';
   // Our seal is printed for us; the signature above it is still signed by hand.
   html += '<div class="sealbox own">' + PROVIDER_SEAL + '</div>';
   html += '</div>';
