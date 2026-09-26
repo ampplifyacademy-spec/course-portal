@@ -274,6 +274,8 @@
   /* Our own seal needs no box around it - the seal is the mark. */
   .sealbox.own { border: none; height: auto; justify-content: flex-start; }
   .sealimg { width: 108px; height: 108px; }
+  .sealwrap { position: relative; display: inline-block; }
+  .signimg { position: absolute; left: 46%; top: -14%; width: 132px; height: auto; transform: rotate(-6deg); mix-blend-mode: multiply; pointer-events: none; }
   .note-italic { font-style: italic; color: var(--ink-soft); font-size: 13px; }
 
   .empty-state {
@@ -360,6 +362,7 @@ auth.onAuthStateChanged(function (user) {
   /* The provider seal prints as the seal itself, at stamp size, no frame. */
   #doc .sealbox.own { border: none; height: auto; }
   #doc .sealimg { width: 34mm; height: 34mm; }
+  #doc .signimg { width: 42mm; left: 46%; top: -14%; }
   /* The letter is handed over on its own, so it starts a fresh sheet. */
   #doc .loa { page-break-before: always; break-before: page; }
   @page { margin: 19mm 22mm; }
@@ -701,7 +704,13 @@ function personnelRows() {
 
 // Our own company seal. The image is the stamp we use on every agreement;
 // the client's box is left empty for their own stamp.
-var PROVIDER_SEAL = '<img class="sealimg" src="assets/company-seal.png" alt="Rakiza Company LTD corporate seal">';
+// Our seal, with the signature laid across it the way a stamped and signed
+// page looks. The signature file is optional: if it is not there, onerror
+// hides it and the seal prints on its own exactly as before.
+var PROVIDER_SEAL = '<span class="sealwrap">'
+  + '<img class="sealimg" src="assets/company-seal.png" alt="Rakiza Company LTD corporate seal">'
+  + '<img class="signimg" src="assets/provider-signature.png" alt="" onerror="this.style.display='none'">'
+  + '</span>';
 
 // The provider side of every agreement is the same business, so it is kept in
 // Firestore and filled in on load. Editing the fields and saving replaces it,
