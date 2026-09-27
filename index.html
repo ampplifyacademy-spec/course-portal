@@ -1,24 +1,486 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
+<link rel="canonical" href="https://ampplifyacademy.com/">
 <meta charset="UTF-8">
-<meta http-equiv="refresh" content="0; url=course.html">
-<link rel="canonical" href="course.html">
-<title>Ampplify Academy</title>
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Amazon Selling Course · Ampplify Academy</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://www.gstatic.com" crossorigin>
+<link rel="preconnect" href="https://firestore.googleapis.com" crossorigin>
+<link rel="preconnect" href="https://lh3.googleusercontent.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@500;600;700;800&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="css/style.css?v=12">
 <style>
-  .landing-note { max-width: 760px; margin: 4rem auto; padding: 0 1.25rem; font-family: system-ui, sans-serif; line-height: 1.75; }
-  .landing-note h1 { margin-bottom: 1rem; }
+  body.course-page { display: block; padding: 0; position: relative; }
+  body.course-page::before, body.course-page::after {
+    content: ''; position: fixed; top: 10%; width: 340px; height: 620px; z-index: -1; pointer-events: none;
+    filter: blur(70px); opacity: .35;
+  }
+  body.course-page::before {
+    left: -120px;
+    background: linear-gradient(180deg, rgba(37,99,235,.55), rgba(253,125,1,.45));
+    border-radius: 45%;
+  }
+  body.course-page::after {
+    right: -120px;
+    background: linear-gradient(180deg, rgba(253,125,1,.45), rgba(37,99,235,.55));
+    border-radius: 45%;
+  }
+  .cnav { display: flex; align-items: center; justify-content: space-between; padding: 1.25rem 4rem; flex-wrap: wrap; gap: 1rem; position: sticky; top: 0; z-index: 50; background: rgba(255,255,255,.9); backdrop-filter: blur(8px); box-shadow: 0 1px 0 var(--border); }
+  .cnav-links { display: flex; gap: 2.25rem; font: 600 .95rem var(--font-body); color: var(--text-soft); }
+  .cnav-links a { color: inherit; text-decoration: none; cursor: pointer; }
+  .cnav-links a:hover { color: var(--accent); }
+  .cnav button, .cta-band button { width: auto; margin-top: 0; }
+  .cnav-cta { border-radius: 999px !important; padding: .7rem 1.5rem !important; }
+  .cnav-right { display: flex; align-items: center; gap: 1rem; }
+  .menu-toggle { display: none; background: none; border: 1px solid var(--border-strong); color: var(--text); font-size: 1.2rem; line-height: 1; padding: .5rem .75rem; border-radius: var(--radius-sm); cursor: pointer; }
+  .csection { padding: 5rem 4rem; }
+  .chero { position: relative; padding: 4.5rem 4rem 5.5rem; overflow: hidden; }
+  .chero-grid { position: relative; z-index: 2; display: grid; grid-template-columns: 1.05fr .95fr; gap: 3.5rem; align-items: center; max-width: 1200px; margin: 0 auto; }
+  .chero-badge { display: inline-flex; align-items: center; gap: .5rem; background: var(--info-bg); border: 1px solid rgba(37,99,235,.3); color: var(--info); font: 600 .8rem var(--font-body); padding: .5rem 1rem; border-radius: 999px; margin-bottom: 1.5rem; }
+  .chero h1 { font-size: clamp(2rem, 4vw, 3.2rem); font-weight: 800; line-height: 1.14; margin-bottom: 1.25rem; }
+  .chero h1 span { color: var(--accent-orange); }
+  .chero p { font-size: 1.08rem; color: var(--text-soft); max-width: 520px; margin-bottom: 2rem; line-height: 1.6; }
+  .chero-ctas { display: flex; gap: 1rem; flex-wrap: wrap; margin-bottom: 2.25rem; }
+  .chero-ctas button, .chero-ctas a.btn { width: auto; margin-top: 0; padding: 1rem 2rem; }
+  .chero-trust { display: flex; align-items: center; gap: .6rem; font-size: .88rem; color: var(--text-muted); font-weight: 600; }
+  .chero-trust span.dot { width: 8px; height: 8px; border-radius: 50%; background: var(--success); display: inline-block; }
+  .chero-media { position: relative; display: flex; align-items: flex-end; justify-content: center; min-height: 420px; }
+  .chero-shape { position: absolute; bottom: 0; width: 360px; height: 360px; border-radius: 42% 58% 55% 45% / 45% 42% 58% 55%; background: linear-gradient(135deg, var(--accent), var(--accent-orange)); opacity: .16; z-index: 0; }
+  .chero img { position: relative; z-index: 1; width: 100%; max-width: 380px; height: 440px; object-fit: contain; object-position: bottom; filter: drop-shadow(0 20px 30px rgba(16,24,40,.18)); }
+  .chero-chip { position: absolute; z-index: 2; bottom: 10%; left: 0; background: var(--surface); border: 1px solid var(--border); border-radius: var(--radius); padding: .7rem 1.1rem; box-shadow: var(--shadow-md); font: 700 .82rem var(--font-display); display: flex; align-items: center; gap: .5rem; }
+  .chero-chip.top { top: 8%; right: 0; bottom: auto; left: auto; }
+  .instructor-strip { padding: 3rem 4rem; display: flex; justify-content: center; align-items: center; gap: 2rem; flex-wrap: wrap; }
+  .instructor-strip .inner { max-width: 720px; }
+  .instructor-strip .eyebrow { color: var(--accent-orange); font: 700 .85rem var(--font-display); margin-bottom: .5rem; }
+  .instructor-strip h3 { font-size: 1.6rem; margin-bottom: .6rem; }
+  .instructor-strip p { color: var(--text-soft); line-height: 1.7; }
+  .csection h2 { font-size: 2.1rem; text-align: center; margin-bottom: .6rem; }
+  .csection > p.lead { text-align: center; color: var(--text-soft); margin-bottom: 2.75rem; }
+  .module-grid { display: flex; flex-direction: column; gap: 1rem; max-width: 800px; margin: 0 auto; }
+  .module-card { background: var(--surface); border: 1px solid var(--border); border-radius: var(--radius); padding: 0; overflow: hidden; }
+  .module-card summary { cursor: pointer; list-style: none; padding: 1.25rem 1.75rem; display: flex; align-items: center; gap: 1.25rem; }
+  .module-card summary::-webkit-details-marker { display: none; }
+  .module-card[open] summary { border-bottom: 1px solid var(--border); }
+  .module-num { width: 44px; height: 44px; border-radius: var(--radius-sm); background: var(--warning-bg); color: var(--accent-orange); display: flex; align-items: center; justify-content: center; font: 800 1.1rem var(--font-display); flex-shrink: 0; }
+  .module-card .module-head { flex: 1; }
+  .module-card h4 { font-size: 1.05rem; margin-bottom: .3rem; }
+  .module-card .module-meta { color: var(--info); font: 600 .8rem var(--font-body); }
+  .module-card .chevron { color: var(--text-muted); font-size: 1.3rem; transition: transform .2s; flex-shrink: 0; }
+  .module-card[open] .chevron { transform: rotate(45deg); }
+  .module-card .module-body { padding: 0 1.75rem 1.5rem 5.75rem; }
+  .module-card .module-body p { color: var(--text-soft); font-size: .9rem; line-height: 1.7; }
+  .testimonial-row { max-width: 1200px; margin: 0 auto; overflow: hidden; -webkit-mask-image: linear-gradient(90deg, transparent, #000 5%, #000 95%, transparent); mask-image: linear-gradient(90deg, transparent, #000 5%, #000 95%, transparent); }
+  .testimonial-track { display: flex; gap: 1.4rem; width: max-content; animation: testimonial-marquee 40s linear infinite; }
+  .testimonial-row:hover .testimonial-track { animation-play-state: paused; }
+  @keyframes testimonial-marquee { from { transform: translateX(0); } to { transform: translateX(-50%); } }
+  .testimonial-card { flex: 0 0 auto; width: 320px; background: var(--surface); border: 1px solid var(--border); border-radius: var(--radius); padding: 1.75rem; }
+  .testimonial-card .stars { color: var(--accent-orange); margin-bottom: .75rem; }
+  .testimonial-card p { font-size: .92rem; line-height: 1.7; color: var(--text-soft); margin-bottom: 1.1rem; }
+  .about-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(270px, 1fr)); gap: 1.5rem; max-width: 1100px; margin: 0 auto; }
+  .about-card { background: var(--surface); border: 1px solid var(--border); border-radius: var(--radius); padding: 1.5rem; }
+  .about-card h4 { font-size: 1.05rem; margin-bottom: .6rem; color: var(--accent-orange); }
+  .about-card p { color: var(--text-soft); font-size: .9rem; line-height: 1.7; }
+  .video-review-wrap { max-width: 1200px; margin: 0 auto; position: relative; display: flex; align-items: center; gap: .75rem; }
+  .video-review-row { overflow-x: auto; scroll-behavior: smooth; scrollbar-width: none; }
+  .video-review-row::-webkit-scrollbar { display: none; }
+  .video-review-track { display: flex; gap: 1.4rem; width: max-content; }
+  .video-review-arrow { flex: 0 0 auto; width: 44px; height: 44px; border-radius: 50%; background: var(--surface); border: 1px solid var(--border-strong); color: var(--text); font-size: 1.1rem; cursor: pointer; display: flex; align-items: center; justify-content: center; }
+  .video-review-arrow:hover { border-color: var(--accent-orange); color: var(--accent-orange); }
+  .video-review-card { flex: 0 0 auto; width: 220px; background: var(--surface); border: 1px solid var(--border); border-radius: var(--radius); overflow: hidden; }
+  .video-review-frame { width: 100%; aspect-ratio: 9/16; background: #000; }
+  .video-review-frame iframe { width: 100%; height: 100%; border: none; }
+  .video-review-name { padding: .9rem 1.1rem; font: 700 .9rem var(--font-display); color: var(--text); }
+  .testimonial-card .tname { font: 700 .95rem var(--font-display); }
+  .testimonial-card .tresult { color: var(--info); font-size: .82rem; }
+  .pricing-wrap { text-align: center; }
+  .pricing-card { max-width: 460px; margin: 0 auto; background: linear-gradient(180deg, var(--surface), var(--surface-alt)); border: 1.5px solid rgba(253,125,1,.4); border-radius: var(--radius-lg); padding: 2.5rem; box-shadow: var(--shadow-lg); }
+  .pricing-card .eyebrow { color: var(--accent-orange); font: 700 .85rem var(--font-display); margin-bottom: .5rem; }
+  .price-row { display: flex; align-items: baseline; justify-content: center; gap: .75rem; margin-bottom: .3rem; }
+  .price-old { text-decoration: line-through; text-decoration-color: var(--danger); color: var(--text); font-size: 1.4rem; font-weight: 700; }
+  .price-new { font-size: 3.2rem; font-weight: 800; }
+  .pricing-card .note { color: var(--text-muted); font-size: .85rem; margin-bottom: 1.75rem; }
+  .offer-countdown { margin: 0 0 1.1rem; }
+  .offer-countdown-label { display: block; color: var(--danger); font: 700 .78rem var(--font-body); text-transform: uppercase; letter-spacing: .04em; margin-bottom: .5rem; }
+  .offer-countdown-clock { display: flex; justify-content: center; gap: .5rem; }
+  .offer-countdown-clock .unit { background: var(--bg); border: 1px solid var(--border-strong); border-radius: var(--radius-sm); padding: .5rem .4rem; min-width: 54px; }
+  .offer-countdown-clock .unit b { display: block; font: 800 1.3rem var(--font-display); color: var(--text); }
+  .offer-countdown-clock .unit span { display: block; font-size: .65rem; color: var(--text-muted); text-transform: uppercase; letter-spacing: .03em; }
+  .offer-end-date { display: block; margin-top: .6rem; color: var(--danger); font: 700 .78rem var(--font-body); text-transform: uppercase; letter-spacing: .04em; }
+  .price-features { text-align: left; display: flex; flex-direction: column; gap: .75rem; margin-bottom: 1.75rem; }
+  .price-features div { display: flex; gap: .6rem; align-items: flex-start; font-size: .92rem; color: var(--text-soft); }
+  .price-features span { color: var(--accent); }
+  .feedback-form-wrap { max-width: 480px; margin: 3rem auto 0; background: var(--surface); border: 1px solid var(--border); border-radius: var(--radius); padding: 1.75rem; }
+  .feedback-form-wrap h3 { font-size: 1.2rem; margin-bottom: .3rem; }
+  .feedback-form-wrap p.hint { color: var(--text-muted); font-size: .82rem; margin-bottom: 1.1rem; }
+  .feedback-form-wrap label { display: block; font: 600 .8rem var(--font-body); color: var(--text-soft); margin: .9rem 0 .4rem; }
+  .feedback-form-wrap label:first-of-type { margin-top: 0; }
+  .faq-wrap { max-width: 760px; margin: 0 auto; display: flex; flex-direction: column; gap: .9rem; }
+  details { background: var(--surface); border: 1px solid var(--border); border-radius: var(--radius-sm); padding: 1.25rem 1.5rem; }
+  details > summary { cursor: pointer; list-style: none; font: 700 1rem var(--font-display); display: flex; justify-content: space-between; }
+  details > summary::-webkit-details-marker { display: none; }
+  details summary span { color: var(--info); }
+  details p { color: var(--text-soft); font-size: .92rem; line-height: 1.7; margin-top: .9rem; }
+  .cta-band { background: linear-gradient(135deg, rgba(37,99,235,.13), rgba(253,125,1,.13)); padding: 3.5rem 4rem; text-align: center; }
+  .cta-band h3 { font-size: 1.9rem; margin-bottom: .75rem; }
+  .cta-band button { width: auto; margin: 0 auto; padding: 1rem 2.25rem; }
+  @media (max-width: 760px) {
+    .cnav { padding: 1rem 1.25rem; }
+    .menu-toggle { display: block; }
+    .cnav-right button:not(.menu-toggle) { display: none; }
+    .cnav-links { display: none; width: 100%; order: 3; flex-direction: column; gap: 0; margin-top: 1rem; }
+    .cnav-links.open { display: flex; }
+    .cnav-links a { padding: .85rem 0; border-bottom: 1px solid var(--border); }
+    .cnav button { padding: .6rem 1.1rem; font-size: .85rem; }
+    .csection { padding: 3rem 1.25rem; }
+    .chero { padding: 2.5rem 1.25rem 3.5rem; }
+    .chero-grid { grid-template-columns: 1fr; gap: 2.5rem; text-align: center; }
+    .chero p { margin-left: auto; margin-right: auto; }
+    .chero-ctas { flex-direction: column; align-items: stretch; }
+    .chero-ctas button, .chero-ctas a.btn { padding: .85rem 1.25rem; font-size: .9rem; width: 100%; }
+    .chero-trust { justify-content: center; }
+    .chero-media { order: -1; }
+    .instructor-strip { padding: 2rem 1.25rem; }
+    .cta-band { padding: 2.5rem 1.25rem; }
+    .cta-band button { padding: .8rem 1.5rem; font-size: .9rem; }
+  }
 </style>
 </head>
-<body>
-<div class="landing-note">
-  <h1>Ampplify Academy</h1>
-  <p><strong>Amazon Seller account management services and Amazon selling training</strong> &mdash; a trading name of Rakiza Company LTD, registered in England &amp; Wales (128 City Road, London, EC1V 2NX, United Kingdom).</p>
-  <p>We manage Amazon Seller Central accounts for brands in the USA, Saudi Arabia and UAE: account setup and reactivation, listing creation and optimisation, A+ content and image design, Sponsored Products advertising, Brand Registry and trademark filings, UK limited company incorporation for Amazon UK/EU seller registration, product research and sourcing, and ongoing account management with monthly reporting.</p>
-  <p><a href="course.html">Continue to our website &rarr;</a></p>
-  <p>Services: <a href="services.html">services</a> &middot; <a href="portfolio.html">portfolio</a> &middot; <a href="success-stories.html">client results</a> &middot; <a href="privacy.html">privacy policy</a></p>
-  <p>Contact: <a href="mailto:ampplifyacademy@gmail.com">ampplifyacademy@gmail.com</a> &middot; <a href="tel:+8801571068040">+880 1571 068040</a></p>
+<body class="course-page">
+
+<nav class="cnav">
+  <a class="brand" href="course.html"><span class="logo" aria-label="Ampplify Academy"><span class="logo-word"><span class="logo-a">A</span>MPPLIFY</span><span class="logo-sub">ACADEMY</span></span></a>
+  <div class="cnav-links">
+    <a href="course.html">Home</a>
+    <a onclick="document.getElementById('curriculum').scrollIntoView({behavior:'smooth'}); closeMobileNav()">Curriculum</a>
+    <a href="services.html">Services</a>
+    <a href="tools.html" id="navToolsLink">Tools</a>
+    <a href="portfolio.html">Portfolio</a>
+    <a href="success-stories.html">Success Stories</a>
+    <a href="partnership.html">Partnership</a>
+    <a onclick="document.getElementById('pricing').scrollIntoView({behavior:'smooth'}); closeMobileNav()">Pricing</a>
+    <a onclick="document.getElementById('faq').scrollIntoView({behavior:'smooth'}); closeMobileNav()">FAQ</a>
+    <a href="login.html">Log in</a>
+    <a href="signup.html">Sign up</a>
+  </div>
+  <div class="cnav-right">
+    <div class="nav-social" id="navSocial"></div>
+    <button class="cnav-login secondary" onclick="location.href='login.html'">Log in</button>
+    <button class="cnav-cta" onclick="location.href='signup.html'">Enroll Now</button>
+    <button class="menu-toggle" onclick="toggleMobileNav()" id="menuToggleBtn">☰ Menu</button>
+  </div>
+</nav>
+
+<section class="chero">
+  <div class="chero-grid">
+    <div class="chero-content">
+      <span class="chero-badge">🚀 Trusted by 500+ Amazon sellers</span>
+      <h1 id="heroTitle">Build a Real Amazon Business — <span id="heroHighlight">Without the Guesswork</span></h1>
+      <p id="heroSubtitle">A step-by-step Amazon Selling Course that takes you from zero to your first profitable product — sourcing, listings, ads, and scaling, all in one place.</p>
+      <div class="chero-ctas">
+        <button onclick="location.href='signup.html'" id="heroEnrollBtn">Enroll Now — 320 SAR</button>
+        <button class="secondary" onclick="document.getElementById('curriculum').scrollIntoView({behavior:'smooth'})">View Curriculum</button>
+      </div>
+      <div class="chero-trust"><span class="dot"></span> Trusted by 500+ students · one-time payment, lifetime access</div>
+    </div>
+    <div class="chero-media">
+      <div class="chero-shape"></div>
+      <img src="https://lh3.googleusercontent.com/d/15SuGvVJEyZwh5vgq6hzEghaWalEWSGP7" alt="Instructor" id="heroImg" fetchpriority="high">
+      <div class="chero-chip top" id="heroModuleCountChip">🎓 6+ Modules</div>
+      <div class="chero-chip">⭐ 4.8 Rated by Students</div>
+    </div>
+  </div>
+</section>
+
+<div class="instructor-strip">
+  <div class="inner">
+    <div class="eyebrow">MEET YOUR MENTOR</div>
+    <h3>Hey, I'm <span id="mentorName">Yasin Arafat</span> — Founder of Ampplify Academy</h3>
+    <p id="mentorBio">I've spent the last 4 years selling on Amazon full-time. This course is everything I wish someone had handed me on day one — no fluff, just what actually works.</p>
+  </div>
 </div>
-<script>location.replace('course.html');</script>
+
+<section class="csection" id="curriculum">
+  <h2>What You'll Learn</h2>
+  <p class="lead" id="moduleCountLead">Lifetime access. Real templates and tools included.</p>
+  <div class="module-grid" id="moduleGrid"></div>
+</section>
+
+<section class="csection" style="background:var(--surface-alt);">
+  <h2>Real Results From Real Students</h2>
+  <p class="lead">&nbsp;</p>
+  <div class="testimonial-row"><div class="testimonial-track" id="testimonialRow"></div></div>
+</section>
+
+<section class="csection" id="about">
+  <h2>About Ampplify Academy</h2>
+  <p class="lead">Amazon Seller account management services and Amazon selling training, run by working sellers.</p>
+  <div class="about-grid">
+    <div class="about-card">
+      <h4>Who we are</h4>
+      <p>Ampplify Academy is a trading name of Rakiza Company LTD, registered in England &amp; Wales (registered office: 128 City Road, London, EC1V 2NX, United Kingdom). We have 4 years of full-time, hands-on experience running Amazon Seller Central accounts in the USA, Saudi Arabia (KSA) and UAE marketplaces.</p>
+    </div>
+    <div class="about-card">
+      <h4>What we offer</h4>
+      <p>Done-for-you account management: seller account setup and reactivation, listing creation and keyword optimisation, image design and Premium A+ content, Sponsored Products advertising, Brand Registry and trademark filings, UK limited company incorporation for Amazon UK/EU seller registration, identity and video-call verification support, product research and supplier sourcing, FBA shipment and inventory planning, and monthly performance reporting. We also teach the same process in our Amazon selling course.</p>
+    </div>
+    <div class="about-card">
+      <h4>Why sellers choose us</h4>
+      <p>Fixed, published prices with no hidden fees; the same specialists work on your account from start to finish; and every recommendation comes from managing live accounts, not theory. See our <a href="portfolio.html">portfolio</a> and <a href="success-stories.html">client results</a>, or email <a href="mailto:ampplifyacademy@gmail.com">ampplifyacademy@gmail.com</a>.</p>
+    </div>
+  </div>
+</section>
+
+<section class="csection" id="videoReviews" style="display:none; background:var(--surface-alt);">
+  <h2>Video Reviews</h2>
+  <p class="lead">Hear directly from our students, in their own words.</p>
+  <div class="video-review-wrap">
+    <button class="video-review-arrow" onclick="scrollVideoReviews(-1)" aria-label="Previous">&#8249;</button>
+    <div class="video-review-row"><div class="video-review-track" id="videoReviewGrid"></div></div>
+    <button class="video-review-arrow" onclick="scrollVideoReviews(1)" aria-label="Next">&#8250;</button>
+  </div>
+</section>
+
+<section class="csection" style="background:var(--surface-alt);">
+  <div class="feedback-form-wrap">
+    <h3>Share Your Feedback</h3>
+    <p class="hint">No account needed. Your feedback will appear above once we approve it.</p>
+    <label>Your name</label>
+    <input id="courseFbName" placeholder="Your name">
+    <label>Rating</label>
+    <select id="courseFbRating">
+      <option value="5">★★★★★ (5)</option>
+      <option value="4">★★★★ (4)</option>
+      <option value="3">★★★ (3)</option>
+      <option value="2">★★ (2)</option>
+      <option value="1">★ (1)</option>
+    </select>
+    <label>Your feedback</label>
+    <textarea id="courseFbQuote" placeholder="Tell us about your experience..."></textarea>
+    <input type="file" id="courseFbImage" accept="image/*" style="display:none;">
+    <label class="upload-btn" for="courseFbImage" id="courseFbImageLabel" style="display:block; text-align:center; padding:.8rem; border-radius:var(--radius-sm); border:1px dashed var(--border-strong); background:var(--surface-alt); color:var(--text-soft); font-size:.9rem; cursor:pointer; margin:.4rem 0;">Add a photo (optional)</label>
+    <button id="courseFbBtn" style="margin-top:1rem;">Submit Feedback</button>
+    <p class="msg" id="courseFbMsg"></p>
+  </div>
+</section>
+
+<section class="csection pricing-wrap" id="pricing">
+  <h2>One Price. Lifetime Access.</h2>
+  <div class="pricing-card">
+    <div class="eyebrow">FULL COURSE ACCESS</div>
+    <div class="price-row"><span class="price-old" id="priceOld">1200 SAR</span><span class="price-new" id="priceNew">320 SAR</span></div>
+    <div class="offer-countdown" id="offerCountdown" style="display:none;">
+      <span class="offer-countdown-label">Offer ends in</span>
+      <div class="offer-countdown-clock" id="offerCountdownClock"></div>
+      <div class="offer-end-date" id="offerEndDateLabel"></div>
+    </div>
+    <div class="note">one-time payment, no subscriptions</div>
+    <div class="price-features" id="priceFeatures"></div>
+    <button onclick="location.href='signup.html'">Enroll Now</button>
+  </div>
+</section>
+
+<section class="csection" id="faq">
+  <h2>Questions? Answered.</h2>
+  <p class="lead">&nbsp;</p>
+  <div class="faq-wrap" id="faqWrap"></div>
+</section>
+
+<footer class="site-footer" id="siteFooter">
+  <div class="footer-grid">
+    <div class="footer-col footer-brand">
+      <span class="footer-logo"><span class="logo" aria-label="Ampplify Academy"><span class="logo-word"><span class="logo-a">A</span>MPPLIFY</span><span class="logo-sub">ACADEMY</span></span></span>
+      <p class="footer-tagline" id="footerTagline">Amazon Seller account management and training, run by working sellers. A trading name of Rakiza Company LTD, United Kingdom.</p>
+      <h4>Social Media</h4>
+      <div class="nav-social" id="footerSocial"></div>
+    </div>
+    <div class="footer-col">
+      <h4>Company Info</h4>
+      <a href="course.html">Home</a>
+      <a href="course.html#about">About Us</a>
+      <a href="success-stories.html">Success Stories</a>
+      <a href="portfolio.html">Portfolio</a>
+      <a href="partnership.html">Partnership</a>
+      <a href="partnership.html">Terms &amp; Conditions</a>
+      <a href="privacy.html">Privacy Policy</a>
+    </div>
+    <div class="footer-col">
+      <h4>Our Services</h4>
+      <a href="services.html">Account Management</a>
+      <a href="services.html">Listing &amp; A+ Content</a>
+      <a href="services.html">PPC Advertising</a>
+      <a href="services.html">Account Reactivation</a>
+      <a href="services.html">Brand Registry &amp; Trademark</a>
+      <a href="services.html">UK LTD Incorporation</a>
+      <a href="tools.html">Seller Tools</a>
+    </div>
+    <div class="footer-col footer-contact">
+      <h4>Get in Touch</h4>
+      <p class="contact-note">Questions about your Amazon account? Write or call us &mdash; we answer within one business day.</p>
+      <div id="footerContactDetails">
+        <p id="footerAddress"><span class="ficon"><svg viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M12 2a7 7 0 0 0-7 7c0 5.25 7 13 7 13s7-7.75 7-13a7 7 0 0 0-7-7Zm0 9.5A2.5 2.5 0 1 1 12 6.5a2.5 2.5 0 0 1 0 5Z"/></svg></span><span>Rakiza Company LTD, 128 City Road, London, EC1V 2NX, United Kingdom</span></p>
+        <p id="footerPhone"><span class="ficon"><svg viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M6.6 10.8a15.1 15.1 0 0 0 6.6 6.6l2.2-2.2a1 1 0 0 1 1-.25 11.4 11.4 0 0 0 3.6.57 1 1 0 0 1 1 1V20a1 1 0 0 1-1 1A17 17 0 0 1 3 4a1 1 0 0 1 1-1h3.5a1 1 0 0 1 1 1c0 1.25.2 2.45.57 3.57a1 1 0 0 1-.25 1Z"/></svg></span><a href="tel:+8801571068040">+880 1571 068040</a></p>
+        <p id="footerEmail"><span class="ficon"><svg viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M20 4H4a2 2 0 0 0-2 2v12a2 2 0 0 0 2 2h16a2 2 0 0 0 2-2V6a2 2 0 0 0-2-2Zm0 4.2-8 5-8-5V6l8 5 8-5Z"/></svg></span><a href="mailto:ampplifyacademy@gmail.com">ampplifyacademy@gmail.com</a></p>
+        <p><span class="ficon"><svg viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M12 2a10 10 0 0 0-8.66 15l-1.3 4.76 4.87-1.28A10 10 0 1 0 12 2Zm5.3 14.1c-.22.63-1.3 1.2-1.8 1.27-.46.07-1.05.1-1.7-.1a15.5 15.5 0 0 1-1.53-.57c-2.7-1.16-4.45-3.87-4.59-4.05-.13-.18-1.1-1.46-1.1-2.79 0-1.32.7-1.97.94-2.24.25-.27.54-.34.72-.34h.51c.17 0 .39-.06.61.46.22.53.75 1.83.82 1.96.07.13.11.29.02.47-.09.18-.13.29-.27.45l-.4.47c-.13.13-.28.28-.12.55.16.27.7 1.16 1.51 1.88 1.04.93 1.91 1.21 2.18 1.35.27.13.43.11.59-.07.16-.18.68-.79.86-1.06.18-.27.36-.22.61-.13.25.09 1.58.75 1.85.88.27.13.45.2.52.31.07.11.07.64-.15 1.27Z"/></svg></span><a href="https://wa.me/8801409207525" target="_blank" rel="noopener">WhatsApp us</a></p>
+      </div>
+    </div>
+  </div>
+  <div class="footer-bottom">
+    <p id="footerCopyright"></p>
+  </div>
+</footer>
+
+<script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-app-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-auth-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore-compat.js"></script>
+<script src="js/firebase-config.js"></script>
+<script src="js/site-content.js?v=7"></script>
+<script src="js/feedback.js"></script>
+<script>
+function toggleMobileNav() {
+  document.querySelector('.cnav-links').classList.toggle('open');
+}
+function closeMobileNav() {
+  document.querySelector('.cnav-links').classList.remove('open');
+}
+
+function scrollVideoReviews(dir) {
+  const row = document.querySelector('.video-review-row');
+  const card = row.querySelector('.video-review-card');
+  const step = card ? card.offsetWidth + 22 : 240;
+  row.scrollBy({ left: dir * step, behavior: 'smooth' });
+}
+
+function toggleModuleShowMore() {
+  const hidden = document.querySelectorAll('.module-hidden');
+  const btn = document.getElementById('moduleShowMoreBtn');
+  if (!hidden.length || !btn) return;
+  const isHidden = hidden[0].style.display === 'none';
+  hidden.forEach(el => { el.style.display = isHidden ? '' : 'none'; });
+  btn.textContent = isHidden ? 'Show Less ▴' : `Show ${hidden.length} More Modules ▾`;
+}
+
+let offerCountdownTimer = null;
+let renderCoursePrices = null;
+function formatSaudiEndDate(isoString) {
+  const MONTH_NAMES = ['January','February','March','April','May','June','July','August','September','October','November','December'];
+  const d = new Date(new Date(isoString).getTime() + 3 * 3600000);
+  let h = d.getUTCHours();
+  const ampm = h < 12 ? 'AM' : 'PM';
+  h = h % 12 === 0 ? 12 : h % 12;
+  const mins = String(d.getUTCMinutes()).padStart(2, '0');
+  return `Ends ${d.getUTCDate()} ${MONTH_NAMES[d.getUTCMonth()]} ${d.getUTCFullYear()}, ${h}:${mins} ${ampm} (Saudi time)`;
+}
+
+function startOfferCountdown(offerEndsAt) {
+  const box = document.getElementById('offerCountdown');
+  const clock = document.getElementById('offerCountdownClock');
+  const endDateLabel = document.getElementById('offerEndDateLabel');
+  if (offerCountdownTimer) clearInterval(offerCountdownTimer);
+  if (!offerEndsAt) { box.style.display = 'none'; return; }
+  const endTime = new Date(offerEndsAt).getTime();
+  if (isNaN(endTime)) { box.style.display = 'none'; return; }
+  endDateLabel.textContent = formatSaudiEndDate(offerEndsAt);
+
+  function tick() {
+    const diff = endTime - Date.now();
+    if (diff <= 0) {
+      clearInterval(offerCountdownTimer);
+      box.style.display = 'none';
+      if (renderCoursePrices) renderCoursePrices();
+      return;
+    }
+    const days = Math.floor(diff / 86400000);
+    const hours = Math.floor(diff % 86400000 / 3600000);
+    const mins = Math.floor(diff % 3600000 / 60000);
+    const secs = Math.floor(diff % 60000 / 1000);
+    clock.innerHTML = [
+      [days, 'Days'], [hours, 'Hrs'], [mins, 'Min'], [secs, 'Sec']
+    ].map(([v, label]) => `<div class="unit"><b>${String(v).padStart(2, '0')}</b><span>${label}</span></div>`).join('');
+  }
+  box.style.display = 'block';
+  tick();
+  offerCountdownTimer = setInterval(tick, 1000);
+}
+
+loadSiteContent().then(content => {
+  const c = content.course;
+  document.getElementById('heroTitle').firstChild.textContent = c.heroTitlePrefix + ' ';
+  document.getElementById('heroHighlight').textContent = c.heroHighlight;
+  document.getElementById('heroSubtitle').textContent = c.heroSubtitle;
+  document.getElementById('mentorName').textContent = c.mentorName;
+  document.getElementById('mentorBio').textContent = c.mentorBio;
+  if (c.heroImageUrl) document.getElementById('heroImg').src = driveImgUrl(c.heroImageUrl);
+  renderCoursePrices = () => {
+    const p = getCoursePricing(c);
+    const priceOldEl = document.getElementById('priceOld');
+    if (p.strike) { priceOldEl.textContent = p.strike + ' ' + c.currency; priceOldEl.style.display = ''; }
+    else { priceOldEl.style.display = 'none'; }
+    document.getElementById('priceNew').textContent = p.current + ' ' + c.currency;
+    document.getElementById('heroEnrollBtn').textContent = 'Enroll Now — ' + p.current + ' ' + c.currency;
+  };
+  renderCoursePrices();
+  startOfferCountdown(c.offerEndsAt);
+  document.getElementById('priceFeatures').innerHTML = (c.priceFeatures || []).map(f => `<div><span>✓</span>${f}</div>`).join('');
+
+  document.getElementById('moduleCountLead').textContent = c.curriculumTopics.length + ' modules. Lifetime access. Real templates and tools included.';
+  document.getElementById('heroModuleCountChip').textContent = '🎓 ' + c.curriculumTopics.length + '+ Modules';
+  const VISIBLE_MODULE_COUNT = 4;
+  const cardsHtml = c.curriculumTopics.map((m, i) => `
+    <details class="module-card${i >= VISIBLE_MODULE_COUNT ? ' module-hidden' : ''}"${i >= VISIBLE_MODULE_COUNT ? ' style="display:none;"' : ''}>
+      <summary>
+        <div class="module-num">${String(i + 1).padStart(2, '0')}</div>
+        <div class="module-head">
+          <h4>${m.title}</h4>
+          <div class="module-meta">${m.duration}</div>
+        </div>
+        <span class="chevron">+</span>
+      </summary>
+      <div class="module-body"><p>${m.desc}</p></div>
+    </details>`).join('');
+  const extraCount = c.curriculumTopics.length - VISIBLE_MODULE_COUNT;
+  const showMoreBtn = extraCount > 0
+    ? `<button type="button" class="secondary" id="moduleShowMoreBtn" onclick="toggleModuleShowMore()" style="width:auto; margin:.5rem auto 0; display:block;">Show ${extraCount} More Modules ▾</button>`
+    : '';
+  document.getElementById('moduleGrid').innerHTML = cardsHtml + showMoreBtn;
+
+  const manualCards = c.testimonials.map(t => `
+    <div class="testimonial-card">
+      <div class="stars">★★★★★</div>
+      <p>"${t.quote}"</p>
+      <div class="tname">${t.name}</div>
+      <div class="tresult">${t.result}</div>
+    </div>`).join('');
+
+  const videoReviews = c.videoReviews || [];
+  if (videoReviews.length) {
+    document.getElementById('videoReviews').style.display = '';
+    document.getElementById('videoReviewGrid').innerHTML = videoReviewCards(videoReviews);
+    if (location.hash === '#videoReviews') {
+      setTimeout(() => document.getElementById('videoReviews').scrollIntoView({ behavior: 'smooth' }), 100);
+    }
+  }
+
+  fbLoadApproved('course').then(list => {
+    const cardsHtml = manualCards + list.map(fbCard).join('');
+    const row = document.getElementById('testimonialRow');
+      if ((cardsHtml.match(/class="testimonial-card/g) || []).length >= 4) { row.innerHTML = cardsHtml + cardsHtml; }
+      else { row.innerHTML = cardsHtml; row.style.animation = 'none'; row.style.margin = '0 auto'; }
+  });
+
+  fbInitForm('courseFb', 'course', content.bankDetails.uploadScriptUrl);
+  renderSocialNav(content.social, 'navSocial');
+  renderSiteFooter(content.footer, content.social);
+
+  document.getElementById('faqWrap').innerHTML = c.faqs.map(q => `
+    <details>
+      <summary>${q.q}<span>+</span></summary>
+      <p>${q.a}</p>
+    </details>`).join('');
+});
+
+
+</script>
 </body>
 </html>
