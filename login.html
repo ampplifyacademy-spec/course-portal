@@ -104,6 +104,18 @@ function doLogin() {
   const password = document.getElementById('password').value;
   const msg = document.getElementById('msg');
 
+  // An empty box reaches Firebase as auth/invalid-email, which reads as though
+  // the address the student typed is wrong. Clear the last message and say what
+  // is actually missing before going anywhere near Firebase.
+  msg.textContent = '';
+  if (!email || !password) {
+    msg.style.color = 'var(--danger)';
+    msg.textContent = !email && !password ? 'Enter your email and password.'
+      : (!email ? 'Enter your email address.' : 'Enter your password.');
+    document.getElementById(!email ? 'email' : 'password').focus();
+    return;
+  }
+
   // Both ways in - password and Google - go through afterSignIn, so the device
   // check cannot be skipped by using the older one.
   auth.signInWithEmailAndPassword(email, password)
@@ -124,6 +136,9 @@ function signInProblem(err) {
   }
   if (err.code === 'auth/too-many-requests') {
     return 'Too many attempts. Wait a few minutes, or reset your password below.';
+  }
+  if (err.code === 'auth/invalid-email') {
+    return 'That does not look like an email address. Check it and try again.';
   }
   return err.message;
 }
