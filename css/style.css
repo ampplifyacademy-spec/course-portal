@@ -1,3 +1,12 @@
+/* One artwork, one fixed height per slot, so the logo is the same size on
+   every page. Width follows the file's own 933x262 ratio. */
+.brand-mark { display: block; height: 34px; width: auto; }
+.footer-mark { display: block; height: 40px; width: auto; }
+@media (max-width: 760px) {
+  .brand-mark { height: 30px; }
+  .footer-mark { height: 34px; }
+}
+
 /* ===== Ampplify Academy — theme variables (edit here to restyle the whole site) ===== */
 :root {
   --bg: #ffffff;

@@ -21,7 +21,7 @@
 <link rel="preconnect" href="https://firestore.googleapis.com" crossorigin>
 <link rel="preconnect" href="https://lh3.googleusercontent.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@500;600;700;800&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
-<link rel="stylesheet" href="css/style.css?v=13">
+<link rel="stylesheet" href="css/style.css?v=14">
 </head>
 <body class="split">
 <div class="auth-top">
@@ -94,14 +94,6 @@
   .device-wa { display: block; background: var(--accent, #2f6df6); color: #fff; font-weight: 600; font-size: .88rem; padding: .7rem 1rem; border-radius: var(--radius-sm, 10px); text-decoration: none; margin: 1.1rem 0 .6rem; }
   .device-wa:hover { filter: brightness(1.06); }
   .device-card button { width: 100%; margin: 0; }
-  /* One artwork, one fixed height per slot, so the logo is the same size on
-     every page. Width follows the file's own 933x262 ratio. */
-  .brand-mark { display: block; height: 34px; width: auto; }
-  .footer-mark { display: block; height: 52px; width: auto; }
-  @media (max-width: 760px) {
-    .brand-mark { height: 30px; }
-    .footer-mark { height: 44px; }
-  }
 </style>
 
 <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-app-compat.js"></script>
