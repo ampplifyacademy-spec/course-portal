@@ -5,7 +5,7 @@ compatibility_date = "2026-09-01"
 [vars]
 FIREBASE_PROJECT_ID = "course-portal-4ac4a"
 FIREBASE_API_KEY = "AIzaSyAz08Y5v26aWGzEp1JjiWT2HUkSO0zAhYc"
-ALLOWED_ORIGINS = "https://ampplifyacademy-spec.github.io,http://localhost:8000"
+ALLOWED_ORIGINS = "https://ampplifyacademy.com,https://www.ampplifyacademy.com"
 
 # Secrets never live in this file. Set them in the Cloudflare dashboard
 # (Worker -> Settings -> Variables -> Encrypt) or with `wrangler secret put`:

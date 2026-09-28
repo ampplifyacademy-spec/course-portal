@@ -17,8 +17,20 @@ const DRIVE_LIST = 'https://www.googleapis.com/drive/v3/files';
 
 export default {
   async fetch(request, env) {
-    const url = new URL(request.url);
     const origin = request.headers.get('Origin') || '';
+    try {
+      return await handle(request, env, origin);
+    } catch (e) {
+      // An uncaught throw leaves Cloudflare to answer, and its page carries no
+      // CORS header, so the browser reports only "Failed to fetch" and the page
+      // shows an empty course. Answer ourselves instead, and say what broke.
+      return err(500, 'Class list is temporarily unavailable: ' + (e && e.message ? e.message : e), env, origin);
+    }
+  }
+};
+
+async function handle(request, env, origin) {
+    const url = new URL(request.url);
 
     if (request.method === 'OPTIONS') return cors(new Response(null, { status: 204 }), env, origin);
     if (request.method !== 'GET' && request.method !== 'HEAD') return err(405, 'Method not allowed', env, origin);
@@ -52,8 +64,7 @@ export default {
     const upstream = await fetchFromDrive(video[1], request, env);
     if (upstream.error) return err(upstream.status, upstream.error, env, origin);
     return cors(upstream.response, env, origin);
-  }
-};
+}
 
 function bearer(request) {
   const h = request.headers.get('Authorization') || '';

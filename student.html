@@ -310,13 +310,24 @@ function folderIdOf(url) {
 }
 
 /** Classes straight out of the Drive folder, in file-name order. */
+// A folder that cannot be read is not the same as a batch with no classes.
+// The reason is kept here so the dashboard can say so instead of showing an
+// empty course, which is what hid a broken proxy for days.
+let folderReadFailed = '';
+
 function classesFromFolder(folderId, moduleKey) {
   if (!videoProxyUrl || !auth.currentUser) return Promise.resolve(null);
   const device = localStorage.getItem('device_' + auth.currentUser.uid) || '';
   return auth.currentUser.getIdToken()
     .then(token => fetch(videoProxyUrl + '/classes/' + folderId +
       '?token=' + encodeURIComponent(token) + '&device=' + encodeURIComponent(device)))
-    .then(res => (res.ok ? res.json() : null))
+    .then(res => {
+      if (res.ok) return res.json();
+      return res.json().catch(() => null).then(body => {
+        folderReadFailed = (body && body.error) || ('The class server answered ' + res.status + '.');
+        return null;
+      });
+    })
     .then(data => {
       if (!data || !data.classes || !data.classes.length) return null;
       return data.classes.map((c, j) => ({
@@ -326,7 +337,11 @@ function classesFromFolder(folderId, moduleKey) {
         driveLink: 'https://drive.google.com/file/d/' + c.id + '/view'
       }));
     })
-    .catch(() => null);
+    .catch(() => {
+      folderReadFailed = folderReadFailed ||
+        'The class server could not be reached from this site.';
+      return null;
+    });
 }
 
 function loadAllBatches(blockedCourses) {
@@ -394,10 +409,18 @@ function renderBatches(batchGroups) {
   }
 }
 
+/** An empty batch is normal; an unreadable folder is a fault worth naming. */
+function emptyReason() {
+  return folderReadFailed
+    ? 'Classes could not be loaded. ' + folderReadFailed +
+      ' Please tell support - your course is not lost.'
+    : 'No classes available yet.';
+}
+
 function renderBatchGrid() {
   const wrap = document.getElementById('batchWrap');
   if (!currentBatchGroups.length) {
-    wrap.innerHTML = '<p style="color:var(--text-faint); font-size:.9rem;">No classes available yet.</p>';
+    wrap.innerHTML = '<p style="color:var(--text-faint); font-size:.9rem;">' + emptyReason() + '</p>';
     return;
   }
 
@@ -443,7 +466,7 @@ function renderBatchPanel() {
         <button class="batch-panel-back" onclick="backToBatchGrid()">← Back</button>
         <span>${g.name}</span>
       </div>
-      ${g.classes.length === 0 ? '<p style="padding:1.25rem 1.6rem; color:var(--text-faint); font-size:.9rem;">No classes available yet.</p>' : g.classes.map(c => {
+      ${g.classes.length === 0 ? '<p style="padding:1.25rem 1.6rem; color:var(--text-faint); font-size:.9rem;">' + emptyReason() + '</p>' : g.classes.map(c => {
         const done = completedClasses.includes(c.id);
         return `
           <div class="class-row" onclick="openPlayer(${jsArg(c.title)}, ${jsArg(c.driveLink)})">
