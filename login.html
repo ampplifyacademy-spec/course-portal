@@ -4,6 +4,18 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>Sign In · Ampplify Academy</title>
+<!-- The A-and-cap mark: browser tab, bookmarks, phone home screen, and the
+     card that appears when a link is shared. -->
+<link rel="icon" href="/favicon.ico" sizes="any">
+<link rel="icon" type="image/png" href="/assets/icon-192.png" sizes="192x192">
+<link rel="apple-touch-icon" href="/assets/apple-touch-icon.png">
+<meta property="og:type" content="website">
+<meta property="og:site_name" content="Ampplify Academy">
+<meta property="og:image" content="https://ampplifyacademy.com/assets/og-image.png">
+<meta property="og:image:width" content="1024">
+<meta property="og:image:height" content="1024">
+<meta name="twitter:card" content="summary">
+<meta property="og:title" content="Sign In · Ampplify Academy">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://www.gstatic.com" crossorigin>
 <link rel="preconnect" href="https://firestore.googleapis.com" crossorigin>
@@ -13,7 +25,7 @@
 </head>
 <body class="split">
 <div class="auth-top">
-  <a class="brand" href="course.html"><span class="logo" aria-label="Ampplify Academy"><span class="logo-word"><span class="logo-a">A</span>MPPLIFY</span><span class="logo-sub">ACADEMY</span></span></a>
+  <a class="brand" href="course.html"><img class="brand-mark" src="assets/logo.png" alt="Ampplify Academy" width="933" height="262"></a>
   <a class="auth-back" href="course.html">&larr; Back to website</a>
 </div>
 
@@ -82,6 +94,14 @@
   .device-wa { display: block; background: var(--accent, #2f6df6); color: #fff; font-weight: 600; font-size: .88rem; padding: .7rem 1rem; border-radius: var(--radius-sm, 10px); text-decoration: none; margin: 1.1rem 0 .6rem; }
   .device-wa:hover { filter: brightness(1.06); }
   .device-card button { width: 100%; margin: 0; }
+  /* One artwork, one fixed height per slot, so the logo is the same size on
+     every page. Width follows the file's own 933x262 ratio. */
+  .brand-mark { display: block; height: 34px; width: auto; }
+  .footer-mark { display: block; height: 52px; width: auto; }
+  @media (max-width: 760px) {
+    .brand-mark { height: 30px; }
+    .footer-mark { height: 44px; }
+  }
 </style>
 
 <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-app-compat.js"></script>
