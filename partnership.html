@@ -12,12 +12,15 @@
 <link rel="stylesheet" href="css/style.css?v=12">
 <style>
   body.course-page { display: block; padding: 0; }
-  .cnav { display: flex; align-items: center; justify-content: space-between; padding: 1.75rem 4rem; flex-wrap: wrap; gap: 1rem; position: relative; }
-  .cnav-links { display: flex; gap: 2.25rem; font: 600 .95rem var(--font-body); color: var(--text-soft); }
+  .cnav { display: flex; align-items: center; justify-content: space-between; padding: 1.75rem clamp(1.1rem, 3vw, 4rem); flex-wrap: nowrap; gap: clamp(.6rem, 1.4vw, 1rem); position: relative; }
+  .cnav-links { display: flex; align-items: center; gap: clamp(.8rem, 1.5vw, 2.25rem); font: 600 clamp(.8rem, .95vw, .95rem) var(--font-body); color: var(--text-soft); white-space: nowrap; }
+  /* The header already carries Log in and Enroll Now as buttons; the text
+     links are for the dropdown, where the buttons are hidden. */
+  .cnav-links a[href="login.html"], .cnav-links a[href="signup.html"] { display: none; }
   .cnav-links a { color: inherit; text-decoration: none; cursor: pointer; }
   .cnav-links a:hover { color: var(--accent); }
   .cnav button, .cta-band button { width: auto; margin-top: 0; }
-  .cnav-right { display: flex; align-items: center; gap: .75rem; }
+  .cnav-right { display: flex; align-items: center; gap: clamp(.45rem, 1vw, .75rem); flex-shrink: 0; }
   .menu-toggle { display: none; background: none; border: 1px solid var(--border-strong); color: var(--text); font-size: 1.2rem; line-height: 1; padding: .5rem .75rem; border-radius: var(--radius-sm); cursor: pointer; }
   .csection { padding: 5rem 4rem; }
   .csection h2 { font-size: 2.1rem; text-align: center; margin-bottom: .6rem; }
@@ -68,6 +71,25 @@
 
   @media (max-width: 900px) {
     .partner-grid { grid-template-columns: 1fr; }
+  }
+  /* Eleven links plus a logo, social icons and two buttons need about 1600px.
+     Below that the row used to wrap and the buttons dropped under the links,
+     so the header is thinned in stages and becomes a menu before it can break. */
+  @media (max-width: 1400px) {
+    .cnav .nav-social { display: none; }
+  }
+  @media (max-width: 1180px) {
+    .cnav-login { display: none; }
+  }
+  @media (max-width: 1080px) {
+    .cnav { flex-wrap: wrap; padding: 1rem clamp(1.1rem, 3vw, 2rem); }
+    .cnav-links { display: none; width: 100%; order: 3; flex-direction: column; align-items: stretch; gap: 0; margin-top: .75rem; font-size: .95rem; }
+    .cnav-links.open { display: flex; }
+    .cnav-links a { padding: .85rem 0; border-bottom: 1px solid var(--border); }
+    .cnav-links a[href="login.html"], .cnav-links a[href="signup.html"] { display: block; }
+    .cnav .nav-social { display: none; }
+    .cnav-right button:not(.menu-toggle) { display: none; }
+    .menu-toggle { display: block; }
   }
   @media (max-width: 760px) {
     .cnav { padding: 1rem 1.25rem; }
