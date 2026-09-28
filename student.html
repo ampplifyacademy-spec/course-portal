@@ -333,7 +333,9 @@ function classesFromFolder(folderId, moduleKey) {
       return data.classes.map((c, j) => ({
         id: moduleKey + '-drive-' + c.id,
         title: c.title,
-        meta: [c.module, c.sizeMB ? c.sizeMB + ' MB' : ''].filter(Boolean).join(' · '),
+        // File size is our business, not the student's - it only invites
+        // guesses about download limits and says nothing about the class.
+        meta: c.module || '',
         driveLink: 'https://drive.google.com/file/d/' + c.id + '/view'
       }));
     })
