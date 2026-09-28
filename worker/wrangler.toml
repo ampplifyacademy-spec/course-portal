@@ -6,9 +6,12 @@ compatibility_date = "2026-09-01"
 FIREBASE_PROJECT_ID = "course-portal-4ac4a"
 FIREBASE_API_KEY = "AIzaSyAz08Y5v26aWGzEp1JjiWT2HUkSO0zAhYc"
 ALLOWED_ORIGINS = "https://ampplifyacademy.com,https://www.ampplifyacademy.com"
+# Not a secret - it is the service account's public address, and keeping it here
+# means a deploy cannot wipe it the way it did when it lived only in the
+# dashboard. The matching private key stays a secret.
+SA_CLIENT_EMAIL = "class-video@ampplify-video.iam.gserviceaccount.com"
 
 # Secrets never live in this file. Set them in the Cloudflare dashboard
 # (Worker -> Settings -> Variables -> Encrypt) or with `wrangler secret put`:
 #
-#   SA_CLIENT_EMAIL   client_email from the service account key file
-#   SA_PRIVATE_KEY    private_key from the same file, BEGIN/END lines included
+#   SA_PRIVATE_KEY    private_key from the key file, BEGIN/END lines included
