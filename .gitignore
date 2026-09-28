@@ -1,0 +1,8 @@
+# wrangler writes its account cache and local state here; neither belongs
+# in the repo.
+worker/.wrangler/
+
+# Credentials never live in the working tree.
+*.token
+*token.txt
+keys/
