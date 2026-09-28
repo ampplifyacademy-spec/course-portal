@@ -33,6 +33,7 @@
   .tool-card p.desc { color: var(--text-soft); font-size: .9rem; line-height: 1.6; flex: 1; }
   .tool-price { color: var(--accent-orange); font: 800 1.3rem var(--font-display); margin: .9rem 0 0; }
   .tool-price span { font-size: .85rem; color: var(--text-muted); font-weight: 600; }
+  .tool-note { font-size: .78rem; color: var(--text-muted); margin: .5rem 0 0; }
   .tool-card button { margin-top: 1rem; }
   .cta-band { background: linear-gradient(135deg, rgba(37,99,235,.13), rgba(253,125,1,.13)); padding: 3.5rem 4rem; text-align: center; }
   .cta-band h3 { font-size: 1.9rem; margin-bottom: .75rem; }
@@ -170,11 +171,6 @@ loadSiteContent().then(content => {
   toolCurrency = currency;
   allTools = c.tools || [];
 
-  if (allTools.length === 1 && allTools[0].link) {
-    location.replace(allTools[0].link);
-    return;
-  }
-
   document.getElementById('toolGrid').innerHTML = allTools.length
     ? allTools.map((t, i) => `
       <div class="tool-card" ${t.link ? `onclick="openTool(${i})" style="cursor:pointer;"` : ''}>
@@ -182,6 +178,7 @@ loadSiteContent().then(content => {
         <div class="body">
           <h4>${t.name}</h4>
           <p class="desc">${t.desc || ''}</p>
+          ${t.link ? `<p class="tool-note">Opens in a new tab, on the tool&rsquo;s own site.</p>` : ''}
           ${t.price ? `<div class="tool-price">${t.price} ${currency} <span>/ month</span></div>` : ''}
           <button onclick="event.stopPropagation(); subscribeToTool(${i})">Subscribe</button>
         </div>
@@ -192,9 +189,11 @@ loadSiteContent().then(content => {
   renderSiteFooter(content.footer, content.social);
 });
 
+// The tool runs on its own site. Opening it is the visitor's own click and it
+// lands in a new tab, so this page - and the rest of the site - stays put.
 function openTool(i) {
   const t = allTools[i];
-  if (t.link) window.open(t.link, '_blank');
+  if (t.link) window.open(t.link, '_blank', 'noopener');
 }
 
 function subscribeToTool(i) {
