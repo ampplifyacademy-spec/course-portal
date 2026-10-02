@@ -1,0 +1,131 @@
+/* ===== Ampplify Academy — motion layer =====
+   Pure additive: nothing here changes layout or colours, it only adds movement.
+   Everything is inside prefers-reduced-motion: no-preference, so visitors who ask
+   their OS for less motion get the static site exactly as before. */
+
+@media (prefers-reduced-motion: no-preference) {
+
+  html { scroll-behavior: smooth; }
+
+  /* ---------- scroll reveal (classes toggled by js/animations.js) ---------- */
+  html.js-anim .rv {
+    opacity: 0;
+    transform: translateY(32px) scale(.97);
+    transition: opacity .75s cubic-bezier(.2,.7,.2,1) var(--d, 0ms),
+                transform .75s cubic-bezier(.2,.7,.2,1) var(--d, 0ms);
+    will-change: opacity, transform;
+  }
+  html.js-anim .rv.rv-in { opacity: 1; transform: none; }
+
+  /* animated accent line under each section heading */
+  .csection h2::after {
+    content: ''; display: block; height: 3px; width: 0; margin: .55rem auto 0; border-radius: 3px;
+    background: linear-gradient(90deg, var(--accent), var(--accent-orange));
+    transition: width .9s cubic-bezier(.2,.7,.2,1) .25s;
+  }
+  .csection h2.h-in::after { width: 72px; }
+
+  /* ---------- page entrance ---------- */
+  .cnav { animation: navIn .7s cubic-bezier(.2,.7,.2,1) both; }
+  @keyframes navIn { from { opacity: 0; transform: translateY(-24px); } to { opacity: 1; transform: none; } }
+
+  .chero-content > * { animation: heroUp .8s cubic-bezier(.2,.7,.2,1) both; }
+  .chero-content > *:nth-child(1) { animation-delay: .10s; }
+  .chero-content > *:nth-child(2) { animation-delay: .22s; }
+  .chero-content > *:nth-child(3) { animation-delay: .34s; }
+  .chero-content > *:nth-child(4) { animation-delay: .46s; }
+  .chero-content > *:nth-child(5) { animation-delay: .58s; }
+  @keyframes heroUp { from { opacity: 0; transform: translateY(36px); } to { opacity: 1; transform: none; } }
+
+  .chero-media { animation: heroZoom 1s cubic-bezier(.2,.7,.2,1) .2s both; }
+  @keyframes heroZoom { from { opacity: 0; transform: translateX(40px) scale(.92); } to { opacity: 1; transform: none; } }
+
+  /* ---------- hero: things that keep moving ---------- */
+  .chero img { animation: floaty 6.5s ease-in-out infinite; }
+  .chero-chip { animation: floaty 5s ease-in-out infinite; }
+  .chero-chip.top { animation-duration: 6s; animation-delay: -2s; }
+  .chero-shape { animation: shapeSpin 22s linear infinite; }
+  @keyframes floaty { 0%, 100% { transform: translateY(0); } 50% { transform: translateY(-14px); } }
+  @keyframes shapeSpin { to { transform: rotate(360deg); } }
+
+  /* mouse parallax (vars set by js/animations.js) — `translate` composes with the animated `transform` */
+  .chero-shape { translate: calc(var(--mx, 0) * -18px) calc(var(--my, 0) * -12px); transition: translate .25s ease-out; }
+  .chero img   { translate: calc(var(--mx, 0) * 12px)  calc(var(--my, 0) * 8px);  transition: translate .25s ease-out; }
+  .chero-chip  { translate: calc(var(--mx, 0) * 26px)  calc(var(--my, 0) * 16px); transition: translate .25s ease-out; }
+
+  /* drifting colour glows behind the page (these pseudo-elements already exist on most pages) */
+  body.course-page::before { animation: blobA 16s ease-in-out infinite; }
+  body.course-page::after  { animation: blobB 19s ease-in-out infinite; }
+  @keyframes blobA { 0%, 100% { transform: translate(0, 0) scale(1) rotate(0); } 50% { transform: translate(70px, 90px) scale(1.2) rotate(18deg); } }
+  @keyframes blobB { 0%, 100% { transform: translate(0, 0) scale(1) rotate(0); } 50% { transform: translate(-70px, -80px) scale(1.15) rotate(-16deg); } }
+
+  /* ---------- buttons ---------- */
+  .cnav-cta { animation: ctaPulse 2.8s ease-out infinite; }
+  .chero-ctas button:not(.secondary), .cta-band button, .pricing-card button { animation: ctaPulse 2.8s ease-out infinite; }
+  @keyframes ctaPulse {
+    0%   { box-shadow: 0 6px 16px rgba(253,125,1,.25), 0 0 0 0 rgba(253,125,1,.45); }
+    70%, 100% { box-shadow: 0 6px 16px rgba(253,125,1,.25), 0 0 0 14px rgba(253,125,1,0); }
+  }
+  .cnav-cta, .chero-ctas button:not(.secondary), .cta-band button, .plan-card button, .pricing-card button { position: relative; overflow: hidden; }
+  .cnav-cta::after, .chero-ctas button:not(.secondary)::after, .cta-band button::after,
+  .plan-card button::after, .pricing-card button::after {
+    content: ''; position: absolute; top: 0; left: -130%; width: 55%; height: 100%; pointer-events: none;
+    background: linear-gradient(110deg, transparent, rgba(255,255,255,.5), transparent);
+    transform: skewX(-20deg); animation: shine 4s ease-in-out infinite;
+  }
+  @keyframes shine { 0%, 55% { left: -130%; } 100% { left: 170%; } }
+
+  /* ---------- nav ---------- */
+  .nav-social a { transition: transform .25s cubic-bezier(.3,1.6,.5,1), color .15s; }
+  .nav-social a:hover { transform: translateY(-4px) scale(1.2); }
+  @media (min-width: 761px) {
+    .cnav-links a { position: relative; }
+    .cnav-links a::after {
+      content: ''; position: absolute; left: 0; bottom: -6px; width: 100%; height: 2px; border-radius: 2px;
+      background: var(--accent-orange); transform: scaleX(0); transform-origin: left; transition: transform .3s ease;
+    }
+    .cnav-links a:hover::after { transform: scaleX(1); }
+  }
+
+  /* ---------- cards: hover life ---------- */
+  .expertise-card, .case-card, .about-card, .partner-point, .proof, .story-card, .tool-card, .feedback-form-wrap {
+    transition: transform .3s cubic-bezier(.2,.7,.2,1), box-shadow .3s ease;
+  }
+  .expertise-card:hover, .case-card:hover, .about-card:hover, .partner-point:hover, .proof:hover, .story-card:hover, .tool-card:hover {
+    transform: translateY(-6px); box-shadow: var(--shadow-md);
+  }
+  .module-card { transition: transform .25s ease, box-shadow .25s ease; }
+  .module-card:hover { transform: translateX(6px); box-shadow: var(--shadow-md); }
+  .pricing-card { animation: pricingGlow 4s ease-in-out infinite; }
+  @keyframes pricingGlow {
+    0%, 100% { box-shadow: var(--shadow-lg); }
+    50% { box-shadow: var(--shadow-lg), 0 0 40px rgba(253,125,1,.25); }
+  }
+
+  /* gradient thumbnails (services / batches) slowly shift colour */
+  .service-card .thumb, .batch-thumb:not(img) { background-size: 220% 220% !important; animation: gradShift 9s ease-in-out infinite; }
+  @keyframes gradShift { 0%, 100% { background-position: 0% 50%; } 50% { background-position: 100% 50%; } }
+  .service-card:hover .thumb { animation-duration: 3s; }
+
+  /* progress bars fill in */
+  .batch-progress .fill { animation: barGrow 1.2s cubic-bezier(.2,.7,.2,1) .3s both; transform-origin: left; }
+  @keyframes barGrow { from { transform: scaleX(0); } to { transform: scaleX(1); } }
+
+  /* live countdown digits tick */
+  .offer-countdown-clock .unit b { display: inline-block; animation: tick 1s ease-in-out infinite; }
+  @keyframes tick { 0%, 100% { transform: translateY(0); } 50% { transform: translateY(-2px); } }
+
+  /* auth pages */
+  .card { animation: cardIn .8s cubic-bezier(.2,.7,.2,1) both; }
+  @keyframes cardIn { from { opacity: 0; transform: translateY(30px) scale(.96); } to { opacity: 1; transform: none; } }
+  .split-brand > * { animation: heroUp .8s cubic-bezier(.2,.7,.2,1) both; }
+  .split-brand > *:nth-child(2) { animation-delay: .15s; }
+  .split-brand > *:nth-child(3) { animation-delay: .3s; }
+
+  /* top-of-page scroll progress bar */
+  #scrollProgress {
+    position: fixed; top: 0; left: 0; height: 3px; width: 100%; z-index: 300; pointer-events: none;
+    background: linear-gradient(90deg, var(--accent), var(--accent-orange));
+    transform: scaleX(0); transform-origin: left;
+  }
+}

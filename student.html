@@ -74,6 +74,7 @@
   .resource-row { display: flex; justify-content: space-between; align-items: center; padding: .9rem 1.1rem; background: var(--surface); border: 1px solid var(--border); border-radius: var(--radius-sm); margin-bottom: .6rem; }
   .resource-row a button { width: auto; margin: 0; padding: .4rem .9rem; font-size: .82rem; }
 </style>
+<link rel="stylesheet" href="css/animations.css?v=1">
 </head>
 <body class="admin-shell">
 <div class="admin-shell-grid">
@@ -600,5 +601,6 @@ function doLogout() {
   auth.signOut().then(() => location.href = 'login.html');
 }
 </script>
+<script src="js/animations.js?v=1" defer></script>
 </body>
 </html>
