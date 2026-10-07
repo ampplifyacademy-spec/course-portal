@@ -11,7 +11,7 @@
    course.html / index.html. JS (`loadSiteContent()` in js/site-content.js) must still override from
    Firestore `siteContent/main`, so admin panel keeps working. Keep text in HTML equal to SITE_CONTENT_DEFAULTS.
 2. DONE (FAQPage JSON-LD added).
-3. Optional: GitHub Action that pulls Firestore siteContent daily and rewrites the static HTML (keeps Google in sync with admin edits).
+3. Optional: GitHub Action that re-bakes static HTML (modules, FAQ, services) from Firestore. index.html, course.html, services.html baked 2026-10-07; plans (priced) and review grids intentionally left dynamic.
 4. DONE: Search Console property https://ampplifyacademy.com/ added, verified by googlebeb6f730b2252395.html (DO NOT DELETE). sitemap.xml submitted 2026-10-07 (success). Next: request indexing for key URLs via URL inspection after a few days.
 5. USER: Google Business profile, social links, backlinks; Bangla keywords content.
 
