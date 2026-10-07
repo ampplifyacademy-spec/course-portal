@@ -20,3 +20,5 @@ Auto-commit+push every edit. Replies terse Bangla (caveman). Commit trailer: Co-
 
 ## CONSTRAINT: Amazon SPN review in progress
 Keep services.html, success-stories.html, expertise sections, company details (Rakiza Company LTD, 128 City Road, London EC1V 2NX) visible + static + indexable. Never fabricate testimonials. Real client testimonials still needed from the user.
+
+NOTE: course.html is a duplicate of index.html with canonical -> home (intentional). It is NOT in sitemap. Keep index.html and course.html content in sync.
