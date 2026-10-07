@@ -22,3 +22,5 @@ Auto-commit+push every edit. Replies terse Bangla (caveman). Commit trailer: Co-
 Keep services.html, success-stories.html, expertise sections, company details (Rakiza Company LTD, 128 City Road, London EC1V 2NX) visible + static + indexable. Never fabricate testimonials. Real client testimonials still needed from the user.
 
 NOTE: course.html is a duplicate of index.html with canonical -> home (intentional). It is NOT in sitemap. Keep index.html and course.html content in sync.
+
+Search Console status 2026-10-07: home page already indexed. "Request indexing" gave "Oops! Something went wrong" (Google-side, retry later by hand: URL inspection -> paste URL -> REQUEST INDEXING for services.html, success-stories.html, partnership.html, portfolio.html). Sitemap showed "Couldn't fetch" right after submit (normal for new sitemaps; file is 200 OK) - recheck in 1-2 days.
