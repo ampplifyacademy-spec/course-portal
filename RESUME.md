@@ -12,7 +12,7 @@
    Firestore `siteContent/main`, so admin panel keeps working. Keep text in HTML equal to SITE_CONTENT_DEFAULTS.
 2. Add FAQPage JSON-LD once FAQ text is static.
 3. Optional: GitHub Action that pulls Firestore siteContent daily and rewrites the static HTML (keeps Google in sync with admin edits).
-4. USER must do: Google Search Console -> add domain ampplifyacademy.com, verify (DNS TXT), submit sitemap.xml.
+4. DONE: Search Console property https://ampplifyacademy.com/ added, verified by googlebeb6f730b2252395.html (DO NOT DELETE). Remaining: submit sitemap.xml in Search Console -> Sitemaps.
 5. USER: Google Business profile, social links, backlinks; Bangla keywords content.
 
 ## Rules
