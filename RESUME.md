@@ -7,10 +7,10 @@
 - JSON-LD: EducationalOrganization (index.html), Course (course.html)
 
 ## Not done yet — next steps, in order
-1. Static HTML default text for SEO-critical content (hero, course description, module list, FAQ) in
+1. DONE 2026-10-07: module list (29) + FAQ (4) baked into course.html static HTML + FAQPage JSON-LD (JS still overrides). Re-bake if admin changes modules/FAQ (script idea: fetch Firestore REST siteContent/main, public read, key in js/firebase-config.js).
    course.html / index.html. JS (`loadSiteContent()` in js/site-content.js) must still override from
    Firestore `siteContent/main`, so admin panel keeps working. Keep text in HTML equal to SITE_CONTENT_DEFAULTS.
-2. Add FAQPage JSON-LD once FAQ text is static.
+2. DONE (FAQPage JSON-LD added).
 3. Optional: GitHub Action that pulls Firestore siteContent daily and rewrites the static HTML (keeps Google in sync with admin edits).
 4. DONE: Search Console property https://ampplifyacademy.com/ added, verified by googlebeb6f730b2252395.html (DO NOT DELETE). sitemap.xml submitted 2026-10-07 (success). Next: request indexing for key URLs via URL inspection after a few days.
 5. USER: Google Business profile, social links, backlinks; Bangla keywords content.
