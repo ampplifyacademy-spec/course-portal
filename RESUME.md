@@ -17,3 +17,6 @@
 
 ## Rules
 Auto-commit+push every edit. Replies terse Bangla (caveman). Commit trailer: Co-Authored-By: Claude Sonnet 5.5 <noreply@anthropic.com>
+
+## CONSTRAINT: Amazon SPN review in progress
+Keep services.html, success-stories.html, expertise sections, company details (Rakiza Company LTD, 128 City Road, London EC1V 2NX) visible + static + indexable. Never fabricate testimonials. Real client testimonials still needed from the user.
