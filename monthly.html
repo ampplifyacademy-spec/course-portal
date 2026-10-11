@@ -258,7 +258,7 @@
 <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-auth-compat.js"></script>
 <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore-compat.js"></script>
 <script src="js/firebase-config.js"></script>
-<script src="js/site-content.js?v=7"></script>
+<script src="js/site-content.js?v=8"></script>
 <script src="js/feedback.js"></script>
 <script>
 function toggleMobileNav() {
@@ -281,15 +281,7 @@ const DEFAULT_MONTHLY_PLANS = [
                'PPC (Sponsored Products)', 'PPC (Sponsored Brands)', 'PPC (Sponsored Display)', '1 Products Research With Supplier Research'] }
 ];
 
-const MONTHLY_ADDONS = [
-  { title: 'FBA Upgrade', price: 150,
-    desc: 'We move your products from self-shipping (FBM) to Fulfilled by Amazon, with listing, labelling and shipment-plan support.',
-    includes: ['FBM to FBA move-over', 'FBA listing and label set-up', 'Inbound shipment planning and follow-up'] },
-  { title: 'Post-Reinstatement Support', price: 150,
-    desc: 'After your account is reinstated we keep it healthy so it is not suspended again.',
-    includes: ['Account health monitoring', 'Fixing the issues that caused the suspension', 'Plan of Action follow-up'] }
-];
-
+let MONTHLY_ADDONS = [];
 let plans = [];
 let currency = 'SAR';
 
@@ -308,6 +300,7 @@ loadSiteContent().then(content => {
   currency = content.course.currency || 'SAR';
   const services = content.course.services || [];
   plans = (content.course.monthlyPlans && content.course.monthlyPlans.length) ? content.course.monthlyPlans : DEFAULT_MONTHLY_PLANS;
+  MONTHLY_ADDONS = (content.course.monthlyAddons || []).filter(a => a.title).map(a => Object.assign({}, a, { price: toNum(a.price) }));
   plans.forEach(p => { p._price = priceOf(p, services); });
   document.getElementById('monthlyGrid').innerHTML = plans.map((p, i) => `
     <div class="plan-card">
@@ -325,9 +318,9 @@ function renderAddons() {
   document.getElementById('addonGrid').innerHTML = MONTHLY_ADDONS.map((a, i) => `
     <div class="plan-card">
       <h4>${a.title}</h4>
-      <p class="desc">${a.desc}</p>
+      <p class="desc">${a.desc || ''}</p>
       <div class="plan-total-row"><span>Per month</span><span>${formatMoney(a.price)} ${currency}</span></div>
-      <ul class="plan-included-list">${a.includes.map(s => `<li><span class="check-mark">✓</span>${s}</li>`).join('')}</ul>
+      <ul class="plan-included-list">${(a.includes || []).map(s => `<li><span class="check-mark">✓</span>${s}</li>`).join('')}</ul>
       <button onclick="chooseAddon(${i})">Get started</button>
     </div>`).join('');
 }

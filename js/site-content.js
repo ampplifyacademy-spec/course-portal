@@ -85,6 +85,25 @@ const SITE_CONTENT_DEFAULTS = {
     ],
     videoReviews: [],
     tools: [],
+    // Monthly plans (monthly.html). A plan's price per month is its "price" if set, otherwise the list price of the
+    // bundled services (matched by title) spread over "months", rounded up to the next 5.
+    monthlyPlans: [
+      { title: 'Performance Management', months: 6, price: '',
+        desc: 'Ongoing listing and content work to lift your products\' visibility and conversion.',
+        includes: ['Tittle, Bullet, Description Writing', 'Keyword Research And Listing Optimize', 'Listing Image Design', 'A+ Content Basic Design', 'Store Design'] },
+      { title: 'Complete Management', months: 6, price: '',
+        desc: 'Everything in Performance Management plus advertising and product research, so we run the account end to end.',
+        includes: ['Tittle, Bullet, Description Writing', 'Keyword Research And Listing Optimize', 'Listing Image Design', 'A+ Content Basic Design', 'Store Design',
+                   'PPC (Sponsored Products)', 'PPC (Sponsored Brands)', 'PPC (Sponsored Display)', '1 Products Research With Supplier Research'] }
+    ],
+    monthlyAddons: [
+      { title: 'FBA Upgrade', price: '150',
+        desc: 'We move your products from self-shipping (FBM) to Fulfilled by Amazon, with listing, labelling and shipment-plan support.',
+        includes: ['FBM to FBA move-over', 'FBA listing and label set-up', 'Inbound shipment planning and follow-up'] },
+      { title: 'Post-Reinstatement Support', price: '150',
+        desc: 'After your account is reinstated we keep it healthy so it is not suspended again.',
+        includes: ['Account health monitoring', 'Fixing the issues that caused the suspension', 'Plan of Action follow-up'] }
+    ],
     plans: [
       { title: 'Private Label (PL)', desc: 'Full-service management for your own private-label brand.', basePrice: '', includedServices: [], oneTimeCosts: [] },
       { title: 'Micro Private Label (MPL)', desc: 'Full-service management on a smaller, lower-cost private-label setup.', basePrice: '', includedServices: [], oneTimeCosts: [] }

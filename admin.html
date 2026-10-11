@@ -479,6 +479,30 @@
       <details class="panel acc-panel" style="margin-top:1rem;">
         <summary>
           <div>
+            <h2>Monthly Plans &amp; Add-ons (monthly.html)</h2>
+            <p style="color:var(--text-muted); font-size:.82rem; margin-top:.3rem;">Plans billed per month. Leave "Fixed price" empty to calculate it from the bundled services; keep these prices equal to the ones on the Amazon Solution Provider Portal listing.</p>
+          </div>
+          <span class="acc-chevron">▾</span>
+        </summary>
+        <div class="acc-body">
+          <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:.75rem;">
+            <strong>Monthly plans</strong>
+            <button onclick="addMonthlyPlan()" style="width:auto; margin:0;">+ Add Plan</button>
+          </div>
+          <div id="monthlyPlanEditor"></div>
+          <div style="display:flex; justify-content:space-between; align-items:center; margin:1.2rem 0 .75rem;">
+            <strong>Add-ons</strong>
+            <button onclick="addMonthlyAddon()" style="width:auto; margin:0;">+ Add Add-on</button>
+          </div>
+          <div id="monthlyAddonEditor"></div>
+          <button onclick="saveMonthly()" style="margin-top:.5rem;">Save Monthly Plans</button>
+          <p class="msg" id="monthlyMsg"></p>
+        </div>
+      </details>
+
+      <details class="panel acc-panel" style="margin-top:1rem;">
+        <summary>
+          <div>
             <h2>Partnership One-Time Costs (partnership.html)</h2>
             <p style="color:var(--text-muted); font-size:.82rem; margin-top:.3rem;">Itemized one-time costs shown on the Partnership page (e.g. Trademark Registration — 350 SAR) so applicants see exact pricing instead of a generic description.</p>
           </div>
@@ -619,7 +643,7 @@
 <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-auth-compat.js"></script>
 <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore-compat.js"></script>
 <script src="js/firebase-config.js"></script>
-<script src="js/site-content.js?v=7"></script>
+<script src="js/site-content.js?v=8"></script>
 <script src="js/feedback.js"></script>
 <script>
 const SAUDI_OFFSET_MS = 3 * 3600000;
@@ -1160,6 +1184,9 @@ function loadSiteContentIntoForm() {
     serviceRows = (content.course.services || []).map(s => Object.assign({}, s));
     renderServiceRows();
 
+    monthlyPlanRows = (content.course.monthlyPlans || []).map(p => Object.assign({}, p, { includes: (p.includes || []).slice() }));
+    monthlyAddonRows = (content.course.monthlyAddons || []).map(a => Object.assign({}, a, { includes: (a.includes || []).slice() }));
+    renderMonthly();
     planRows = (content.course.plans || []).map(p => Object.assign({}, p, { oneTimeCosts: (p.oneTimeCosts || []).map(c => Object.assign({}, c)) }));
     renderPlanRows();
 
@@ -1509,6 +1536,78 @@ function savePlans() {
   db.collection('siteContent').doc('main').update({ 'course.plans': plans }).then(() => {
     msg.style.color = 'var(--success)';
     msg.textContent = 'Plans saved. Changes are live immediately.';
+  }).catch(err => {
+    msg.style.color = 'var(--danger)';
+    msg.textContent = err.message;
+  });
+}
+
+/* ---- Monthly plans & add-ons (monthly.html) ---- */
+let monthlyPlanRows = [];
+let monthlyAddonRows = [];
+const mq = s => String(s == null ? '' : s).replace(/"/g, '&quot;');
+
+function monthlyAutoPrice(p) {
+  const total = (p.includes || []).reduce((sum, name) => {
+    const s = serviceRows.find(x => (x.title || '').trim() === String(name).trim());
+    return sum + (s ? toNum(s.price) : 0);
+  }, 0);
+  return Math.ceil(total / Math.max(1, toNum(p.months) || 6) / 5) * 5;
+}
+
+function monthlyPriceText(p) {
+  const fixed = toNum(p.price);
+  return fixed > 0 ? fixed + ' (fixed)' : monthlyAutoPrice(p) + ' (calculated from services)';
+}
+
+function renderMonthly() {
+  document.getElementById('monthlyPlanEditor').innerHTML = monthlyPlanRows.map((p, i) => `
+    <div class="module-edit-card">
+      <div class="row-top"><span>Plan ${i + 1}</span><button class="danger" onclick="monthlyPlanRows.splice(${i},1); renderMonthly();">Remove</button></div>
+      <input placeholder="Plan name" value="${mq(p.title)}" oninput="monthlyPlanRows[${i}].title = this.value">
+      <input placeholder="Description" value="${mq(p.desc)}" oninput="monthlyPlanRows[${i}].desc = this.value" style="margin-top:.5rem;">
+      <div style="display:flex; gap:.5rem; margin-top:.5rem;">
+        <input placeholder="Minimum months (e.g. 6)" value="${mq(p.months)}" oninput="monthlyPlanRows[${i}].months = this.value; refreshMonthlyPrice('plan',${i});" style="margin:0; flex:1;">
+        <input placeholder="Fixed price per month (optional)" value="${mq(p.price)}" oninput="monthlyPlanRows[${i}].price = this.value; refreshMonthlyPrice('plan',${i});" style="margin:0; flex:1;">
+      </div>
+      <label style="display:block; margin:.75rem 0 .4rem; font-size:.8rem; color:var(--text-muted);">Included (one per line). A line that exactly matches a service title adds that service's price to the calculation.</label>
+      <textarea rows="6" oninput="monthlyPlanRows[${i}].includes = this.value.split('\\n'); refreshMonthlyPrice('plan',${i});">${(p.includes || []).join('\n').replace(/</g, '&lt;')}</textarea>
+      <div style="background:var(--bg); border:1px solid var(--border); border-radius:var(--radius-sm); padding:.75rem 1rem; font-weight:700; display:flex; justify-content:space-between; margin-top:.5rem;">
+        <span>Client sees (per month)</span><span id="monthlyPlanPrice${i}">${monthlyPriceText(p)}</span>
+      </div>
+    </div>`).join('');
+  document.getElementById('monthlyAddonEditor').innerHTML = monthlyAddonRows.map((a, i) => `
+    <div class="module-edit-card">
+      <div class="row-top"><span>Add-on ${i + 1}</span><button class="danger" onclick="monthlyAddonRows.splice(${i},1); renderMonthly();">Remove</button></div>
+      <input placeholder="Add-on name" value="${mq(a.title)}" oninput="monthlyAddonRows[${i}].title = this.value">
+      <input placeholder="Description" value="${mq(a.desc)}" oninput="monthlyAddonRows[${i}].desc = this.value" style="margin-top:.5rem;">
+      <input placeholder="Price per month" value="${mq(a.price)}" oninput="monthlyAddonRows[${i}].price = this.value" style="margin-top:.5rem;">
+      <label style="display:block; margin:.75rem 0 .4rem; font-size:.8rem; color:var(--text-muted);">Included (one per line)</label>
+      <textarea rows="4" oninput="monthlyAddonRows[${i}].includes = this.value.split('\\n');">${(a.includes || []).join('\n').replace(/</g, '&lt;')}</textarea>
+    </div>`).join('');
+}
+
+function refreshMonthlyPrice(kind, i) {
+  const el = document.getElementById('monthlyPlanPrice' + i);
+  if (el) el.textContent = monthlyPriceText(monthlyPlanRows[i]);
+}
+
+function addMonthlyPlan() { monthlyPlanRows.push({ title: '', desc: '', months: '6', price: '', includes: [] }); renderMonthly(); }
+function addMonthlyAddon() { monthlyAddonRows.push({ title: '', desc: '', price: '', includes: [] }); renderMonthly(); }
+
+function saveMonthly() {
+  const msg = document.getElementById('monthlyMsg');
+  const clean = list => (list || []).map(s => String(s).trim()).filter(Boolean);
+  const plans = monthlyPlanRows.filter(p => (p.title || '').trim()).map(p => ({
+    title: p.title.trim(), desc: (p.desc || '').trim(), months: toNum(p.months) || 6,
+    price: toNum(p.price) > 0 ? String(toNum(p.price)) : '', includes: clean(p.includes)
+  }));
+  const addons = monthlyAddonRows.filter(a => (a.title || '').trim()).map(a => ({
+    title: a.title.trim(), desc: (a.desc || '').trim(), price: String(toNum(a.price)), includes: clean(a.includes)
+  }));
+  db.collection('siteContent').doc('main').update({ 'course.monthlyPlans': plans, 'course.monthlyAddons': addons }).then(() => {
+    msg.style.color = 'var(--success)';
+    msg.textContent = 'Monthly plans saved. Changes are live immediately. Remember to update the Amazon listing if prices changed.';
   }).catch(err => {
     msg.style.color = 'var(--danger)';
     msg.textContent = err.message;
