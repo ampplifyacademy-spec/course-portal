@@ -29,3 +29,7 @@ Search Console status 2026-10-07: home page already indexed. "Request indexing" 
 - invoice.html (admin-only, linked in admin sidebar "Invoice"): pick a client (users with purchases), prefilled services/prices from siteContent services, custom lines, discount, Paid/Due stamp, seller+payment details (saved in config/invoiceSettings), sequential numbers via config/invoiceCounter, Print/Save as PDF.
 - agreement.html: new "Services sold on our website" tick list (all 21 site services, class svc so they print in services list + Schedule A) + "Load from a client's purchase" selector; fee auto-fills with list-price total.
 - Not done: per-service legal clauses (agreement lists the ticked services; the clause text is generic). Saving invoices to Firestore history (needs firestore.rules change for an `invoices` collection).
+
+## 2026-10-11 update
+- agreement.html: SERVICE_TERMS / SERVICE_COMMON_TERMS (above buildDoc) = per-service clauses, printed as "Service-Specific Terms" for every ticked website service (matched by title regex). DRAFT wording, needs lawyer review. New website service => add a regex+terms entry.
+- invoice.html: official logo assets/logo.png (cartoon siteLogoUrl no longer used), seal+signature+date block (toggle), default status = Due, Paid only when admin sets it (auto-paid only if user.amountPaid && not refunded), paid date field, payment details prefilled from siteContent bankDetails.accounts.
