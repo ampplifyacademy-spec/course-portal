@@ -24,3 +24,8 @@ Keep services.html, success-stories.html, expertise sections, company details (R
 NOTE: course.html is a duplicate of index.html with canonical -> home (intentional). It is NOT in sitemap. Keep index.html and course.html content in sync.
 
 Search Console status 2026-10-07: home page already indexed. "Request indexing" gave "Oops! Something went wrong" (Google-side, retry later by hand: URL inspection -> paste URL -> REQUEST INDEXING for services.html, success-stories.html, partnership.html, portfolio.html). Sitemap showed "Couldn't fetch" right after submit (normal for new sitemaps; file is 200 OK) - recheck in 1-2 days.
+
+## Admin tools added 2026-10-11
+- invoice.html (admin-only, linked in admin sidebar "Invoice"): pick a client (users with purchases), prefilled services/prices from siteContent services, custom lines, discount, Paid/Due stamp, seller+payment details (saved in config/invoiceSettings), sequential numbers via config/invoiceCounter, Print/Save as PDF.
+- agreement.html: new "Services sold on our website" tick list (all 21 site services, class svc so they print in services list + Schedule A) + "Load from a client's purchase" selector; fee auto-fills with list-price total.
+- Not done: per-service legal clauses (agreement lists the ticked services; the clause text is generic). Saving invoices to Firestore history (needs firestore.rules change for an `invoices` collection).
