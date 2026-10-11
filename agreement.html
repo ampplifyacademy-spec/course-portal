@@ -322,6 +322,7 @@
 <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-auth-compat.js"></script>
 <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore-compat.js"></script>
 <script src="js/firebase-config.js"></script>
+<script src="js/site-content.js"></script>
 <style id="adminGate">body > .shell { visibility: hidden; }</style>
 <script>
 auth.onAuthStateChanged(function (user) {
@@ -405,6 +406,8 @@ auth.onAuthStateChanged(function (user) {
 
       <fieldset>
         <legend>Client (account owner)</legend>
+        <label class="field"><span class="lbl">Load from a client's purchase (fills name and ticks their services)</span>
+          <select id="loadPurchase"><option value="">— choose a client —</option></select></label>
         <label class="field"><span class="lbl">Client name</span>
           <input type="text" id="clientName" placeholder="e.g. Taib Ali Khan"></label>
         <label class="field"><span class="lbl">Company / registered name</span>
@@ -556,6 +559,9 @@ auth.onAuthStateChanged(function (user) {
           <label><input type="checkbox" class="svc" value="Brand Registry enrolment and trade mark filing support"> Brand Registry / trade mark</label>
           <label><input type="checkbox" class="svc" value="Product research, supplier sourcing and shipment planning"> Product research &amp; sourcing</label>
         </div>
+        <div class="lbl" style="margin:10px 0 4px;">Services sold on our website (tick every service this agreement covers)</div>
+        <div class="service-list" id="siteSvcList"><span class="pct-note">Loading website services&hellip;</span></div>
+        <div class="pct-note" id="siteSvcTotal"></div>
         <label class="field"><span class="lbl">Other service (optional)</span>
           <input type="text" id="svcOther"></label>
         <!-- Amazon asks what the third party was engaged to do. A written scope
@@ -1254,6 +1260,55 @@ document.getElementById('printBtn').addEventListener('click', function() {
   }
   window.print();
 });
+</script>
+
+<script>
+/* Website services -> agreement. Every service sold on the site can be ticked; the ticked ones are
+   printed in the agreement's services list and Schedule A (they are picked up like the built-in
+   checkboxes because they carry the same "svc" class). */
+var SITE_SVC = [], PURCHASES = [];
+function refreshSiteTotal() {
+  var cur = (SITE_SVC.cur || ''), t = 0, n = 0;
+  document.querySelectorAll('#siteSvcList input.svc:checked').forEach(function (x) { t += Number(x.getAttribute('data-price') || 0); n++; });
+  var el = document.getElementById('siteSvcTotal');
+  el.textContent = n ? (n + ' website service(s) ticked, list-price total ' + t + ' ' + cur) : '';
+  var fee = document.getElementById('feeAmount');
+  if (fee && (!fee.value || fee.getAttribute('data-auto') === '1')) {
+    fee.value = n ? (t + ' ' + cur + ' (one-time, total of the services listed)') : '';
+    fee.setAttribute('data-auto', n ? '1' : '');
+  }
+}
+document.getElementById('feeAmount').addEventListener('input', function () { this.setAttribute('data-auto', ''); });
+function initSiteServices() {
+  loadSiteContent().then(function (c) {
+    SITE_SVC = c.course.services || []; SITE_SVC.cur = c.course.currency || '';
+    var box = document.getElementById('siteSvcList'); box.innerHTML = '';
+    SITE_SVC.forEach(function (s, i) {
+      var l = document.createElement('label');
+      var cb = document.createElement('input'); cb.type = 'checkbox'; cb.className = 'svc';
+      cb.value = s.title + (s.desc ? ' (' + s.desc + ')' : '');
+      cb.setAttribute('data-title', s.title); cb.setAttribute('data-price', s.price || 0);
+      cb.addEventListener('change', refreshSiteTotal);
+      l.appendChild(cb); l.appendChild(document.createTextNode(' ' + s.title + (s.price ? ' — ' + s.price + ' ' + SITE_SVC.cur : '')));
+      box.appendChild(l);
+    });
+  });
+  db.collection('users').get().then(function (snap) {
+    snap.forEach(function (d) { var u = d.data(); if (u.selectedServices && u.selectedServices.length) PURCHASES.push(u); });
+    var sel = document.getElementById('loadPurchase');
+    PURCHASES.forEach(function (u, i) {
+      var o = document.createElement('option'); o.value = i;
+      o.textContent = (u.name || u.email) + ' — ' + u.selectedServices.join(', ').slice(0, 60); sel.appendChild(o);
+    });
+  });
+}
+document.getElementById('loadPurchase').addEventListener('change', function () {
+  var u = PURCHASES[this.value]; if (!u) return;
+  document.getElementById('clientName').value = u.name || '';
+  document.querySelectorAll('#siteSvcList input.svc').forEach(function (cb) { cb.checked = u.selectedServices.indexOf(cb.getAttribute('data-title')) !== -1; });
+  refreshSiteTotal();
+});
+auth.onAuthStateChanged(function (user) { if (user && ADMIN_EMAILS.includes(user.email)) initSiteServices(); });
 </script>
 </body>
 </html>

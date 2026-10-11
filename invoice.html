@@ -1,0 +1,287 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta name="robots" content="noindex, nofollow">
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Invoice Generator · Ampplify Academy</title>
+<link rel="icon" href="/favicon.ico" sizes="any">
+<link rel="icon" type="image/png" href="/assets/icon-192.png" sizes="192x192">
+<style>
+  :root { --ink:#0f172a; --soft:#475569; --line:#e2e8f0; --accent:#2563eb; --bg:#f1f5f9; --panel:#fff; --ok:#15803d; --bad:#b91c1c; }
+  * { box-sizing: border-box; }
+  body { margin:0; background:var(--bg); color:var(--ink); font:15px/1.5 "Segoe UI", system-ui, sans-serif; }
+  .shell { max-width:1240px; margin:0 auto; padding:24px 16px 80px; }
+  header.top { display:flex; flex-wrap:wrap; justify-content:space-between; gap:8px; align-items:baseline; margin-bottom:18px; }
+  header.top h1 { margin:0; font-size:1.5rem; }
+  header.top a { color:var(--accent); text-decoration:none; font-size:.9rem; }
+  .layout { display:grid; grid-template-columns:minmax(0,420px) minmax(0,1fr); gap:20px; align-items:start; }
+  @media (max-width:900px) { .layout { grid-template-columns:1fr; } }
+  .card { background:var(--panel); border:1px solid var(--line); border-radius:14px; padding:18px; }
+  .card h2 { margin:0 0 12px; font-size:1.05rem; }
+  fieldset { border:1px solid var(--line); border-radius:10px; margin:0 0 14px; padding:12px; }
+  legend { font-weight:700; font-size:.85rem; color:var(--soft); padding:0 6px; }
+  label.f { display:block; margin-bottom:10px; }
+  label.f span { display:block; font-size:.78rem; color:var(--soft); margin-bottom:3px; }
+  input, select, textarea { width:100%; padding:8px 10px; border:1px solid #cbd5e1; border-radius:8px; font:inherit; background:#fff; }
+  textarea { min-height:70px; resize:vertical; }
+  .row2 { display:grid; grid-template-columns:1fr 1fr; gap:10px; }
+  button { cursor:pointer; border:0; border-radius:8px; padding:9px 14px; font:inherit; font-weight:600; background:var(--accent); color:#fff; }
+  button.ghost { background:#e2e8f0; color:var(--ink); }
+  button.sm { padding:5px 10px; font-size:.8rem; }
+  .items .it { display:grid; grid-template-columns:1fr 54px 80px 28px; gap:6px; margin-bottom:6px; align-items:center; }
+  .note { font-size:.8rem; color:var(--soft); }
+  /* ---- the invoice itself ---- */
+  #inv { background:#fff; border:1px solid var(--line); border-radius:14px; padding:44px 48px; min-height:640px; }
+  #inv .hd { display:flex; justify-content:space-between; gap:20px; border-bottom:3px solid var(--accent); padding-bottom:18px; margin-bottom:22px; }
+  #inv .hd img { height:54px; display:block; margin-bottom:8px; }
+  #inv h3 { margin:0; font-size:1.9rem; letter-spacing:.06em; color:var(--accent); text-align:right; }
+  #inv .meta { text-align:right; font-size:.88rem; color:var(--soft); }
+  #inv .parties { display:grid; grid-template-columns:1fr 1fr; gap:24px; margin-bottom:22px; font-size:.92rem; }
+  #inv .parties b { display:block; font-size:.72rem; letter-spacing:.08em; text-transform:uppercase; color:var(--soft); margin-bottom:3px; }
+  #inv table { width:100%; border-collapse:collapse; font-size:.92rem; }
+  #inv th { text-align:left; background:#f1f5f9; padding:9px 10px; font-size:.78rem; text-transform:uppercase; letter-spacing:.05em; color:var(--soft); }
+  #inv td { padding:10px; border-bottom:1px solid var(--line); vertical-align:top; }
+  #inv .r { text-align:right; white-space:nowrap; }
+  #inv .tot { margin:14px 0 0 auto; width:min(320px,100%); font-size:.95rem; }
+  #inv .tot div { display:flex; justify-content:space-between; padding:5px 0; }
+  #inv .tot .g { border-top:2px solid var(--ink); font-weight:800; font-size:1.1rem; margin-top:4px; padding-top:9px; }
+  #inv .stamp { display:inline-block; border:2px solid; border-radius:6px; padding:2px 12px; font-weight:800; letter-spacing:.1em; transform:rotate(-4deg); }
+  #inv .stamp.paid { color:var(--ok); } #inv .stamp.unpaid { color:var(--bad); }
+  #inv .box { margin-top:22px; padding:12px 14px; background:#f8fafc; border-radius:8px; font-size:.86rem; white-space:pre-line; }
+  #inv .foot { margin-top:30px; padding-top:12px; border-top:1px solid var(--line); font-size:.8rem; color:var(--soft); text-align:center; }
+  @media print {
+    body { background:#fff; }
+    .no-print, .form-col { display:none !important; }
+    .shell { padding:0; max-width:none; } .layout { display:block; }
+    #inv { border:0; padding:0; border-radius:0; }
+    @page { margin:16mm; }
+  }
+  #gate { padding:60px 20px; text-align:center; color:var(--soft); }
+</style>
+<style id="adminGate">.shell { visibility:hidden; }</style>
+<script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-app-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-auth-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore-compat.js"></script>
+<script src="js/firebase-config.js"></script>
+<script src="js/site-content.js"></script>
+</head>
+<body>
+<div class="shell">
+  <header class="top no-print">
+    <h1>Invoice Generator</h1>
+    <a href="admin.html">&larr; Back to admin panel</a>
+  </header>
+
+  <div class="layout">
+    <div class="form-col">
+      <div class="card">
+        <h2>Invoice details</h2>
+
+        <fieldset>
+          <legend>Client</legend>
+          <label class="f"><span>Load from a client's purchase</span>
+            <select id="loadClient"><option value="">— choose a client —</option></select></label>
+          <label class="f"><span>Client name</span><input id="cName"></label>
+          <div class="row2">
+            <label class="f"><span>Email</span><input id="cEmail"></label>
+            <label class="f"><span>WhatsApp / phone</span><input id="cPhone"></label>
+          </div>
+          <label class="f"><span>Address (optional)</span><textarea id="cAddr"></textarea></label>
+        </fieldset>
+
+        <fieldset>
+          <legend>Invoice</legend>
+          <div class="row2">
+            <label class="f"><span>Invoice number</span><input id="invNo" placeholder="INV-0001"></label>
+            <label class="f"><span>Issue date</span><input type="date" id="invDate"></label>
+          </div>
+          <button type="button" class="ghost sm" id="nextNoBtn">Get next invoice number</button>
+          <div class="row2" style="margin-top:10px;">
+            <label class="f"><span>Status</span>
+              <select id="invStatus"><option value="paid">Paid</option><option value="unpaid">Unpaid / Due</option></select></label>
+            <label class="f"><span>Currency</span><input id="invCur" value="SAR"></label>
+          </div>
+        </fieldset>
+
+        <fieldset>
+          <legend>Services (line items)</legend>
+          <div class="items" id="items"></div>
+          <label class="f"><span>Add a service from the website</span>
+            <select id="addSite"><option value="">— choose a service —</option></select></label>
+          <button type="button" class="ghost sm" id="addRowBtn">+ Add custom line</button>
+          <label class="f" style="margin-top:12px;"><span>Discount (amount, optional)</span><input type="number" id="disc" min="0" step="0.01"></label>
+        </fieldset>
+
+        <fieldset>
+          <legend>Seller &amp; payment details</legend>
+          <label class="f"><span>Seller / company name</span><input id="sName"></label>
+          <label class="f"><span>Seller address</span><textarea id="sAddr"></textarea></label>
+          <label class="f"><span>Seller email / contact</span><input id="sContact"></label>
+          <label class="f"><span>Payment details (bank / wallet)</span><textarea id="payInfo" style="min-height:90px;"></textarea></label>
+          <label class="f"><span>Notes (optional)</span><textarea id="notes"></textarea></label>
+          <button type="button" class="ghost sm" id="saveSellerBtn">Save seller details for next time</button>
+          <span class="note" id="saveNote"></span>
+        </fieldset>
+
+        <button type="button" id="printBtn" style="width:100%;">Print / Save as PDF</button>
+        <p class="note">In the print window choose "Save as PDF" to get a file you can send to the client.</p>
+      </div>
+    </div>
+
+    <div id="inv"></div>
+  </div>
+</div>
+
+<script>
+var SITE = null, USERS = [], ITEMS = [];
+
+auth.onAuthStateChanged(function (user) {
+  if (user && ADMIN_EMAILS.includes(user.email)) {
+    var g = document.getElementById('adminGate'); if (g) g.remove();
+    init();
+    return;
+  }
+  location.replace('login.html');
+});
+
+function $(id) { return document.getElementById(id); }
+function esc(s) { return String(s == null ? '' : s).replace(/[&<>"]/g, function (c) { return { '&':'&amp;', '<':'&lt;', '>':'&gt;', '"':'&quot;' }[c]; }); }
+function num(v) { var n = parseFloat(String(v).replace(/,/g, '')); return isNaN(n) ? 0 : n; }
+function money(n) { return n.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 }); }
+
+function init() {
+  $('invDate').value = new Date().toISOString().slice(0, 10);
+  loadSiteContent().then(function (c) {
+    SITE = c;
+    var sel = $('addSite');
+    (c.course.services || []).forEach(function (s, i) {
+      var o = document.createElement('option');
+      o.value = i; o.textContent = s.title + (s.price ? ' — ' + s.price + ' ' + (c.course.currency || '') : '');
+      sel.appendChild(o);
+    });
+    $('invCur').value = c.course.currency || 'SAR';
+    if (!$('sAddr').value && c.footer && c.footer.address) $('sAddr').value = c.footer.address;
+    if (!$('payInfo').value && c.bankDetails && c.bankDetails.instructions) $('payInfo').value = c.bankDetails.instructions;
+    render();
+  });
+  db.collection('config').doc('invoiceSettings').get().then(function (d) {
+    var s = d.exists ? d.data() : {};
+    if (s.sName) $('sName').value = s.sName; else $('sName').value = 'Rakiza Company LTD (Ampplify Academy)';
+    if (s.sAddr) $('sAddr').value = s.sAddr;
+    if (s.sContact) $('sContact').value = s.sContact; else $('sContact').value = 'ampplifyacademy@gmail.com';
+    if (s.payInfo) $('payInfo').value = s.payInfo;
+    render();
+  }).catch(function () {});
+  db.collection('users').get().then(function (snap) {
+    snap.forEach(function (d) { var u = d.data(); u.id = d.id; USERS.push(u); });
+    USERS = USERS.filter(function (u) { return (u.selectedServices && u.selectedServices.length) || u.amountPaid || u.toolName; });
+    USERS.sort(function (a, b) { return ((b.createdAt && b.createdAt.seconds) || 0) - ((a.createdAt && a.createdAt.seconds) || 0); });
+    var sel = $('loadClient');
+    USERS.forEach(function (u, i) {
+      var what = (u.selectedServices && u.selectedServices.length) ? u.selectedServices.join(', ') : (u.toolName || 'Course');
+      var o = document.createElement('option');
+      o.value = i; o.textContent = (u.name || u.email) + ' — ' + what.slice(0, 50);
+      sel.appendChild(o);
+    });
+  });
+  document.querySelectorAll('input,select,textarea').forEach(function (el) { el.addEventListener('input', render); });
+}
+
+$('loadClient').addEventListener('change', function () {
+  var u = USERS[this.value]; if (!u) return;
+  $('cName').value = u.name || ''; $('cEmail').value = u.email || ''; $('cPhone').value = u.whatsapp || '';
+  ITEMS = [];
+  var cur = u.serviceCurrency || u.currency || (SITE && SITE.course.currency) || 'SAR';
+  $('invCur').value = cur;
+  if (u.selectedServices && u.selectedServices.length) {
+    var all = (SITE && SITE.course.services) || [];
+    u.selectedServices.forEach(function (name) {
+      var m = all.filter(function (s) { return s.title === name; })[0];
+      ITEMS.push({ d: name, q: 1, p: m ? num(m.price) : 0 });
+    });
+    // if the stored total differs from the sum of list prices, trust the stored total
+    var sum = ITEMS.reduce(function (a, r) { return a + r.p * r.q; }, 0);
+    if (u.serviceTotal && Math.abs(num(u.serviceTotal) - sum) > 0.01 && ITEMS.length === 1) ITEMS[0].p = num(u.serviceTotal);
+  } else if (u.toolName) {
+    ITEMS.push({ d: u.toolName, q: 1, p: num(u.toolPrice) });
+  } else {
+    ITEMS.push({ d: 'Amazon Selling Course', q: 1, p: num(u.amountPaid) });
+  }
+  $('invStatus').value = (u.status === 'approved' || u.amountPaid) ? 'paid' : 'unpaid';
+  render();
+});
+
+$('addSite').addEventListener('change', function () {
+  var s = SITE && SITE.course.services[this.value]; if (!s) return;
+  ITEMS.push({ d: s.title, q: 1, p: num(s.price) }); this.value = ''; render();
+});
+$('addRowBtn').addEventListener('click', function () { ITEMS.push({ d: '', q: 1, p: 0 }); render(); });
+
+$('nextNoBtn').addEventListener('click', function () {
+  var ref = db.collection('config').doc('invoiceCounter');
+  db.runTransaction(function (t) {
+    return t.get(ref).then(function (d) {
+      var n = (d.exists && d.data().n || 0) + 1; t.set(ref, { n: n }); return n;
+    });
+  }).then(function (n) { $('invNo').value = 'INV-' + String(n).padStart(4, '0'); render(); })
+    .catch(function (e) { alert('Could not get a number: ' + e.message); });
+});
+
+$('saveSellerBtn').addEventListener('click', function () {
+  db.collection('config').doc('invoiceSettings').set({
+    sName: $('sName').value, sAddr: $('sAddr').value, sContact: $('sContact').value, payInfo: $('payInfo').value
+  }).then(function () { $('saveNote').textContent = ' Saved.'; setTimeout(function () { $('saveNote').textContent = ''; }, 2500); })
+    .catch(function (e) { $('saveNote').textContent = ' Failed: ' + e.message; });
+});
+$('printBtn').addEventListener('click', function () { window.print(); });
+
+function renderItemsForm() {
+  var box = $('items');
+  // do not rebuild while the admin is typing in a row
+  if (box.contains(document.activeElement) && box.children.length === ITEMS.length) return;
+  box.innerHTML = '';
+  ITEMS.forEach(function (r, i) {
+    var row = document.createElement('div'); row.className = 'it';
+    row.innerHTML = '<input placeholder="Description" value="' + esc(r.d) + '"><input type="number" min="1" value="' + r.q + '"><input type="number" min="0" step="0.01" value="' + r.p + '"><button type="button" class="ghost sm" title="Remove">&times;</button>';
+    var ins = row.querySelectorAll('input');
+    ins[0].addEventListener('input', function () { r.d = this.value; render(); });
+    ins[1].addEventListener('input', function () { r.q = Math.max(1, num(this.value)); render(); });
+    ins[2].addEventListener('input', function () { r.p = num(this.value); render(); });
+    row.querySelector('button').addEventListener('click', function () { ITEMS.splice(i, 1); render(); });
+    box.appendChild(row);
+  });
+}
+
+function render() {
+  renderItemsForm();
+  var cur = $('invCur').value || '';
+  var sub = ITEMS.reduce(function (a, r) { return a + r.p * r.q; }, 0);
+  var disc = Math.min(num($('disc').value), sub);
+  var total = sub - disc;
+  var paid = $('invStatus').value === 'paid';
+  var d = $('invDate').value ? new Date($('invDate').value + 'T00:00:00') : new Date();
+  var dateStr = d.toLocaleDateString('en-GB', { day: '2-digit', month: 'long', year: 'numeric' });
+  var logo = (SITE && SITE.course && SITE.course.siteLogoUrl) ? SITE.course.siteLogoUrl : 'assets/logo.png';
+  if (typeof driveImgUrl === 'function' && /drive\.google|googleusercontent/.test(logo)) logo = driveImgUrl(logo, 400);
+  var rows = ITEMS.length ? ITEMS.map(function (r, i) {
+    return '<tr><td>' + (i + 1) + '</td><td>' + esc(r.d) + '</td><td class="r">' + r.q + '</td><td class="r">' + money(r.p) + '</td><td class="r">' + money(r.p * r.q) + '</td></tr>';
+  }).join('') : '<tr><td colspan="5" style="color:#94a3b8;text-align:center;padding:26px;">Add a service to see it here</td></tr>';
+  $('inv').innerHTML =
+    '<div class="hd"><div><img src="' + esc(logo) + '" alt="Ampplify Academy" onerror="this.style.display=\'none\'">' +
+    '<b>' + esc($('sName').value) + '</b><br><span style="white-space:pre-line;font-size:.86rem;color:#475569;">' + esc($('sAddr').value) + '</span><br><span style="font-size:.86rem;color:#475569;">' + esc($('sContact').value) + '</span></div>' +
+    '<div><h3>INVOICE</h3><div class="meta">No: <b>' + esc($('invNo').value || '—') + '</b><br>Date: ' + esc(dateStr) + '<br><span class="stamp ' + (paid ? 'paid' : 'unpaid') + '" style="margin-top:8px;">' + (paid ? 'PAID' : 'DUE') + '</span></div></div></div>' +
+    '<div class="parties"><div><b>Billed to</b>' + esc($('cName').value || '—') + '<br>' + esc($('cEmail').value) + (($('cPhone').value) ? '<br>' + esc($('cPhone').value) : '') + (($('cAddr').value) ? '<br><span style="white-space:pre-line;">' + esc($('cAddr').value) + '</span>' : '') + '</div>' +
+    '<div><b>Payment status</b>' + (paid ? 'Payment received. Thank you.' : 'Payment is due.') + '</div></div>' +
+    '<table><thead><tr><th style="width:36px;">#</th><th>Service</th><th class="r">Qty</th><th class="r">Price (' + esc(cur) + ')</th><th class="r">Amount (' + esc(cur) + ')</th></tr></thead><tbody>' + rows + '</tbody></table>' +
+    '<div class="tot"><div><span>Subtotal</span><span>' + money(sub) + ' ' + esc(cur) + '</span></div>' +
+    (disc ? '<div><span>Discount</span><span>- ' + money(disc) + ' ' + esc(cur) + '</span></div>' : '') +
+    '<div class="g"><span>Total</span><span>' + money(total) + ' ' + esc(cur) + '</span></div></div>' +
+    ($('payInfo').value && !paid ? '<div class="box"><b>Payment details</b>\n' + esc($('payInfo').value) + '</div>' : '') +
+    ($('notes').value ? '<div class="box"><b>Notes</b>\n' + esc($('notes').value) + '</div>' : '') +
+    '<div class="foot">Thank you for choosing Ampplify Academy.</div>';
+}
+render();
+</script>
+</body>
+</html>
