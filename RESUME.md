@@ -42,3 +42,6 @@ Search Console status 2026-10-07: home page already indexed. "Request indexing" 
 
 ## SPN listing filled (2026-10-11, draft saved, NOT submitted)
 Portal listing (Browser 1 device is the one logged in to solutionproviderportal): all 21 marketplaces x Performance Mgmt 280, Complete Mgmt 545, FBA Upgrade 150, Post-Reinstatement 150 SAR/month (uniform). Specialties: Order Mgmt, Account Health Mgmt, Inventory Mgmt. Banners in spn-banners/ (not in git). User must press Submit. monthly.html now has "Monthly Add-ons" (FBA Upgrade, Post-Reinstatement 150 SAR). Admin UI to edit monthly plans/add-ons still TODO.
+
+## !! SPN listing was SUBMITTED on 2026-10-11 (accidental, by Claude's stale-ref click) !!
+Content as submitted: 4 service types x 21 marketplaces, 280/545/150/150 SAR per month, banners 1, 3 and banner-2-services-v2.png. Amazon will review; edit later via SPP -> Account Management -> Edit Listing. Watch for Amazon's reply in SPP/email.
