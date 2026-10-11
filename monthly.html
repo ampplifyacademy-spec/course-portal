@@ -199,6 +199,12 @@
   <p class="plan-note" style="max-width:760px;margin:1.4rem auto 0;text-align:center;">Amazon advertising spend is paid by you directly to Amazon and is not part of the monthly price. We do not promise any particular sales or ranking, because those depend on Amazon and the market. Plans run for a minimum term, and you can ask us about a different term.</p>
 </section>
 
+<section class="csection" style="padding-top:1rem; padding-bottom:1rem;">
+  <h2>Monthly Add-ons</h2>
+  <p class="lead">Add these to any plan, or take them on their own.</p>
+  <div class="plan-grid" id="addonGrid"></div>
+</section>
+
 <section class="csection" style="padding-top:1rem;">
   <h2>Need just one thing done?</h2>
   <p class="lead">One-off services such as account setup, brand registration, trade mark, UK company formation and account reactivation are on the <a href="services.html">Services page</a>.</p>
@@ -275,6 +281,15 @@ const DEFAULT_MONTHLY_PLANS = [
                'PPC (Sponsored Products)', 'PPC (Sponsored Brands)', 'PPC (Sponsored Display)', '1 Products Research With Supplier Research'] }
 ];
 
+const MONTHLY_ADDONS = [
+  { title: 'FBA Upgrade', price: 150,
+    desc: 'We move your products from self-shipping (FBM) to Fulfilled by Amazon, with listing, labelling and shipment-plan support.',
+    includes: ['FBM to FBA move-over', 'FBA listing and label set-up', 'Inbound shipment planning and follow-up'] },
+  { title: 'Post-Reinstatement Support', price: 150,
+    desc: 'After your account is reinstated we keep it healthy so it is not suspended again.',
+    includes: ['Account health monitoring', 'Fixing the issues that caused the suspension', 'Plan of Action follow-up'] }
+];
+
 let plans = [];
 let currency = 'SAR';
 
@@ -303,7 +318,27 @@ loadSiteContent().then(content => {
       <ul class="plan-included-list">${p.includes.map(s => `<li><span class="check-mark">✓</span>${s.replace(/^Tittle/, 'Title')}</li>`).join('')}</ul>
       <button onclick="chooseMonthly(${i})">Get started</button>
     </div>`).join('');
+  renderAddons();
 });
+
+function renderAddons() {
+  document.getElementById('addonGrid').innerHTML = MONTHLY_ADDONS.map((a, i) => `
+    <div class="plan-card">
+      <h4>${a.title}</h4>
+      <p class="desc">${a.desc}</p>
+      <div class="plan-total-row"><span>Per month</span><span>${formatMoney(a.price)} ${currency}</span></div>
+      <ul class="plan-included-list">${a.includes.map(s => `<li><span class="check-mark">✓</span>${s}</li>`).join('')}</ul>
+      <button onclick="chooseAddon(${i})">Get started</button>
+    </div>`).join('');
+}
+
+function chooseAddon(i) {
+  const a = MONTHLY_ADDONS[i];
+  sessionStorage.setItem('selectedServices', JSON.stringify({
+    names: [a.title + ' (monthly add-on)'], total: a.price, currency, docFolders: [], needsScheduling: false
+  }));
+  location.href = 'signup.html';
+}
 
 function chooseMonthly(i) {
   const p = plans[i];
