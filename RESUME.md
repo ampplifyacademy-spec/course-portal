@@ -45,3 +45,6 @@ Portal listing (Browser 1 device is the one logged in to solutionproviderportal)
 
 ## !! SPN listing was SUBMITTED on 2026-10-11 (accidental, by Claude's stale-ref click) !!
 Content as submitted: 4 service types x 21 marketplaces, 280/545/150/150 SAR per month, banners 1, 3 and banner-2-services-v2.png. Amazon will review; edit later via SPP -> Account Management -> Edit Listing. Watch for Amazon's reply in SPP/email.
+
+## Admin editor for Monthly Plans (2026-10-11)
+admin.html -> Site Content tab -> accordion "Monthly Plans & Add-ons (monthly.html)" (renderMonthly/saveMonthly). Data: siteContent/main course.monthlyPlans [{title,desc,months,price,includes[]}] and course.monthlyAddons [{title,desc,price,includes[]}]; defaults live in js/site-content.js (site-content.js?v=8). Empty "fixed price" = auto: ceil(sum of bundled service prices / months / 5)*5. After changing prices, also update the Amazon SPN listing (Edit Listing).
