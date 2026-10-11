@@ -101,10 +101,9 @@
         <fieldset>
           <legend>Invoice</legend>
           <div class="row2">
-            <label class="f"><span>Invoice number</span><input id="invNo" placeholder="INV-0001"></label>
+            <label class="f"><span>Invoice number (automatic)</span><input id="invNo" placeholder="Assigned when you save" readonly></label>
             <label class="f"><span>Issue date</span><input type="date" id="invDate"></label>
           </div>
-          <button type="button" class="ghost sm" id="nextNoBtn">Get next invoice number</button>
           <div class="row2" style="margin-top:10px;">
             <label class="f"><span>Status (mark Paid only after the money is received)</span>
               <select id="invStatus"><option value="unpaid" selected>Unpaid / Due</option><option value="paid">Paid</option></select></label>
@@ -134,8 +133,16 @@
           <span class="note" id="saveNote"></span>
         </fieldset>
 
-        <button type="button" id="printBtn" style="width:100%;">Print / Save as PDF</button>
-        <p class="note">In the print window choose "Save as PDF" to get a file you can send to the client.</p>
+        <div class="row2">
+          <button type="button" id="saveBtn">Save invoice</button>
+          <button type="button" id="printBtn">Save &amp; Print / PDF</button>
+        </div>
+        <button type="button" class="ghost" id="newBtn" style="width:100%;margin-top:8px;">New invoice</button>
+        <p class="note" id="saveMsg">The invoice number is given automatically when you save. Every saved invoice is kept in the list below. In the print window choose "Save as PDF" to get a file you can send to the client.</p>
+      </div>
+      <div class="card" style="margin-top:16px;">
+        <h2>Saved invoices</h2>
+        <div id="history" class="note">Loading&hellip;</div>
       </div>
     </div>
 
@@ -161,6 +168,7 @@ function num(v) { var n = parseFloat(String(v).replace(/,/g, '')); return isNaN(
 function money(n) { return n.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 }); }
 
 function init() {
+  loadHistory();
   $('invDate').value = new Date().toISOString().slice(0, 10);
   loadSiteContent().then(function (c) {
     SITE = c;
@@ -204,6 +212,7 @@ function init() {
 
 $('loadClient').addEventListener('change', function () {
   var u = USERS[this.value]; if (!u) return;
+  CUR_N = null; $('invNo').value = '';
   $('cName').value = u.name || ''; $('cEmail').value = u.email || ''; $('cPhone').value = u.whatsapp || '';
   ITEMS = [];
   var cur = u.serviceCurrency || u.currency || (SITE && SITE.course.currency) || 'SAR';
@@ -234,15 +243,89 @@ $('addSite').addEventListener('change', function () {
 });
 $('addRowBtn').addEventListener('click', function () { ITEMS.push({ d: '', q: 1, p: 0 }); render(); });
 
-$('nextNoBtn').addEventListener('click', function () {
+/* ---- saving: the number is assigned automatically and every invoice is kept in Firestore ---- */
+var CUR_N = null, HIST = [];
+
+function nextNumber() {
   var ref = db.collection('config').doc('invoiceCounter');
-  db.runTransaction(function (t) {
+  return db.runTransaction(function (t) {
     return t.get(ref).then(function (d) {
       var n = (d.exists && d.data().n || 0) + 1; t.set(ref, { n: n }); return n;
     });
-  }).then(function (n) { $('invNo').value = 'INV-' + String(n).padStart(4, '0'); render(); })
-    .catch(function (e) { alert('Could not get a number: ' + e.message); });
-});
+  });
+}
+function collectInvoice() {
+  var sub = ITEMS.reduce(function (a, r) { return a + r.p * r.q; }, 0);
+  var disc = Math.min(num($('disc').value), sub);
+  return {
+    kind: 'invoice', no: $('invNo').value, n: CUR_N, date: $('invDate').value,
+    client: { name: $('cName').value, email: $('cEmail').value, phone: $('cPhone').value, addr: $('cAddr').value },
+    items: ITEMS.map(function (r) { return { d: r.d, q: r.q, p: r.p }; }),
+    disc: disc, total: sub - disc, cur: $('invCur').value,
+    status: $('invStatus').value, paidDate: $('paidDate').value,
+    seller: { name: $('sName').value, addr: $('sAddr').value, contact: $('sContact').value },
+    payInfo: $('payInfo').value, notes: $('notes').value, showSeal: $('showSeal').checked,
+    updatedAt: firebase.firestore.FieldValue.serverTimestamp()
+  };
+}
+function saveInvoice() {
+  if (!ITEMS.length) { alert('Add at least one service first.'); return Promise.reject(new Error('empty')); }
+  var ready = $('invNo').value ? Promise.resolve() : nextNumber().then(function (n) {
+    CUR_N = n; $('invNo').value = 'INV-' + String(n).padStart(4, '0'); render();
+  });
+  return ready.then(function () {
+    var data = collectInvoice();
+    if (CUR_N == null) { var m = /(\d+)$/.exec(data.no); CUR_N = m ? parseInt(m[1], 10) : 0; data.n = CUR_N; }
+    return db.collection('config').doc('invoice-' + data.no).set(data, { merge: true });
+  }).then(function () {
+    $('saveMsg').textContent = 'Saved as ' + $('invNo').value + '.';
+    loadHistory();
+  });
+}
+function loadHistory() {
+  db.collection('config').where('kind', '==', 'invoice').get().then(function (snap) {
+    HIST = []; snap.forEach(function (d) { var x = d.data(); x._id = d.id; HIST.push(x); });
+    HIST.sort(function (a, b) { return (b.n || 0) - (a.n || 0); });
+    var box = $('history');
+    if (!HIST.length) { box.textContent = 'No saved invoices yet.'; return; }
+    box.innerHTML = HIST.map(function (x, i) {
+      var paid = x.status === 'paid';
+      return '<div style="display:flex;gap:8px;align-items:center;justify-content:space-between;padding:7px 0;border-bottom:1px solid #e2e8f0;"><div style="min-width:0;"><b>' + esc(x.no) + '</b> &middot; ' + esc((x.client && x.client.name) || '—') +
+        '<br><span class="note">' + money(x.total || 0) + ' ' + esc(x.cur || '') + ' &middot; ' + esc(x.date || '') + ' &middot; <b style="color:' + (paid ? '#15803d' : '#b91c1c') + '">' + (paid ? 'Paid' : 'Due') + '</b></span></div>' +
+        '<div style="display:flex;gap:6px;flex-shrink:0;"><button type="button" class="ghost sm" data-open="' + i + '">Open</button>' +
+        (paid ? '' : '<button type="button" class="sm" data-paid="' + i + '">Mark paid</button>') + '</div></div>';
+    }).join('');
+    box.querySelectorAll('[data-open]').forEach(function (b) { b.addEventListener('click', function () { openInvoice(HIST[b.getAttribute('data-open')]); }); });
+    box.querySelectorAll('[data-paid]').forEach(function (b) { b.addEventListener('click', function () {
+      var x = HIST[b.getAttribute('data-paid')];
+      if (!confirm('Mark ' + x.no + ' as paid today?')) return;
+      db.collection('config').doc(x._id).set({ status: 'paid', paidDate: new Date().toISOString().slice(0, 10) }, { merge: true }).then(function () {
+        if ($('invNo').value === x.no) { $('invStatus').value = 'paid'; $('paidDate').value = new Date().toISOString().slice(0, 10); render(); }
+        loadHistory();
+      });
+    }); });
+  }).catch(function (e) { $('history').textContent = 'Could not load: ' + e.message; });
+}
+function openInvoice(x) {
+  CUR_N = x.n || null; $('invNo').value = x.no || '';
+  $('cName').value = (x.client && x.client.name) || ''; $('cEmail').value = (x.client && x.client.email) || '';
+  $('cPhone').value = (x.client && x.client.phone) || ''; $('cAddr').value = (x.client && x.client.addr) || '';
+  $('invDate').value = x.date || ''; $('invCur').value = x.cur || 'SAR';
+  $('invStatus').value = x.status || 'unpaid'; $('paidDate').value = x.paidDate || '';
+  $('disc').value = x.disc || ''; $('notes').value = x.notes || ''; $('payInfo').value = x.payInfo || '';
+  if (x.seller) { $('sName').value = x.seller.name || ''; $('sAddr').value = x.seller.addr || ''; $('sContact').value = x.seller.contact || ''; }
+  $('showSeal').checked = x.showSeal !== false;
+  ITEMS = (x.items || []).map(function (r) { return { d: r.d, q: r.q, p: r.p }; });
+  $('items').innerHTML = ''; render(); window.scrollTo(0, 0);
+}
+function newInvoice() {
+  CUR_N = null; ITEMS = [];
+  ['invNo', 'cName', 'cEmail', 'cPhone', 'cAddr', 'disc', 'notes', 'paidDate'].forEach(function (id) { $(id).value = ''; });
+  $('loadClient').value = ''; $('invStatus').value = 'unpaid'; $('invDate').value = new Date().toISOString().slice(0, 10);
+  $('items').innerHTML = ''; $('saveMsg').textContent = 'New invoice. The number is given automatically when you save.'; render();
+}
+$('saveBtn').addEventListener('click', function () { saveInvoice().catch(function (e) { if (e.message !== 'empty') alert('Could not save: ' + e.message); }); });
+$('newBtn').addEventListener('click', newInvoice);
 
 $('saveSellerBtn').addEventListener('click', function () {
   db.collection('config').doc('invoiceSettings').set({
@@ -250,7 +333,10 @@ $('saveSellerBtn').addEventListener('click', function () {
   }).then(function () { $('saveNote').textContent = ' Saved.'; setTimeout(function () { $('saveNote').textContent = ''; }, 2500); })
     .catch(function (e) { $('saveNote').textContent = ' Failed: ' + e.message; });
 });
-$('printBtn').addEventListener('click', function () { window.print(); });
+$('printBtn').addEventListener('click', function () {
+  saveInvoice().then(function () { setTimeout(function () { window.print(); }, 150); })
+    .catch(function (e) { if (e.message !== 'empty') alert('Could not save: ' + e.message); });
+});
 
 function renderItemsForm() {
   var box = $('items');
