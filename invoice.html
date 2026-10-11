@@ -57,6 +57,14 @@
     #inv { border:0; padding:0; border-radius:0; }
     @page { margin:16mm; }
   }
+  #inv .signoff { display:flex; justify-content:flex-end; margin-top:34px; page-break-inside:avoid; }
+  #inv .signoff .blk { width:280px; font-size:.86rem; }
+  #inv .signoff .ln { border-bottom:1px solid #333; height:44px; position:relative; margin-bottom:4px; }
+  #inv .signoff .ln img { position:absolute; left:6px; bottom:-6px; width:150px; mix-blend-mode:multiply; }
+  #inv .signoff .hw { font-family:"Segoe Script","Bradley Hand","Brush Script MT",cursive; font-size:1.05rem; }
+  #inv .signoff .sw { position:relative; display:inline-block; margin-top:8px; }
+  #inv .signoff .sw .seal { width:104px; height:104px; display:block; }
+  #inv .signoff .sw .sg { position:absolute; left:16%; top:-4%; width:92px; transform:rotate(-6deg); mix-blend-mode:multiply; }
   #gate { padding:60px 20px; text-align:center; color:var(--soft); }
 </style>
 <style id="adminGate">.shell { visibility:hidden; }</style>
@@ -98,10 +106,12 @@
           </div>
           <button type="button" class="ghost sm" id="nextNoBtn">Get next invoice number</button>
           <div class="row2" style="margin-top:10px;">
-            <label class="f"><span>Status</span>
-              <select id="invStatus"><option value="paid">Paid</option><option value="unpaid">Unpaid / Due</option></select></label>
+            <label class="f"><span>Status (mark Paid only after the money is received)</span>
+              <select id="invStatus"><option value="unpaid" selected>Unpaid / Due</option><option value="paid">Paid</option></select></label>
             <label class="f"><span>Currency</span><input id="invCur" value="SAR"></label>
           </div>
+          <label class="f" id="paidDateRow" style="display:none;"><span>Date payment was received</span><input type="date" id="paidDate"></label>
+          <label class="f" style="display:flex;gap:8px;align-items:center;"><input type="checkbox" id="showSeal" checked style="width:auto;"> <span style="margin:0;">Print company seal, signature and date</span></label>
         </fieldset>
 
         <fieldset>
@@ -208,7 +218,9 @@ $('loadClient').addEventListener('change', function () {
   } else {
     ITEMS.push({ d: 'Amazon Selling Course', q: 1, p: num(u.amountPaid) });
   }
-  $('invStatus').value = (u.status === 'approved' || u.amountPaid) ? 'paid' : 'unpaid';
+  var isPaid = !!u.amountPaid && u.paymentStatus !== 'refunded';
+  $('invStatus').value = isPaid ? 'paid' : 'unpaid';
+  $('paidDate').value = isPaid && u.approvedAt && u.approvedAt.toDate ? u.approvedAt.toDate().toISOString().slice(0, 10) : '';
   render();
 });
 
@@ -262,8 +274,9 @@ function render() {
   var paid = $('invStatus').value === 'paid';
   var d = $('invDate').value ? new Date($('invDate').value + 'T00:00:00') : new Date();
   var dateStr = d.toLocaleDateString('en-GB', { day: '2-digit', month: 'long', year: 'numeric' });
-  var logo = (SITE && SITE.course && SITE.course.siteLogoUrl) ? SITE.course.siteLogoUrl : 'assets/logo.png';
-  if (typeof driveImgUrl === 'function' && /drive\.google|googleusercontent/.test(logo)) logo = driveImgUrl(logo, 400);
+  var logo = 'assets/logo.png';
+  $('paidDateRow').style.display = paid ? '' : 'none';
+  var pd = $('paidDate').value ? new Date($('paidDate').value + 'T00:00:00').toLocaleDateString('en-GB', { day: '2-digit', month: 'long', year: 'numeric' }) : '';
   var rows = ITEMS.length ? ITEMS.map(function (r, i) {
     return '<tr><td>' + (i + 1) + '</td><td>' + esc(r.d) + '</td><td class="r">' + r.q + '</td><td class="r">' + money(r.p) + '</td><td class="r">' + money(r.p * r.q) + '</td></tr>';
   }).join('') : '<tr><td colspan="5" style="color:#94a3b8;text-align:center;padding:26px;">Add a service to see it here</td></tr>';
@@ -272,13 +285,14 @@ function render() {
     '<b>' + esc($('sName').value) + '</b><br><span style="white-space:pre-line;font-size:.86rem;color:#475569;">' + esc($('sAddr').value) + '</span><br><span style="font-size:.86rem;color:#475569;">' + esc($('sContact').value) + '</span></div>' +
     '<div><h3>INVOICE</h3><div class="meta">No: <b>' + esc($('invNo').value || '—') + '</b><br>Date: ' + esc(dateStr) + '<br><span class="stamp ' + (paid ? 'paid' : 'unpaid') + '" style="margin-top:8px;">' + (paid ? 'PAID' : 'DUE') + '</span></div></div></div>' +
     '<div class="parties"><div><b>Billed to</b>' + esc($('cName').value || '—') + '<br>' + esc($('cEmail').value) + (($('cPhone').value) ? '<br>' + esc($('cPhone').value) : '') + (($('cAddr').value) ? '<br><span style="white-space:pre-line;">' + esc($('cAddr').value) + '</span>' : '') + '</div>' +
-    '<div><b>Payment status</b>' + (paid ? 'Payment received. Thank you.' : 'Payment is due.') + '</div></div>' +
+    '<div><b>Payment status</b>' + (paid ? 'Payment received' + (pd ? ' on ' + esc(pd) : '') + '. Thank you.' : 'Payment is due.') + '</div></div>' +
     '<table><thead><tr><th style="width:36px;">#</th><th>Service</th><th class="r">Qty</th><th class="r">Price (' + esc(cur) + ')</th><th class="r">Amount (' + esc(cur) + ')</th></tr></thead><tbody>' + rows + '</tbody></table>' +
     '<div class="tot"><div><span>Subtotal</span><span>' + money(sub) + ' ' + esc(cur) + '</span></div>' +
     (disc ? '<div><span>Discount</span><span>- ' + money(disc) + ' ' + esc(cur) + '</span></div>' : '') +
     '<div class="g"><span>Total</span><span>' + money(total) + ' ' + esc(cur) + '</span></div></div>' +
     ($('payInfo').value && !paid ? '<div class="box"><b>Payment details</b>\n' + esc($('payInfo').value) + '</div>' : '') +
     ($('notes').value ? '<div class="box"><b>Notes</b>\n' + esc($('notes').value) + '</div>' : '') +
+    ($('showSeal').checked ? '<div class="signoff"><div class="blk"><div class="ln"><img src="assets/provider-signature.png" alt="" onerror="this.remove()"></div>Authorised signature<br>For ' + esc($('sName').value) + '<br>Date: <span class="hw">' + esc(dateStr) + '</span><br><span class="sw"><img class="seal" src="assets/company-seal.png" alt="Company seal" onerror="this.remove()"><img class="sg" src="assets/provider-signature.png" alt="" onerror="this.remove()"></span></div></div>' : '') +
     '<div class="foot">Thank you for choosing Ampplify Academy.</div>';
 }
 render();

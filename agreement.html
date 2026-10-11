@@ -788,6 +788,63 @@ document.getElementById('saveProviderBtn').addEventListener('click', function ()
   });
 });
 
+/* Service-specific agreement terms. A block is printed for every website service that is ticked
+   (matched on its title). DRAFT wording: have a lawyer review it before relying on it. */
+var SERVICE_COMMON_TERMS = [
+  "The Provider shall perform each Service with reasonable skill and care. No Service carries a guarantee of any particular sales, ranking, profit, approval or other result, because these depend on Amazon, public authorities, banks and other third parties and on market conditions outside the Provider's control.",
+  "Third-party costs (for example Amazon advertising spend, government, registry, bank or platform fees) are not included in the Provider's fee unless the invoice says so, and are paid by the Client.",
+  "The Client shall give accurate and genuine information and documents on time. A delay or inaccuracy on the Client's side may delay delivery and does not entitle the Client to a refund.",
+  "Unless the invoice or a separate written agreement says otherwise, fees for work already started or delivered are not refundable. If the Provider cannot deliver a Service for a reason within its own control, the fee for that undelivered Service shall be refunded."
+];
+var SERVICE_TERMS = [
+  { re: /account setup/i, terms: [
+    "The Provider shall help the Client register and configure a Seller Central account in the Client's own name, using the documents and information the Client supplies. Whether and when Amazon approves the account is Amazon's decision alone.",
+    "The account belongs to the Client. The Provider shall not keep the Client's passwords after set-up is complete, and the Client shall not supply false or borrowed documents."] },
+  { re: /coaching call/i, terms: [
+    "This is one private session of up to 30 minutes at a time agreed in advance. Rescheduling needs at least 24 hours' notice, otherwise the session may be treated as used.",
+    "The call is advice only. The Client makes all business decisions and carries the risk of them."] },
+  { re: /products? research/i, terms: [
+    "The Provider shall deliver a written product research report, including supplier research, for the market the Client names. The report reflects information available when it was prepared and is not a promise of sales or profit.",
+    "The Client decides whether to buy stock or launch a product and carries that risk."] },
+  { re: /(title|tittle|bullet|description) writing/i, terms: [
+    "The Provider shall write the listing title, bullet points and description in the language agreed, with up to two rounds of revisions requested within 7 days of delivery.",
+    "The Client shall confirm that all product claims are true and lawful. The Provider does not guarantee ranking or conversion."] },
+  { re: /keyword research/i, terms: [
+    "The Provider shall carry out keyword research and optimise the listing accordingly. Search ranking changes over time and is not guaranteed."] },
+  { re: /ppc|sponsored/i, terms: [
+    "The Provider shall set up and manage the named type of advertising campaign through the Advertising section of the Client's account, using User Permissions only.",
+    "Advertising spend is paid by the Client directly to Amazon and is separate from the Provider's fee. The Provider shall not exceed the budget the Client has approved.",
+    "Results such as ACoS, sales or ranking are not guaranteed."] },
+  { re: /store design/i, terms: [
+    "The Provider shall design the Client's Brand Store pages and images, with up to two rounds of revisions. The Client shall supply brand assets, logos and product photos, and confirms it owns or may use all material supplied.",
+    "Amazon's review of, and rules for, Store content apply."] },
+  { re: /listing image/i, terms: [
+    "The Provider shall create the number of images stated in the service description (including the main image) from photos and information the Client supplies, with up to two rounds of revisions.",
+    "Images must follow Amazon's image policies. The Client confirms it owns or may use all material supplied."] },
+  { re: /a\+|a plus/i, terms: [
+    "The Provider shall create the A+ Content set with the number of images stated in the service description, with up to two rounds of revisions. The Client shall supply brand assets and product information.",
+    "Amazon reviews A+ Content and may reject it. The Provider shall make one reasonable round of corrections after any rejection, and does not guarantee approval or any sales effect."] },
+  { re: /brand registration/i, terms: [
+    "The Provider shall help the Client apply for Amazon Brand Registry in the market named. This needs a trade mark, registered or pending, that the Client owns.",
+    "Amazon decides on the application. Approval is not guaranteed."] },
+  { re: /(tread|trade) ?mark/i, terms: [
+    "The Provider shall prepare and file a trade mark application with the UK Intellectual Property Office for the mark and classes the Client confirms. Official fees are as stated on the invoice; where they are not included, the Client pays them.",
+    "The Client confirms it has the right to use the mark. The Intellectual Property Office decides the application; objections or oppositions may need extra work and fees agreed in writing. Registration is not guaranteed.",
+    "Where the law requires a regulated professional to act, the Provider shall arrange one."] },
+  { re: /renewal|confirm/i, terms: [
+    "The Provider shall prepare and submit the annual confirmation statement to Companies House, using information the Client confirms is correct. Accounts and tax filings are not included unless stated.",
+    "Filing fees, and any penalties caused by the Client's delay or incorrect information, are the Client's."] },
+  { re: /ltd creation|company creation/i, terms: [
+    "The Provider shall incorporate a UK limited company at Companies House for the Client, using details the Client confirms and the documents required (for example a passport and bank statements). Companies House may reject or query an application.",
+    "The company belongs to the Client. Ongoing duties (confirmation statements, annual accounts, tax and the registered office) stay with the Client unless a separate service is bought. Items included are those listed with the service."] },
+  { re: /saudi seller/i, terms: [
+    "This Service is available only where the account was deactivated under the conditions stated in the service description (registration of 2023 or 2024 under a company CR or a Saudi National ID). The Provider shall check eligibility first.",
+    "Amazon alone decides on reactivation and conversion, and the result is not guaranteed. The Client shall supply valid, genuine documents. False documents end the Service without refund."] },
+  { re: /bank account/i, terms: [
+    "The Provider shall help the Client apply for a business account with the providers named in the service description. Each provider's own checks decide whether an account is opened, and approval is not guaranteed.",
+    "The Client shall supply genuine documents. The account belongs to the Client, and the Provider shall never keep its login credentials. The provider's own fees are paid by the Client."] }
+];
+
 function buildDoc() {
   const mode = document.querySelector('input[name="engagement"]:checked').value;
   const includesService = (mode === 'service' || mode === 'both');
@@ -925,6 +982,28 @@ function buildDoc() {
       html += '<p>The specific scope, deliverables, and reporting cadence for the Services are set out in Schedule A (Statement of Work) at the end of this Agreement, which forms an integral part hereof.</p>';
     } else {
       html += '<p>The Services listed above are the whole of the Services engaged under this Agreement. Any additional work shall be agreed by the Parties in writing before it is carried out.</p>';
+    }
+  }
+
+  // --- Service-specific terms (one block per website service that was ticked) ----
+  if (includesService) {
+    const siteTitles = Array.from(document.querySelectorAll('#siteSvcList input.svc:checked')).map(function (x) { return x.getAttribute('data-title'); });
+    const seen = {};
+    const blocks = [];
+    siteTitles.forEach(function (t) {
+      const key = t.trim().toLowerCase();
+      if (seen[key]) return; seen[key] = true;
+      const found = SERVICE_TERMS.filter(function (s) { return s.re.test(t); })[0];
+      if (found) blocks.push({ title: t.trim(), terms: found.terms });
+    });
+    if (blocks.length) {
+      section('Service-Specific Terms');
+      html += '<p>The following terms apply to the Services named below, in addition to the rest of this Agreement. If a term below conflicts with another part of this Agreement for the same Service, the term below applies.</p><ol class="clauses">';
+      SERVICE_COMMON_TERMS.forEach(function (x) { html += '<li><strong>All Services.</strong> ' + escapeHtml(x) + '</li>'; });
+      blocks.forEach(function (b) {
+        b.terms.forEach(function (x) { html += '<li><strong>' + escapeHtml(b.title) + '.</strong> ' + escapeHtml(x) + '</li>'; });
+      });
+      html += '</ol>';
     }
   }
 
