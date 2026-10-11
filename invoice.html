@@ -172,7 +172,11 @@ function init() {
     });
     $('invCur').value = c.course.currency || 'SAR';
     if (!$('sAddr').value && c.footer && c.footer.address) $('sAddr').value = c.footer.address;
-    if (!$('payInfo').value && c.bankDetails && c.bankDetails.instructions) $('payInfo').value = c.bankDetails.instructions;
+    if (!$('payInfo').value && c.bankDetails && c.bankDetails.accounts && c.bankDetails.accounts.length) {
+      $('payInfo').value = c.bankDetails.accounts.map(function (a) {
+        return [a.bankName, a.accountName, a.iban ? 'IBAN ' + a.iban : '', a.accountNumber ? 'Account ' + a.accountNumber : ''].filter(Boolean).join(' | ');
+      }).join('\n');
+    }
     render();
   });
   db.collection('config').doc('invoiceSettings').get().then(function (d) {
