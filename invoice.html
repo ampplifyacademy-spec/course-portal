@@ -271,7 +271,9 @@ function collectInvoice() {
 function saveInvoice() {
   if (!ITEMS.length) { alert('Add at least one service first.'); return Promise.reject(new Error('empty')); }
   var ready = $('invNo').value ? Promise.resolve() : nextNumber().then(function (n) {
-    CUR_N = n; $('invNo').value = 'INV-' + String(n).padStart(4, '0'); render();
+    // Brand prefix + year/month of the invoice date + running number, e.g. AMP-2610-0001
+    var dt = ($('invDate').value || new Date().toISOString().slice(0, 10)).split('-');
+    CUR_N = n; $('invNo').value = 'AMP-' + dt[0].slice(2) + dt[1] + '-' + String(n).padStart(4, '0'); render();
   });
   return ready.then(function () {
     var data = collectInvoice();
