@@ -48,3 +48,9 @@ Content as submitted: 4 service types x 21 marketplaces, 280/545/150/150 SAR per
 
 ## Admin editor for Monthly Plans (2026-10-11)
 admin.html -> Site Content tab -> accordion "Monthly Plans & Add-ons (monthly.html)" (renderMonthly/saveMonthly). Data: siteContent/main course.monthlyPlans [{title,desc,months,price,includes[]}] and course.monthlyAddons [{title,desc,price,includes[]}]; defaults live in js/site-content.js (site-content.js?v=8). Empty "fixed price" = auto: ceil(sum of bundled service prices / months / 5)*5. After changing prices, also update the Amazon SPN listing (Edit Listing).
+
+## SEO status 2026-10-12
+- Search Console: property verified, sitemap.xml "Success" (7 pages read 2026-10-10), Indexed 7, Not indexed 2 (course.html = alternate canonical, expected; 1 "Discovered - currently not indexed" = probably monthly.html, new). Impressions ~1 (query "ampplify"), 0 clicks - site is brand new.
+- On-page: unique titles + meta description + canonical on all public pages; single <h1> on every public page (done 2026-10-12); JSON-LD on home (EducationalOrganization), course (Course+FAQPage).
+- LinkedIn (personal account of Md Yasin Arafat): 8 invites sent, 2 connections. Company Page creation now says "Please verify your workplace before creating a LinkedIn Page" (needs LinkedIn workplace/work-email verification by the user, e.g. an @ampplifyacademy.com email). Not done by Claude.
+- TODO SEO: LinkedIn Company Page + sameAs in JSON-LD; Request indexing for monthly.html/services.html in Search Console; blog/Bangla keyword content; Google Business Profile skipped on purpose (virtual address); backlinks (YouTube/Facebook/LinkedIn); add Service JSON-LD for monthly plans.
