@@ -224,6 +224,7 @@
       <a href="course.html#about">About Us</a>
       <a href="success-stories.html">Success Stories</a>
       <a href="portfolio.html">Portfolio</a>
+      <a href="amazon-fba-vs-fbm.html">Guide: FBA vs FBM</a>
       <a href="partnership.html">Partnership</a>
       <a href="partnership.html">Terms &amp; Conditions</a>
       <a href="privacy.html">Privacy Policy</a>
@@ -312,7 +313,29 @@ loadSiteContent().then(content => {
       <button onclick="chooseMonthly(${i})">Get started</button>
     </div>`).join('');
   renderAddons();
+  injectSchema();
 });
+
+// Structured data for Google, built from the same live prices the page shows.
+function injectSchema() {
+  const offer = (name, price, desc) => ({
+    '@type': 'Offer', name, description: desc || name, priceCurrency: currency, price: String(price),
+    priceSpecification: { '@type': 'UnitPriceSpecification', price: String(price), priceCurrency: currency, unitCode: 'MON' },
+    url: 'https://ampplifyacademy.com/monthly.html'
+  });
+  const offers = plans.map(p => offer(p.title, p._price, p.desc))
+    .concat(MONTHLY_ADDONS.map(a => offer(a.title, a.price, a.desc)));
+  const ld = {
+    '@context': 'https://schema.org', '@type': 'Service', name: 'Amazon account management (monthly plans)',
+    serviceType: 'Amazon seller account management', areaServed: 'Worldwide',
+    provider: { '@type': 'Organization', name: 'Ampplify Academy', url: 'https://ampplifyacademy.com/' },
+    hasOfferCatalog: { '@type': 'OfferCatalog', name: 'Monthly plans and add-ons', itemListElement: offers }
+  };
+  const s = document.createElement('script');
+  s.type = 'application/ld+json';
+  s.text = JSON.stringify(ld);
+  document.head.appendChild(s);
+}
 
 function renderAddons() {
   document.getElementById('addonGrid').innerHTML = MONTHLY_ADDONS.map((a, i) => `
