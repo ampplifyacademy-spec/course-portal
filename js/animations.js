@@ -12,7 +12,7 @@
   root.classList.add('js-anim');
 
   var TARGETS = [
-    '.csection > h2', '.csection > .lead', '.section-label', '.partner-hero > *',
+    '.csection > h1', '.csection > h2', '.csection > .lead', '.section-label', '.partner-hero > *',
     '.module-card', '.service-card', '.plan-card', '.expertise-card', '.case-card', '.about-card',
     '.story-card', '.portfolio-card', '.folder-card', '.tool-card', '.partner-point', '.partner-form-card',
     '.proof', '.feedback-form-wrap', '.pricing-card', '.price-features > div', '.faq-wrap details',
@@ -33,7 +33,7 @@
       io.unobserve(el);
       el.style.setProperty('--d', delay + 'ms');
       el.classList.add('rv-in');
-      if (el.tagName === 'H2') el.classList.add('h-in');
+      if (el.tagName === 'H2' || el.tagName === 'H1') el.classList.add('h-in');
       // once it has settled, drop the reveal classes so hover transforms work normally again
       setTimeout(function () {
         el.classList.remove('rv', 'rv-in');
@@ -79,7 +79,7 @@
       if (r.width && r.height && r.top < window.innerHeight && r.bottom > 0) {
         io.unobserve(el);
         el.classList.add('rv-in');
-        if (el.tagName === 'H2') el.classList.add('h-in');
+        if (el.tagName === 'H2' || el.tagName === 'H1') el.classList.add('h-in');
         setTimeout(function () { el.classList.remove('rv', 'rv-in'); el.style.removeProperty('--d'); }, 900);
       }
     });
