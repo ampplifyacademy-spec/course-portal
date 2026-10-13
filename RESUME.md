@@ -58,3 +58,11 @@ admin.html -> Site Content tab -> accordion "Monthly Plans & Add-ons (monthly.ht
 - 2026-10-12 SEO: new guide page amazon-fba-vs-fbm.html (Article JSON-LD, in sitemap, footer link "Guide: FBA vs FBM" on all pages); index.html Organization JSON-LD now has sameAs (Facebook, Instagram), legalName, email; monthly.html injects Service/OfferCatalog JSON-LD from live prices. FB page action button (WhatsApp) connected by user. Next SEO: more guides (one every week: Amazon seller account opening, listing optimisation, PPC basics, KSA/UAE selling, UK Ltd for Amazon), Request indexing for each new page, backlinks.
 - 2026-10-12 GEO/AEO (AI answers): about.html (AboutPage + Organization JSON-LD, brand disambiguation "Ampplify, two p's") and llms.txt created; ChatGPT baseline test: it mistook "Ampplify" for "Amplify Academy" and found nothing on us. TODO user: Bing Webmaster Tools + submit sitemap; consistent descriptor sentence everywhere; third-party mentions; re-test ChatGPT/Perplexity monthly.
 - 2026-10-13 Bing Webmaster Tools: signed in with Google (ampplifyacademy@gmail.com), site added manually, verified via <meta name="msvalidate.01"> in index.html head (DO NOT REMOVE). Sitemap to submit: https://ampplifyacademy.com/sitemap.xml. about.html indexing requested in Google Search Console.
+
+## SPP service applications (2026-10-13)
+Submitted in Amazon Solution Provider Portal (all "Pending Review"; Account Management already Submitted):
+- Advertising Optimization: Manage Bids/Text Ads/Daily Budget = Edit; Business Reports (Sales Summary) = Edit (only level offered), B2B = View; Account Health, Product Ads Performance Reports, View Products, FBA dashboard = View.
+- Cataloging: View Products, Brand Analytics = View; Review listing changes, Customized Content Manager, Upload Reviewable Product Images, Content, Image Uploading, Manage Inventory/Add a Product, Catalog Manager, Upload and Manage Videos, Image Management, Add Products via Upload = Edit.
+- Training: Learning and Development = View.
+Experience wording kept same as first form ("1-3 years", "No formal certification... 4 years hands-on").
+TODO: Compliance application (LLC/LTD formation, UK trademark, UK Brand Registry service, seller account opening help; no tax/VAT) - needs user OK.
