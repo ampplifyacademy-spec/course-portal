@@ -65,4 +65,5 @@ Submitted in Amazon Solution Provider Portal (all "Pending Review"; Account Mana
 - Cataloging: View Products, Brand Analytics = View; Review listing changes, Customized Content Manager, Upload Reviewable Product Images, Content, Image Uploading, Manage Inventory/Add a Product, Catalog Manager, Upload and Manage Videos, Image Management, Add Products via Upload = Edit.
 - Training: Learning and Development = View.
 Experience wording kept same as first form ("1-3 years", "No formal certification... 4 years hands-on").
-TODO: Compliance application (LLC/LTD formation, UK trademark, UK Brand Registry service, seller account opening help; no tax/VAT) - needs user OK.
+- Compliance (submitted 2026-10-13): LTD/LLC formation, UK trademark, Brand Registry via trademark (same trademark works for any marketplace), seller account opening help; no tax/VAT. Role: Learning and Development = View only.
+All five services (Account Management, Advertising Optimization, Cataloging, Training, Compliance) now submitted; awaiting Amazon review.
