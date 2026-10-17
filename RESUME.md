@@ -67,3 +67,6 @@ Submitted in Amazon Solution Provider Portal (all "Pending Review"; Account Mana
 Experience wording kept same as first form ("1-3 years", "No formal certification... 4 years hands-on").
 - Compliance (submitted 2026-10-13): LTD/LLC formation, UK trademark, Brand Registry via trademark (same trademark works for any marketplace), seller account opening help; no tax/VAT. Role: Learning and Development = View only.
 All five services (Account Management, Advertising Optimization, Cataloging, Training, Compliance) now submitted; awaiting Amazon review.
+
+## Account Management role expansion (2026-10-17)
+Only role approved on AM was Fulfillment By Amazon (Edit). Applied for 35 additional roles (Catalog Manager, Manage Inventory/Add a Product, Image Management, Add Products via Upload, A+ Content Manager, Content/Image uploading, Pricing, Business Reports, Account Health, Inventory/Fulfillment reports, Appeals, FBA dashboard/Inbound/Planning/Shipments, etc.). No Orders/PII, payment or ads-bidding roles. Awaiting Amazon review. Experience on AM = 4-7 years; other four services still say 1-3 (change after AM is approved).
