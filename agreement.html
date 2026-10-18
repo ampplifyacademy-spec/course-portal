@@ -477,10 +477,20 @@ auth.onAuthStateChanged(function (user) {
         <label class="field"><span class="lbl">User Permissions level granted</span>
           <select id="permissionLevel">
             <option value="admin">Admin &mdash; full access to all sections</option>
+            <option value="edit_all" selected>Edit &mdash; edit access in all sections, no Admin rights</option>
             <option value="limited">Limited &mdash; only the sections listed below</option>
           </select></label>
-        <label class="field"><span class="lbl">Sections granted (only for limited access)</span>
-          <input type="text" id="permissionSections" placeholder="e.g. Inventory, Orders, Advertising, Performance"></label>
+        <p class="pct-note" id="permHelp"></p>
+        <div id="permEditAllBox" style="display:none;">
+          <label class="field"><span class="lbl">Sections the Provider can NOT access (optional)</span>
+            <input type="text" id="permissionExcluded" placeholder="e.g. Payments, Account Info (bank &amp; tax), Manage Users"></label>
+        </div>
+        <div id="permLimitedBox" style="display:none;">
+          <label class="field"><span class="lbl">Sections with EDIT access</span>
+            <input type="text" id="permissionSections" placeholder="e.g. Inventory, Orders, Advertising, Performance"></label>
+          <label class="field"><span class="lbl">Sections with VIEW-only access (optional)</span>
+            <input type="text" id="permissionView" placeholder="e.g. Reports, Payments"></label>
+        </div>
       </fieldset>
 
       <fieldset>
@@ -725,6 +735,12 @@ document.getElementById('providerResidesAbroad').addEventListener('change', func
 });
 
 function updateVisibility() {
+  var pl = document.getElementById('permissionLevel').value;
+  document.getElementById('permEditAllBox').style.display = pl === 'edit_all' ? '' : 'none';
+  document.getElementById('permLimitedBox').style.display = pl === 'limited' ? '' : 'none';
+  document.getElementById('permHelp').textContent = pl === 'admin' ? 'Admin is the highest level. Use it only if the client really wants the Provider to have it.'
+    : pl === 'edit_all' ? 'The Provider can edit every section but holds no Admin rights anywhere. Amazon can see exactly this on the agreement.'
+    : 'Name the sections with Edit access, and optionally the ones with View-only access.';
   var ct = document.querySelector('input[name="clientType"]:checked');
   document.getElementById('companyFields').style.display = (!ct || ct.value === 'company') ? '' : 'none';
   const mode = document.querySelector('input[name="engagement"]:checked').value;
@@ -734,6 +750,7 @@ function updateVisibility() {
 }
 document.querySelectorAll('input[name="engagement"]').forEach(r => r.addEventListener('change', updateVisibility));
 document.querySelectorAll('input[name="clientType"]').forEach(r => r.addEventListener('change', updateVisibility));
+document.getElementById('permissionLevel').addEventListener('change', updateVisibility);
 updateVisibility();
 checkPct();
 
@@ -915,7 +932,9 @@ function buildDoc() {
   const useSeal = document.getElementById('useSeal').checked;
   const permissionLevel = document.getElementById('permissionLevel').value;
   const permissionSections = val('permissionSections');
+  const permissionView = val('permissionView'), permissionExcluded = val('permissionExcluded');
   const isAdminAccess = permissionLevel === 'admin';
+  const isEditAll = permissionLevel === 'edit_all';
   const accessGrantedRaw = val('accessGrantedDate');
   let accessGranted = accessGrantedRaw;
   if (accessGrantedRaw) {
@@ -1074,8 +1093,10 @@ function buildDoc() {
   html += '<li>Access to the Account shall be granted exclusively through Amazon Seller Central\'s built-in "User Permissions" feature, under which the Provider (or the Provider\'s designated personnel named in Schedule B) shall be added as an authorised user with their own separate login credentials, at the permission level recorded in Schedule B and determined by the Client.</li>';
   if (isAdminAccess) {
     html += '<li>The Client has elected to grant the Provider Admin-level User Permissions, covering all sections of the Account, so that the Provider can carry out its role without repeated permission changes. The Client may reduce that level to specific sections at any time, and the restrictions in this Section apply in full regardless of the level granted &mdash; in particular, the Provider shall make no change to bank, deposit, or tax details, nor to the Account\'s legal entity or registered information, at any time.</li>';
-  } else if (permissionSections) {
-    html += '<li>The Provider\'s access is limited to the following sections of the Account: ' + escapeHtml(permissionSections) + '. The Provider shall not request or use access to any other section without the Client\'s prior written authorisation.</li>';
+  } else if (isEditAll) {
+    html += '<li>The Client has granted the Provider <b>Edit-level</b> User Permissions in all sections of the Account, and <b>no Admin-level rights in any section</b>, because the Services require the Provider to create and change listings, content, inventory, shipments, advertising and similar items. ' + (permissionExcluded ? 'The following sections are not accessible to the Provider: ' + escapeHtml(permissionExcluded) + '. ' : '') + 'The restrictions in this Section apply in full: the Provider shall make no change to bank, deposit, or tax details, nor to the Account\'s legal entity or registered information, at any time. The Client may reduce this level at any time.</li>';
+  } else if (permissionSections || permissionView) {
+    html += '<li>The Provider\'s access is limited as follows. ' + (permissionSections ? 'Edit access: ' + escapeHtml(permissionSections) + '. ' : '') + (permissionView ? 'View-only access: ' + escapeHtml(permissionView) + '. ' : '') + 'The Provider shall not request or use access to any other section without the Client\'s prior written authorisation.</li>';
   }
   html += '<li>The Client retains full and exclusive ownership, control, and administrative rights over the Account at all times, including the unrestricted right to modify, restrict, or revoke the Provider\'s access at any time, with or without cause, and with or without prior notice.</li>';
   html += '<li>The Provider shall access and use the Account solely for the purpose of performing its role under this Agreement, and for no other purpose whatsoever, including but not limited to: creating or operating any other seller account; accessing, copying, or disclosing Account data for the Provider\'s own commercial benefit; or making any change to Account settings, bank/deposit details, business information, or registered documents without the Client\'s prior written authorisation.</li>';
@@ -1282,7 +1303,9 @@ function buildDoc() {
   html += '<tr><th>Post-termination settlement period</th><td>&nbsp;</td></tr>';
   html += '</tbody></table>';
 
-  const levelLabel = isAdminAccess ? 'Admin (all sections)' : (permissionSections || 'Limited');
+  const levelLabel = isAdminAccess ? 'Admin (all sections)'
+    : isEditAll ? 'Edit (all sections, no Admin rights)' + (permissionExcluded ? '; no access to: ' + permissionExcluded : '')
+    : ((permissionSections ? 'Edit: ' + permissionSections : '') + (permissionView ? (permissionSections ? '; ' : '') + 'View only: ' + permissionView : '') || 'Limited');
   html += '<h4>Schedule B &mdash; Authorised Personnel for User Permissions Access</h4>';
   html += '<p>Permission level granted by the Client: <b>' + escapeHtml(levelLabel) + '</b>.</p>';
   html += '<table class="sched"><thead><tr><th>Full name</th><th>Role / permission level</th><th>Contact email</th><th>Location (city/country)</th></tr></thead><tbody>';
