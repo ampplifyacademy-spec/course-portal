@@ -468,7 +468,7 @@ auth.onAuthStateChanged(function (user) {
           <input type="text" id="storeName"></label>
         <label class="field"><span class="lbl">Marketplace(s)</span>
           <input type="text" id="marketplaces" placeholder="e.g. Amazon.sa, Amazon.ae"></label>
-        <label class="field"><span class="lbl">Amazon Merchant Token / Seller ID</span>
+        <label class="field"><span class="lbl">Amazon Seller ID (Merchant ID). Not a password and not an API token</span>
           <input type="text" id="sellerId" placeholder="e.g. A2XXXXXXXXXXXX"></label>
         <label class="field"><span class="lbl">Account registered email (owner login &mdash; never a password)</span>
           <input type="text" id="accountEmail"></label>
@@ -998,7 +998,7 @@ function buildDoc() {
   }
   html += '<div class="fld"><b>Amazon Store / Account Name:</b> ' + fillOr(storeName, '[store name]') + '</div>';
   html += '<div class="fld"><b>Marketplace(s):</b> ' + fillOr(marketplaces, '[marketplace(s)]') + '</div>';
-  html += '<div class="fld"><b>Amazon Merchant Token / Seller ID:</b> ' + fillOr(sellerId, '[seller ID]') + '</div>';
+  html += '<div class="fld"><b>Amazon Seller ID (Merchant ID):</b> ' + fillOr(sellerId, '[seller ID]') + '</div>';
   html += '<div class="fld"><b>Account Registered Email:</b> ' + fillOr(accountEmail, '[account email]') + '</div>';
   html += '<div class="fld"><b>Effective Date:</b> ' + fillOr(effectiveDate, '[effective date]') + '</div>';
   html += '<div class="fld"><b>Account to be Handled From (location):</b> ' + fillOr(handlingLocation, '[location]') + '</div>';
@@ -1098,6 +1098,7 @@ function buildDoc() {
   } else if (permissionSections || permissionView) {
     html += '<li>The Provider\'s access is limited as follows. ' + (permissionSections ? 'Edit access: ' + escapeHtml(permissionSections) + '. ' : '') + (permissionView ? 'View-only access: ' + escapeHtml(permissionView) + '. ' : '') + 'The Provider shall not request or use access to any other section without the Client\'s prior written authorisation.</li>';
   }
+  html += '<li>The Seller ID (Merchant ID) printed in this Agreement identifies the Client\'s Account only. It is not a password. The Provider shall use it only for the Client\'s own Account, shall not share it with any other seller, and shall not use it for any other seller account. No password, authentication code, or API credential is recorded in this Agreement.</li>';
   html += '<li>The Client retains full and exclusive ownership, control, and administrative rights over the Account at all times, including the unrestricted right to modify, restrict, or revoke the Provider\'s access at any time, with or without cause, and with or without prior notice.</li>';
   html += '<li>The Provider shall access and use the Account solely for the purpose of performing its role under this Agreement, and for no other purpose whatsoever, including but not limited to: creating or operating any other seller account; accessing, copying, or disclosing Account data for the Provider\'s own commercial benefit; or making any change to Account settings, bank/deposit details, business information, or registered documents without the Client\'s prior written authorisation.</li>';
   html += '<li>Where the Provider\'s personnel access the Account remotely (including via screen-sharing or remote-desktop tools), such access shall at all times be under the Provider\'s own authorised User Permissions login, and never under the Client\'s owner-level credentials.</li>';
@@ -1326,7 +1327,7 @@ function buildDoc() {
   html += '<p><b>To:</b> Amazon Seller Performance / Account Verification</p>';
   html += '<div class="fld"><b>Seller of record:</b> ' + fillOr(clientCompany || clientName, isCompanyClient ? '[company name]' : '[client name]') + '</div>';
   html += '<div class="fld"><b>Store name:</b> ' + fillOr(storeName, '[store name]') + '</div>';
-  html += '<div class="fld"><b>Merchant Token / Seller ID:</b> ' + fillOr(sellerId, '[seller ID]') + '</div>';
+  html += '<div class="fld"><b>Seller ID (Merchant ID):</b> ' + fillOr(sellerId, '[seller ID]') + '</div>';
   html += '<div class="fld"><b>Account registered email:</b> ' + fillOr(accountEmail, '[account email]') + '</div>';
   html += '<div class="fld"><b>Marketplace(s):</b> ' + fillOr(marketplaces, '[marketplace(s)]') + '</div>';
   html += '<p>I confirm that I am the owner of the Amazon selling account identified above, and that I have knowingly authorised the third party named below to access and operate that account on my behalf' + (includesService ? ', in the capacity of an account management service provider' : '') + (includesPartner ? (includesService ? ' and as a profit-sharing business partner' : ', in the capacity of a profit-sharing business partner') : '') + '.</p>';
