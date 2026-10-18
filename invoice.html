@@ -54,8 +54,15 @@
     body { background:#fff; }
     .no-print, .form-col { display:none !important; }
     .shell { padding:0; max-width:none; } .layout { display:block; }
-    #inv { border:0; padding:0; border-radius:0; }
-    @page { margin:16mm; }
+    #inv { border:0; padding:0; border-radius:0; min-height:0; }
+    #inv .hd { padding-bottom:12px; margin-bottom:14px; }
+    #inv .parties { margin-bottom:14px; }
+    #inv td { padding:7px 10px; }
+    #inv .box { margin-top:12px; padding:9px 12px; }
+    #inv .foot { margin-top:14px; padding-top:8px; }
+    #inv .signoff { margin-top:16px; break-inside:avoid; page-break-inside:avoid; }
+    #inv .tot, #inv .box, #inv table, #inv tr { break-inside:avoid; page-break-inside:avoid; }
+    @page { size:A4; margin:10mm 12mm; }
   }
   #inv .signoff { display:flex; justify-content:flex-end; margin-top:34px; page-break-inside:avoid; }
   #inv .signoff .blk { width:280px; font-size:.86rem; }
@@ -394,6 +401,8 @@ function render() {
   var adv = paid ? total : advIn;
   var due = Math.max(0, total - adv);
   var part = !paid && adv > 0;
+  var settled = paidFlag && advIn > 0 && advIn < total;   // advance first, balance paid later
+  var finalAmt = total - advIn;
   var advDt = $('advDate').value ? new Date($('advDate').value + 'T00:00:00').toLocaleDateString('en-GB', { day: '2-digit', month: 'long', year: 'numeric' }) : '';
   var d = $('invDate').value ? new Date($('invDate').value + 'T00:00:00') : new Date();
   var dateStr = d.toLocaleDateString('en-GB', { day: '2-digit', month: 'long', year: 'numeric' });
@@ -408,11 +417,12 @@ function render() {
     '<b>' + esc($('sName').value) + '</b><br><span style="white-space:pre-line;font-size:.86rem;color:#475569;">' + esc($('sAddr').value) + '</span><br><span style="font-size:.86rem;color:#475569;">' + esc($('sContact').value) + '</span></div>' +
     '<div><h3>INVOICE</h3><div class="meta">No: <b>' + esc($('invNo').value || '—') + '</b><br>Date: ' + esc(dateStr) + '<br><span class="stamp ' + (paid ? 'paid' : (part ? 'part' : 'unpaid')) + '" style="margin-top:8px;">' + (paid ? 'PAID' : (part ? 'PART PAID' : 'DUE')) + '</span></div></div></div>' +
     '<div class="parties"><div><b>Billed to</b>' + esc($('cName').value || '—') + '<br>' + esc($('cEmail').value) + (($('cPhone').value) ? '<br>' + esc($('cPhone').value) : '') + (($('cAddr').value) ? '<br><span style="white-space:pre-line;">' + esc($('cAddr').value) + '</span>' : '') + '</div>' +
-    '<div><b>Payment status</b>' + (paid ? 'Payment received' + (pd ? ' on ' + esc(pd) : '') + '. Thank you.' : (part ? 'Advance of ' + money(adv) + ' ' + esc(cur) + ' received' + (advDt ? ' on ' + esc(advDt) : '') + '.<br><b style="color:#b91c1c;">Balance due: ' + money(due) + ' ' + esc(cur) + '</b>' : 'Payment is due.')) + '</div></div>' +
+    '<div><b>Payment status</b>' + (settled ? '<b style="color:#15803d;">Paid in full.</b><br>Invoice total: ' + money(total) + ' ' + esc(cur) + '<br>Advance: ' + money(advIn) + ' ' + esc(cur) + (advDt ? ' (' + esc(advDt) + ')' : '') + '<br>Final payment: ' + money(finalAmt) + ' ' + esc(cur) + (pd ? ' (' + esc(pd) + ')' : '') + '<br>Balance due: 0.00 ' + esc(cur) : paid ? 'Payment received' + (pd ? ' on ' + esc(pd) : '') + '. Thank you.' : (part ? 'Advance of ' + money(adv) + ' ' + esc(cur) + ' received' + (advDt ? ' on ' + esc(advDt) : '') + '.<br><b style="color:#b91c1c;">Balance due: ' + money(due) + ' ' + esc(cur) + '</b>' : 'Payment is due.')) + '</div></div>' +
     '<table><thead><tr><th style="width:36px;">#</th><th>Service</th><th class="r">Qty</th><th class="r">Price (' + esc(cur) + ')</th><th class="r">Amount (' + esc(cur) + ')</th></tr></thead><tbody>' + rows + '</tbody></table>' +
     '<div class="tot"><div><span>Subtotal</span><span>' + money(sub) + ' ' + esc(cur) + '</span></div>' +
     (disc ? '<div><span>Discount</span><span>- ' + money(disc) + ' ' + esc(cur) + '</span></div>' : '') +
     '<div class="g"><span>Total</span><span>' + money(total) + ' ' + esc(cur) + '</span></div>' +
+    (settled ? '<div><span>Advance paid' + (advDt ? ' (' + esc(advDt) + ')' : '') + '</span><span>- ' + money(advIn) + ' ' + esc(cur) + '</span></div><div><span>Final payment received' + (pd ? ' (' + esc(pd) + ')' : '') + '</span><span>- ' + money(finalAmt) + ' ' + esc(cur) + '</span></div><div class="g"><span>Balance due</span><span>0.00 ' + esc(cur) + '</span></div>' : '') +
     (part ? '<div><span>Advance paid' + (advDt ? ' (' + esc(advDt) + ')' : '') + '</span><span>- ' + money(adv) + ' ' + esc(cur) + '</span></div><div class="g"><span>Balance due</span><span>' + money(due) + ' ' + esc(cur) + '</span></div>' : '') + '</div>' +
     ($('payInfo').value && !paid ? '<div class="box"><b>Payment details</b>\n' + esc($('payInfo').value) + '</div>' : '') +
     ($('notes').value ? '<div class="box"><b>Notes</b>\n' + esc($('notes').value) + '</div>' : '') +
@@ -420,6 +430,21 @@ function render() {
     '<div class="foot">Thank you for choosing Ampplify Academy.</div>';
 }
 render();
+/* Print on ONE page: measure the invoice at A4 print width and scale it down if it is longer than the page,
+   so the signature and seal are never split across two pages. */
+(function () {
+  var PAGE_W = 718, PAGE_H = 1040;   // A4 minus margins, in CSS px
+  window.addEventListener('beforeprint', function () {
+    var el = document.getElementById('inv'); if (!el) return;
+    el.style.zoom = ''; el.style.width = PAGE_W + 'px'; el.style.padding = '0'; el.style.minHeight = '0'; el.style.border = '0';
+    var h = el.scrollHeight, z = h > PAGE_H ? PAGE_H / h : 1;
+    el.style.width = ''; el.style.padding = ''; el.style.minHeight = ''; el.style.border = '';
+    if (z < 1) el.style.zoom = String(Math.max(0.5, z * 0.97));
+  });
+  window.addEventListener('afterprint', function () {
+    var el = document.getElementById('inv'); if (el) el.style.zoom = '';
+  });
+})();
 </script>
 </body>
 </html>
