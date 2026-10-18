@@ -1009,6 +1009,10 @@ function buildDoc() {
       html += '<li>' + fillOr('', '[no services selected &mdash; add at least one]') + '</li>';
     }
     html += '</ol>';
+    const planBoxes = Array.from(document.querySelectorAll('#siteSvcList input.svc[data-plan="1"]:checked'));
+    if (planBoxes.length) {
+      html += '<p><span class="cond">Full-service plan.</span> A full-service plan is one fixed service charge that covers exactly the services listed under that plan. It is for Clients who want everything handled rather than choosing separate services. The plan does not include any service that is not listed under it; extra work is agreed in writing first. One-time costs named in the plan (for example EAN/UPC, trademark registration, package design) are separate third-party or registration costs paid by the Client and are not part of the service charge.</p>';
+    }
     if (svcDetail) {
       html += '<p>The specific scope, deliverables, and reporting cadence for the Services are set out in Schedule A (Statement of Work) at the end of this Agreement, which forms an integral part hereof.</p>';
     } else {
@@ -1018,7 +1022,13 @@ function buildDoc() {
 
   // --- Service-specific terms (one block per website service that was ticked) ----
   if (includesService) {
-    const siteTitles = Array.from(document.querySelectorAll('#siteSvcList input.svc:checked')).map(function (x) { return x.getAttribute('data-title'); });
+    const siteTitles = [];
+    Array.from(document.querySelectorAll('#siteSvcList input.svc:checked')).forEach(function (x) {
+      siteTitles.push(x.getAttribute('data-title'));
+      if (x.getAttribute('data-plan') === '1') {
+        try { JSON.parse(x.getAttribute('data-includes') || '[]').forEach(function (t) { siteTitles.push(t); }); } catch (e) {}
+      }
+    });
     const seen = {};
     const blocks = [];
     siteTitles.forEach(function (t) {
@@ -1423,6 +1433,7 @@ document.getElementById('printBtn').addEventListener('click', function() {
    printed in the agreement's services list and Schedule A (they are picked up like the built-in
    checkboxes because they carry the same "svc" class). */
 var SITE_SVC = [], PURCHASES = [];
+function planNum(v) { var n = parseFloat(String(v == null ? '' : v).replace(/,/g, '')); return isNaN(n) ? 0 : n; }
 function refreshSiteTotal() {
   var cur = (SITE_SVC.cur || ''), t = 0, n = 0;
   document.querySelectorAll('#siteSvcList input.svc:checked').forEach(function (x) { t += Number(x.getAttribute('data-price') || 0); n++; });
@@ -1446,6 +1457,28 @@ function initSiteServices() {
       cb.setAttribute('data-title', s.title); cb.setAttribute('data-price', s.price || 0);
       cb.addEventListener('change', refreshSiteTotal);
       l.appendChild(cb); l.appendChild(document.createTextNode(' ' + s.title + (s.price ? ' — ' + s.price + ' ' + SITE_SVC.cur : '')));
+      box.appendChild(l);
+    });
+    /* Full-service plans (Private Label / Micro Private Label): one tick = every service the plan includes. */
+    var plans = c.course.plans || [];
+    if (plans.length) {
+      var hd = document.createElement('div'); hd.className = 'lbl'; hd.style.cssText = 'margin:8px 0 2px;font-weight:700;';
+      hd.textContent = 'Full-service plans (tick one instead of picking separate services)'; box.appendChild(hd);
+    }
+    plans.forEach(function (pl) {
+      var base = planNum(pl.basePrice), costs = pl.oneTimeCosts || [], costTotal = 0;
+      costs.forEach(function (ct) { costTotal += planNum(ct.amount); });
+      var inc = (pl.includedServices || []).map(function (x) { return String(x).trim(); });
+      var l = document.createElement('label');
+      var cb = document.createElement('input'); cb.type = 'checkbox'; cb.className = 'svc';
+      cb.value = pl.title + ' (full-service plan). Included services: ' + inc.join('; ') +
+        '. Plan service charge: ' + base + ' ' + SITE_SVC.cur +
+        (costs.length ? '. One-time costs, separate from the service charge and paid by the Client: ' + costs.map(function (ct) { return String(ct.label).trim() + ' ' + planNum(ct.amount) + ' ' + SITE_SVC.cur; }).join('; ') : '') + '.';
+      cb.setAttribute('data-title', pl.title); cb.setAttribute('data-price', base + costTotal);
+      cb.setAttribute('data-plan', '1'); cb.setAttribute('data-includes', JSON.stringify(inc));
+      cb.addEventListener('change', refreshSiteTotal);
+      l.appendChild(cb);
+      l.appendChild(document.createTextNode(' ' + pl.title + ' \u2014 ' + base + ' ' + SITE_SVC.cur + (costTotal ? ' + ' + costTotal + ' one-time costs' : '') + ' (' + inc.length + ' services included)'));
       box.appendChild(l);
     });
   });

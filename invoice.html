@@ -118,6 +118,8 @@
           <div class="items" id="items"></div>
           <label class="f"><span>Add a service from the website</span>
             <select id="addSite"><option value="">— choose a service —</option></select></label>
+          <label class="f"><span>Add a full-service plan (PL / MPL: lists every included service)</span>
+            <select id="addPlan"><option value="">&mdash; choose a plan &mdash;</option></select></label>
           <button type="button" class="ghost sm" id="addRowBtn">+ Add custom line</button>
           <label class="f" style="margin-top:12px;"><span>Discount (amount, optional)</span><input type="number" id="disc" min="0" step="0.01"></label>
         </fieldset>
@@ -177,6 +179,11 @@ function init() {
       var o = document.createElement('option');
       o.value = i; o.textContent = s.title + (s.price ? ' — ' + s.price + ' ' + (c.course.currency || '') : '');
       sel.appendChild(o);
+    });
+    (c.course.plans || []).forEach(function (pl, i) {
+      var o = document.createElement('option');
+      o.value = i; o.textContent = pl.title + ' \u2014 ' + (pl.basePrice || 0) + ' ' + (c.course.currency || '');
+      $('addPlan').appendChild(o);
     });
     $('invCur').value = c.course.currency || 'SAR';
     if (!$('sAddr').value && c.footer && c.footer.address) $('sAddr').value = c.footer.address;
@@ -241,6 +248,17 @@ $('addSite').addEventListener('change', function () {
   var s = SITE && SITE.course.services[this.value]; if (!s) return;
   ITEMS.push({ d: s.title, q: 1, p: num(s.price) }); this.value = ''; render();
 });
+$('addPlan').addEventListener('change', function () {
+  var pl = SITE && SITE.course.plans && SITE.course.plans[this.value]; if (!pl) return;
+  var inc = (pl.includedServices || []).map(function (x) { return String(x).trim(); }).filter(Boolean);
+  ITEMS.push({ d: pl.title + ' \u2014 full-service plan', q: 1, p: num(pl.basePrice),
+    n: 'Includes: ' + inc.join('; ') + '. This is one fixed service charge covering only the services listed.' });
+  (pl.oneTimeCosts || []).forEach(function (ct) {
+    if (!ct || !ct.label) return;
+    ITEMS.push({ d: String(ct.label).trim(), q: 1, p: num(ct.amount), n: 'One-time cost for the ' + pl.title + ' plan. Not part of the service charge.' });
+  });
+  this.value = ''; render();
+});
 $('addRowBtn').addEventListener('click', function () { ITEMS.push({ d: '', q: 1, p: 0 }); render(); });
 
 /* ---- saving: the number is assigned automatically and every invoice is kept in Firestore ---- */
@@ -260,7 +278,7 @@ function collectInvoice() {
   return {
     kind: 'invoice', no: $('invNo').value, n: CUR_N, date: $('invDate').value,
     client: { name: $('cName').value, email: $('cEmail').value, phone: $('cPhone').value, addr: $('cAddr').value },
-    items: ITEMS.map(function (r) { return { d: r.d, q: r.q, p: r.p }; }),
+    items: ITEMS.map(function (r) { return { d: r.d, q: r.q, p: r.p, n: r.n || '' }; }),
     disc: disc, total: sub - disc, cur: $('invCur').value,
     status: $('invStatus').value, paidDate: $('paidDate').value,
     seller: { name: $('sName').value, addr: $('sAddr').value, contact: $('sContact').value },
@@ -317,7 +335,7 @@ function openInvoice(x) {
   $('disc').value = x.disc || ''; $('notes').value = x.notes || ''; $('payInfo').value = x.payInfo || '';
   if (x.seller) { $('sName').value = x.seller.name || ''; $('sAddr').value = x.seller.addr || ''; $('sContact').value = x.seller.contact || ''; }
   $('showSeal').checked = x.showSeal !== false;
-  ITEMS = (x.items || []).map(function (r) { return { d: r.d, q: r.q, p: r.p }; });
+  ITEMS = (x.items || []).map(function (r) { return { d: r.d, q: r.q, p: r.p, n: r.n || '' }; });
   $('items').innerHTML = ''; render(); window.scrollTo(0, 0);
 }
 function newInvoice() {
@@ -370,7 +388,7 @@ function render() {
   $('paidDateRow').style.display = paid ? '' : 'none';
   var pd = $('paidDate').value ? new Date($('paidDate').value + 'T00:00:00').toLocaleDateString('en-GB', { day: '2-digit', month: 'long', year: 'numeric' }) : '';
   var rows = ITEMS.length ? ITEMS.map(function (r, i) {
-    return '<tr><td>' + (i + 1) + '</td><td>' + esc(r.d) + '</td><td class="r">' + r.q + '</td><td class="r">' + money(r.p) + '</td><td class="r">' + money(r.p * r.q) + '</td></tr>';
+    return '<tr><td>' + (i + 1) + '</td><td>' + esc(r.d) + (r.n ? '<div style="font-size:.78rem;color:#475569;margin-top:3px;line-height:1.45;">' + esc(r.n) + '</div>' : '') + '</td><td class="r">' + r.q + '</td><td class="r">' + money(r.p) + '</td><td class="r">' + money(r.p * r.q) + '</td></tr>';
   }).join('') : '<tr><td colspan="5" style="color:#94a3b8;text-align:center;padding:26px;">Add a service to see it here</td></tr>';
   $('inv').innerHTML =
     '<div class="hd"><div><img src="' + esc(logo) + '" alt="Ampplify Academy" onerror="this.style.display=\'none\'">' +
