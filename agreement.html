@@ -411,14 +411,24 @@ auth.onAuthStateChanged(function (user) {
         <legend>Client (account owner)</legend>
         <label class="field"><span class="lbl">Load from a client's purchase (fills name and ticks their services)</span>
           <select id="loadPurchase"><option value="">— choose a client —</option></select></label>
+        <div class="field">
+          <span class="lbl">Type of Amazon account</span>
+          <div style="display:flex;gap:18px;flex-wrap:wrap;margin-top:4px;font-family:'Avenir Next','Segoe UI',sans-serif;font-size:13px;">
+            <label style="display:flex;align-items:center;gap:6px;"><input type="radio" name="clientType" value="individual"> Individual account (no company)</label>
+            <label style="display:flex;align-items:center;gap:6px;"><input type="radio" name="clientType" value="company" checked> Company account</label>
+          </div>
+          <span class="pct-note">Individual: only the person's own details are asked for. Company: the company name, registration number and registered address are added.</span>
+        </div>
         <label class="field"><span class="lbl">Client name</span>
           <input type="text" id="clientName" placeholder="e.g. Taib Ali Khan"></label>
-        <label class="field"><span class="lbl">Company / registered name</span>
-          <input type="text" id="clientCompany" placeholder="e.g. Vindra Global Ltd"></label>
-        <label class="field"><span class="lbl">Company registration number</span>
-          <input type="text" id="clientRegNo"></label>
-        <label class="field"><span class="lbl">Registered (company) address</span>
-          <textarea id="clientAddress"></textarea></label>
+        <div id="companyFields">
+          <label class="field"><span class="lbl">Company / registered name</span>
+            <input type="text" id="clientCompany" placeholder="e.g. Vindra Global Ltd"></label>
+          <label class="field"><span class="lbl">Company registration number</span>
+            <input type="text" id="clientRegNo"></label>
+          <label class="field"><span class="lbl">Registered (company) address</span>
+            <textarea id="clientAddress"></textarea></label>
+        </div>
         <label class="field"><span class="lbl">National Address (per National ID / Passport)</span>
           <textarea id="clientHomeAddress"></textarea></label>
         <div class="two-col">
@@ -715,12 +725,15 @@ document.getElementById('providerResidesAbroad').addEventListener('change', func
 });
 
 function updateVisibility() {
+  var ct = document.querySelector('input[name="clientType"]:checked');
+  document.getElementById('companyFields').style.display = (!ct || ct.value === 'company') ? '' : 'none';
   const mode = document.querySelector('input[name="engagement"]:checked').value;
   document.getElementById('serviceFields').style.display = (mode === 'service' || mode === 'both') ? '' : 'none';
   document.getElementById('partnerFields').style.display = (mode === 'partnership' || mode === 'both') ? '' : 'none';
   document.getElementById('researchFields').style.display = (mode === 'partnership' || mode === 'both') ? '' : 'none';
 }
 document.querySelectorAll('input[name="engagement"]').forEach(r => r.addEventListener('change', updateVisibility));
+document.querySelectorAll('input[name="clientType"]').forEach(r => r.addEventListener('change', updateVisibility));
 updateVisibility();
 checkPct();
 
@@ -880,9 +893,11 @@ function buildDoc() {
   const includesService = (mode === 'service' || mode === 'both');
   const includesPartner = (mode === 'partnership' || mode === 'both');
 
-  const clientName = val('clientName'), clientCompany = val('clientCompany'), clientRegNo = val('clientRegNo'),
+  const clientTypeEl = document.querySelector('input[name="clientType"]:checked');
+  const isCompanyClient = !clientTypeEl || clientTypeEl.value === 'company';
+  const clientName = val('clientName'), clientCompany = isCompanyClient ? val('clientCompany') : '', clientRegNo = isCompanyClient ? val('clientRegNo') : '',
         clientId = val('clientId'), clientIdType = val('clientIdType'), clientIdCountry = val('clientIdCountry'),
-        clientAddress = val('clientAddress'), clientHomeAddress = val('clientHomeAddress'),
+        clientAddress = isCompanyClient ? val('clientAddress') : '', clientHomeAddress = val('clientHomeAddress'),
         clientResidesAbroad = document.getElementById('clientResidesAbroad').checked,
         clientResIdType = val('clientResIdType'), clientResCountry = val('clientResCountry'),
         clientResId = val('clientResId'), clientResidenceAddress = val('clientResidenceAddress'),
@@ -949,10 +964,14 @@ function buildDoc() {
   html += '<p>This Agreement is made as of the Effective Date stated below, by and between:</p>';
 
   html += '<div class="fld"><b>Client / Account Owner:</b> ' + fillOr(clientName, '[client name]') + '</div>';
-  html += '<div class="fld"><b>Registered / Company Name:</b> ' + fillOr(clientCompany, '[company name]') + '</div>';
-  html += '<div class="fld"><b>Company Registration No.:</b> ' + fillOr(clientRegNo, '[reg. no.]') + '</div>';
-  html += '<div class="fld"><b>Registered (Company) Address:</b> ' + fillOr(clientAddress, '[company address]') + '</div>';
-  html += '<div class="fld"><b>National Address:</b> ' + fillOr(clientHomeAddress, '[national address]') + '</div>';
+  if (isCompanyClient) {
+    html += '<div class="fld"><b>Registered / Company Name:</b> ' + fillOr(clientCompany, '[company name]') + '</div>';
+    html += '<div class="fld"><b>Company Registration No.:</b> ' + fillOr(clientRegNo, '[reg. no.]') + '</div>';
+    html += '<div class="fld"><b>Registered (Company) Address:</b> ' + fillOr(clientAddress, '[company address]') + '</div>';
+  } else {
+    html += '<div class="fld"><b>Account type:</b> Individual (personal) Amazon seller account</div>';
+  }
+  html += '<div class="fld"><b>' + (isCompanyClient ? 'National Address' : 'Address') + ':</b> ' + fillOr(clientHomeAddress, '[national address]') + '</div>';
   html += '<div class="fld"><b>' + (clientIdType || 'National ID') + ' (' + fillOr(clientIdCountry, '[nationality]') + '):</b> ' + fillOr(clientId, '[ID no.]') + '</div>';
   if (clientResidesAbroad) {
     html += '<div class="fld"><b>Residence Country Address:</b> ' + fillOr(clientResidenceAddress, '[residence address]') + '</div>';
@@ -1282,7 +1301,7 @@ function buildDoc() {
   html += '<div class="loa">';
   html += '<h4>Annex &mdash; Letter of Authorisation (for Amazon)</h4>';
   html += '<p><b>To:</b> Amazon Seller Performance / Account Verification</p>';
-  html += '<div class="fld"><b>Seller of record:</b> ' + fillOr(clientCompany || clientName, '[company name]') + '</div>';
+  html += '<div class="fld"><b>Seller of record:</b> ' + fillOr(clientCompany || clientName, isCompanyClient ? '[company name]' : '[client name]') + '</div>';
   html += '<div class="fld"><b>Store name:</b> ' + fillOr(storeName, '[store name]') + '</div>';
   html += '<div class="fld"><b>Merchant Token / Seller ID:</b> ' + fillOr(sellerId, '[seller ID]') + '</div>';
   html += '<div class="fld"><b>Account registered email:</b> ' + fillOr(accountEmail, '[account email]') + '</div>';
