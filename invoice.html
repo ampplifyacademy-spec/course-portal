@@ -47,7 +47,7 @@
   #inv .tot div { display:flex; justify-content:space-between; padding:5px 0; }
   #inv .tot .g { border-top:2px solid var(--ink); font-weight:800; font-size:1.1rem; margin-top:4px; padding-top:9px; }
   #inv .stamp { display:inline-block; border:2px solid; border-radius:6px; padding:2px 12px; font-weight:800; letter-spacing:.1em; transform:rotate(-4deg); }
-  #inv .stamp.paid { color:var(--ok); } #inv .stamp.unpaid { color:var(--bad); }
+  #inv .stamp.paid { color:var(--ok); } #inv .stamp.unpaid { color:var(--bad); } #inv .stamp.part { color:#b45309; }
   #inv .box { margin-top:22px; padding:12px 14px; background:#f8fafc; border-radius:8px; font-size:.86rem; white-space:pre-line; }
   #inv .foot { margin-top:30px; padding-top:12px; border-top:1px solid var(--line); font-size:.8rem; color:var(--soft); text-align:center; }
   @media print {
@@ -110,6 +110,11 @@
             <label class="f"><span>Currency</span><input id="invCur" value="SAR"></label>
           </div>
           <label class="f" id="paidDateRow" style="display:none;"><span>Date payment was received</span><input type="date" id="paidDate"></label>
+          <div class="row2" style="margin-top:10px;">
+            <label class="f"><span>Advance / part-payment received (amount, optional)</span><input type="number" id="advPaid" min="0" step="0.01" placeholder="0"></label>
+            <label class="f"><span>Date the advance was received</span><input type="date" id="advDate"></label>
+          </div>
+          <p class="note" id="advNote">Enter only money that has really been received. The invoice then shows the advance and the balance still due.</p>
           <label class="f" style="display:flex;gap:8px;align-items:center;"><input type="checkbox" id="showSeal" checked style="width:auto;"> <span style="margin:0;">Print company seal, signature and date</span></label>
         </fieldset>
 
@@ -280,7 +285,7 @@ function collectInvoice() {
     client: { name: $('cName').value, email: $('cEmail').value, phone: $('cPhone').value, addr: $('cAddr').value },
     items: ITEMS.map(function (r) { return { d: r.d, q: r.q, p: r.p, n: r.n || '' }; }),
     disc: disc, total: sub - disc, cur: $('invCur').value,
-    status: $('invStatus').value, paidDate: $('paidDate').value,
+    status: $('invStatus').value, paidDate: $('paidDate').value, advPaid: num($('advPaid').value), advDate: $('advDate').value,
     seller: { name: $('sName').value, addr: $('sAddr').value, contact: $('sContact').value },
     payInfo: $('payInfo').value, notes: $('notes').value, showSeal: $('showSeal').checked,
     updatedAt: firebase.firestore.FieldValue.serverTimestamp()
@@ -310,8 +315,9 @@ function loadHistory() {
     if (!HIST.length) { box.textContent = 'No saved invoices yet.'; return; }
     box.innerHTML = HIST.map(function (x, i) {
       var paid = x.status === 'paid';
+      var adv0 = Math.min(Number(x.advPaid) || 0, Number(x.total) || 0), partH = !paid && adv0 > 0 && adv0 < (Number(x.total) || 0);
       return '<div style="display:flex;gap:8px;align-items:center;justify-content:space-between;padding:7px 0;border-bottom:1px solid #e2e8f0;"><div style="min-width:0;"><b>' + esc(x.no) + '</b> &middot; ' + esc((x.client && x.client.name) || '—') +
-        '<br><span class="note">' + money(x.total || 0) + ' ' + esc(x.cur || '') + ' &middot; ' + esc(x.date || '') + ' &middot; <b style="color:' + (paid ? '#15803d' : '#b91c1c') + '">' + (paid ? 'Paid' : 'Due') + '</b></span></div>' +
+        '<br><span class="note">' + money(x.total || 0) + ' ' + esc(x.cur || '') + ' &middot; ' + esc(x.date || '') + ' &middot; <b style="color:' + (paid ? '#15803d' : (partH ? '#b45309' : '#b91c1c')) + '">' + (paid ? 'Paid' : (partH ? 'Part paid, balance ' + money((Number(x.total) || 0) - adv0) : 'Due')) + '</b></span></div>' +
         '<div style="display:flex;gap:6px;flex-shrink:0;"><button type="button" class="ghost sm" data-open="' + i + '">Open</button>' +
         (paid ? '' : '<button type="button" class="sm" data-paid="' + i + '">Mark paid</button>') + '</div></div>';
     }).join('');
@@ -332,6 +338,7 @@ function openInvoice(x) {
   $('cPhone').value = (x.client && x.client.phone) || ''; $('cAddr').value = (x.client && x.client.addr) || '';
   $('invDate').value = x.date || ''; $('invCur').value = x.cur || 'SAR';
   $('invStatus').value = x.status || 'unpaid'; $('paidDate').value = x.paidDate || '';
+  $('advPaid').value = x.advPaid || ''; $('advDate').value = x.advDate || '';
   $('disc').value = x.disc || ''; $('notes').value = x.notes || ''; $('payInfo').value = x.payInfo || '';
   if (x.seller) { $('sName').value = x.seller.name || ''; $('sAddr').value = x.seller.addr || ''; $('sContact').value = x.seller.contact || ''; }
   $('showSeal').checked = x.showSeal !== false;
@@ -340,7 +347,7 @@ function openInvoice(x) {
 }
 function newInvoice() {
   CUR_N = null; ITEMS = [];
-  ['invNo', 'cName', 'cEmail', 'cPhone', 'cAddr', 'disc', 'notes', 'paidDate'].forEach(function (id) { $(id).value = ''; });
+  ['invNo', 'cName', 'cEmail', 'cPhone', 'cAddr', 'disc', 'notes', 'paidDate', 'advPaid', 'advDate'].forEach(function (id) { $(id).value = ''; });
   $('loadClient').value = ''; $('invStatus').value = 'unpaid'; $('invDate').value = new Date().toISOString().slice(0, 10);
   $('items').innerHTML = ''; $('saveMsg').textContent = 'New invoice. The number is given automatically when you save.'; render();
 }
@@ -381,7 +388,13 @@ function render() {
   var sub = ITEMS.reduce(function (a, r) { return a + r.p * r.q; }, 0);
   var disc = Math.min(num($('disc').value), sub);
   var total = sub - disc;
-  var paid = $('invStatus').value === 'paid';
+  var paidFlag = $('invStatus').value === 'paid';
+  var advIn = Math.min(num($('advPaid').value), total);
+  var paid = paidFlag || (advIn > 0 && advIn >= total);
+  var adv = paid ? total : advIn;
+  var due = Math.max(0, total - adv);
+  var part = !paid && adv > 0;
+  var advDt = $('advDate').value ? new Date($('advDate').value + 'T00:00:00').toLocaleDateString('en-GB', { day: '2-digit', month: 'long', year: 'numeric' }) : '';
   var d = $('invDate').value ? new Date($('invDate').value + 'T00:00:00') : new Date();
   var dateStr = d.toLocaleDateString('en-GB', { day: '2-digit', month: 'long', year: 'numeric' });
   var logo = 'assets/logo.png';
@@ -393,13 +406,14 @@ function render() {
   $('inv').innerHTML =
     '<div class="hd"><div><img src="' + esc(logo) + '" alt="Ampplify Academy" onerror="this.style.display=\'none\'">' +
     '<b>' + esc($('sName').value) + '</b><br><span style="white-space:pre-line;font-size:.86rem;color:#475569;">' + esc($('sAddr').value) + '</span><br><span style="font-size:.86rem;color:#475569;">' + esc($('sContact').value) + '</span></div>' +
-    '<div><h3>INVOICE</h3><div class="meta">No: <b>' + esc($('invNo').value || '—') + '</b><br>Date: ' + esc(dateStr) + '<br><span class="stamp ' + (paid ? 'paid' : 'unpaid') + '" style="margin-top:8px;">' + (paid ? 'PAID' : 'DUE') + '</span></div></div></div>' +
+    '<div><h3>INVOICE</h3><div class="meta">No: <b>' + esc($('invNo').value || '—') + '</b><br>Date: ' + esc(dateStr) + '<br><span class="stamp ' + (paid ? 'paid' : (part ? 'part' : 'unpaid')) + '" style="margin-top:8px;">' + (paid ? 'PAID' : (part ? 'PART PAID' : 'DUE')) + '</span></div></div></div>' +
     '<div class="parties"><div><b>Billed to</b>' + esc($('cName').value || '—') + '<br>' + esc($('cEmail').value) + (($('cPhone').value) ? '<br>' + esc($('cPhone').value) : '') + (($('cAddr').value) ? '<br><span style="white-space:pre-line;">' + esc($('cAddr').value) + '</span>' : '') + '</div>' +
-    '<div><b>Payment status</b>' + (paid ? 'Payment received' + (pd ? ' on ' + esc(pd) : '') + '. Thank you.' : 'Payment is due.') + '</div></div>' +
+    '<div><b>Payment status</b>' + (paid ? 'Payment received' + (pd ? ' on ' + esc(pd) : '') + '. Thank you.' : (part ? 'Advance of ' + money(adv) + ' ' + esc(cur) + ' received' + (advDt ? ' on ' + esc(advDt) : '') + '.<br><b style="color:#b91c1c;">Balance due: ' + money(due) + ' ' + esc(cur) + '</b>' : 'Payment is due.')) + '</div></div>' +
     '<table><thead><tr><th style="width:36px;">#</th><th>Service</th><th class="r">Qty</th><th class="r">Price (' + esc(cur) + ')</th><th class="r">Amount (' + esc(cur) + ')</th></tr></thead><tbody>' + rows + '</tbody></table>' +
     '<div class="tot"><div><span>Subtotal</span><span>' + money(sub) + ' ' + esc(cur) + '</span></div>' +
     (disc ? '<div><span>Discount</span><span>- ' + money(disc) + ' ' + esc(cur) + '</span></div>' : '') +
-    '<div class="g"><span>Total</span><span>' + money(total) + ' ' + esc(cur) + '</span></div></div>' +
+    '<div class="g"><span>Total</span><span>' + money(total) + ' ' + esc(cur) + '</span></div>' +
+    (part ? '<div><span>Advance paid' + (advDt ? ' (' + esc(advDt) + ')' : '') + '</span><span>- ' + money(adv) + ' ' + esc(cur) + '</span></div><div class="g"><span>Balance due</span><span>' + money(due) + ' ' + esc(cur) + '</span></div>' : '') + '</div>' +
     ($('payInfo').value && !paid ? '<div class="box"><b>Payment details</b>\n' + esc($('payInfo').value) + '</div>' : '') +
     ($('notes').value ? '<div class="box"><b>Notes</b>\n' + esc($('notes').value) + '</div>' : '') +
     ($('showSeal').checked ? '<div class="signoff"><div class="blk"><div class="ln"><img src="assets/provider-signature.png" alt="" onerror="this.remove()"></div>Authorised signature<br>For ' + esc($('sName').value) + '<br>Date: <span class="hw">' + esc(dateStr) + '</span><br><span class="sw"><img class="seal" src="assets/company-seal.png" alt="Company seal" onerror="this.remove()"><img class="sg" src="assets/provider-signature.png" alt="" onerror="this.remove()"></span></div></div>' : '') +
