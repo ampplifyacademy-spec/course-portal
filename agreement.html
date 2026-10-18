@@ -4,7 +4,7 @@
 <meta name="robots" content="noindex, nofollow">
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
-<title>Agreement Generator — Account Access & Profit-Share</title>
+<title>Agreement Generator · Ampplify Academy</title>
 <!-- The A-and-cap mark: browser tab, bookmarks, phone home screen, and the
      card that appears when a link is shared. -->
 <link rel="icon" href="/favicon.ico" sizes="any">
@@ -16,7 +16,7 @@
 <meta property="og:image:width" content="1024">
 <meta property="og:image:height" content="1024">
 <meta name="twitter:card" content="summary">
-<meta property="og:title" content="Agreement Generator — Account Access & Profit-Share">
+<meta property="og:title" content="Agreement Generator · Ampplify Academy">
 <style>
   :root {
     --ink: #1f2937;
@@ -397,7 +397,7 @@ auth.onAuthStateChanged(function (user) {
   <header class="top">
     <div>
       <h1>Agreement Generator</h1>
-      <p>Account access, service &amp; profit-share agreement — fill in, generate, print, then sign &amp; seal.</p>
+      <p>Service, partnership or both: choose below, fill in, generate, print, then sign &amp; seal.</p>
     </div>
   </header>
 
@@ -970,7 +970,12 @@ function buildDoc() {
 
   // The document keeps one title, as the drafted agreement does; only the line
   // beneath it says which of the three arrangements this copy covers.
-  let titleMode = "Account Management, Profit-Sharing &amp; Authorised Access Agreement";
+  let titleMode = includesService && includesPartner ? "Account Management, Profit-Sharing &amp; Authorised Access Agreement"
+                : includesPartner ? "Profit-Sharing Partnership &amp; Authorised Access Agreement"
+                : "Account Management Services &amp; Authorised Access Agreement";
+  // the name a saved PDF gets (browsers use the page title as the file name)
+  window.__docTitle = (includesService && includesPartner ? 'Service and Partnership Agreement' : includesPartner ? 'Partnership Agreement' : 'Service Agreement')
+    + ((clientName || clientCompany) ? ' - ' + (clientName || clientCompany) : '') + ' - Ampplify Academy';
 
   let subMode = includesService && includesPartner ? "Amazon Seller Account — Service &amp; Profit-Sharing Partnership"
                 : includesPartner ? "Amazon Seller Account — Profit-Sharing Partnership (no separate service fee)"
@@ -1452,6 +1457,12 @@ document.getElementById('genBtn').addEventListener('click', function() {
   status.textContent = 'Generated — review below, then print.';
   document.getElementById('doc').scrollIntoView({behavior:'smooth', block:'start'});
 });
+
+(function () {
+  var oldTitle = document.title;
+  window.addEventListener('beforeprint', function () { oldTitle = document.title; if (window.__docTitle) document.title = window.__docTitle; });
+  window.addEventListener('afterprint', function () { document.title = oldTitle; });
+})();
 
 document.getElementById('printBtn').addEventListener('click', function() {
   const problem = splitProblem();
