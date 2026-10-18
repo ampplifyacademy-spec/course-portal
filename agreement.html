@@ -643,6 +643,8 @@ auth.onAuthStateChanged(function (user) {
           <input type="text" id="govLaw" placeholder="e.g. Kingdom of Saudi Arabia"></label>
         <label class="field"><span class="lbl">Notice period to end agreement (days)</span>
           <input type="text" id="noticeDays" value="30"></label>
+        <label class="field"><span class="lbl">Minimum term (months, 0 = none)</span>
+          <input type="text" id="minTermMonths" value="6"></label>
         <label class="field"><span class="lbl">Non-compete period after termination (months, 0 = none)</span>
           <input type="text" id="nonCompeteMonths" value="12"></label>
         <label style="display:flex;align-items:center;gap:8px;font-family:'Avenir Next','Segoe UI',sans-serif;font-size:13px;margin:4px 0 4px;">
@@ -893,6 +895,7 @@ function buildDoc() {
         providerResId = val('providerResId'), providerResidenceAddress = val('providerResidenceAddress'),
         providerContact = val('providerContact');
   const govLaw = val('govLaw'), noticeDays = val('noticeDays') || '30';
+  const minTermMonths = val('minTermMonths') === '' ? '6' : val('minTermMonths');
   const sellerId = val('sellerId'), accountEmail = val('accountEmail');
   const useSeal = document.getElementById('useSeal').checked;
   const permissionLevel = document.getElementById('permissionLevel').value;
@@ -1155,7 +1158,12 @@ function buildDoc() {
   html += endDate
     ? '<li>This Agreement shall commence on the Effective Date and, unless terminated earlier in accordance with this Section, shall end on ' + escapeHtml(endDate) + '. It may be extended only by written agreement of both Parties.</li>'
     : '<li>This Agreement shall commence on the Effective Date and shall continue on an ongoing basis until terminated in accordance with this Section.</li>';
-  html += '<li>Either Party may terminate this Agreement for convenience upon ' + fillOr(noticeDays, '30') + ' days\' prior written notice to the other Party.</li>';
+  if (minTermMonths && minTermMonths !== '0') {
+    html += '<li><span style="color:#c00000;font-weight:700;-webkit-print-color-adjust:exact;print-color-adjust:exact;">Minimum term.</span> This Agreement runs for at least ' + escapeHtml(minTermMonths) + ' months from the Effective Date. Neither Party may end it for convenience before that minimum term is over. The exit rules for the research stage (see &ldquo;Project Stages, Starting Fee &amp; Exit Terms&rdquo;, where included) apply in that stage and are not affected by this minimum term.</li>';
+    html += '<li><span style="color:#c00000;font-weight:700;-webkit-print-color-adjust:exact;print-color-adjust:exact;">Notice to leave.</span> After the minimum term, either Party (the Provider as well as the Client) may end this Agreement by giving the other Party ' + fillOr(noticeDays, '30') + ' days\' written notice. Notice may be given during the last ' + fillOr(noticeDays, '30') + ' days of the minimum term so that the exit takes effect when it ends, but never earlier.</li>';
+  } else {
+    html += '<li>Either Party may terminate this Agreement for convenience upon ' + fillOr(noticeDays, '30') + ' days\' prior written notice to the other Party.</li>';
+  }
   html += '<li>Either Party may terminate this Agreement immediately upon written notice if the other Party materially breaches this Agreement and fails to remedy such breach within fourteen (14) days of receiving written notice thereof, or if the other Party becomes insolvent, ceases business, or engages in fraudulent or illegal activity in connection with the Account.</li>';
   html += '<li>Upon termination, the provisions on access revocation, confidentiality, data protection' + (includesPartner ? ', accrued but unpaid profit share, exit and Account ownership' : '') + ', liability, and governing law shall survive.</li>';
   html += '</ol>';
@@ -1204,6 +1212,7 @@ function buildDoc() {
   section('Governing Law &amp; Dispute Resolution');
   html += '<ol class="clauses">';
   html += '<li>This Agreement is governed by the laws of ' + fillOr(govLaw, '[jurisdiction]') + '.</li>';
+  html += '<li><span style="color:#c00000;font-weight:700;-webkit-print-color-adjust:exact;print-color-adjust:exact;">In plain words.</span> The country named above decides which law is used to read this Agreement and which courts or arbitration body would handle a dispute. Both Parties agree to try to settle any problem by talking first, within 30 days.</li>';
   html += '<li>Any dispute arising out of or in connection with this Agreement shall first be attempted to be resolved amicably between the Parties. If not resolved within thirty (30) days, the dispute shall be referred to the courts / arbitration body of that jurisdiction, whose decision shall be final and binding.</li>';
   html += '</ol>';
 
@@ -1238,6 +1247,7 @@ function buildDoc() {
   }
   html += '<tr><th>Effective date</th><td>' + (effectiveDate ? escapeHtml(effectiveDate) : '&nbsp;') + '</td></tr>';
   html += '<tr><th>End date</th><td>' + (endDate ? escapeHtml(endDate) : 'Ongoing until terminated') + '</td></tr>';
+  html += '<tr><th>Minimum term</th><td>' + (minTermMonths && minTermMonths !== '0' ? escapeHtml(minTermMonths) + ' months' : 'None') + '</td></tr>';
   html += '<tr><th>Notice period to terminate</th><td>' + escapeHtml(noticeDays) + ' days</td></tr>';
   html += '<tr><th>Post-termination settlement period</th><td>&nbsp;</td></tr>';
   html += '</tbody></table>';
