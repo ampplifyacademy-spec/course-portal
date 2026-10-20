@@ -70,3 +70,7 @@ All five services (Account Management, Advertising Optimization, Cataloging, Tra
 
 ## Account Management role expansion (2026-10-17)
 Only role approved on AM was Fulfillment By Amazon (Edit). Applied for 35 additional roles (Catalog Manager, Manage Inventory/Add a Product, Image Management, Add Products via Upload, A+ Content Manager, Content/Image uploading, Pricing, Business Reports, Account Health, Inventory/Fulfillment reports, Appeals, FBA dashboard/Inbound/Planning/Shipments, etc.). No Orders/PII, payment or ads-bidding roles. Awaiting Amazon review. Experience on AM = 4-7 years; other four services still say 1-3 (change after AM is approved).
+
+## SPN listing approved (2026-10-20)
+Account Management listing approved and published on SPN (case 22690719971), live within 12-24h. Two earlier rejections were about banners: banner text must not mention "Amazon" and must not show a web address or contact info (final banners: spn-banners/banner-1-brand-v2.png, banner-2-services-v3.png, banner-3-marketplaces-v3.png; lighter banner-2-services-v4.png kept in reserve).
+Next: after the listing is visible, add the SPN badge/line to the website; change experience on the other four services to 4-7 years; decide on the Compliance service (does not match Amazon's Compliance category).
