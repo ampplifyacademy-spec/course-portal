@@ -82,3 +82,9 @@ Next: after the listing is visible, add the SPN badge/line to the website; chang
 - Reply to the listing case goes to contact.24arafat@gmail.com (SPP login); role/access cases go to contact@ampplifyacademy.com. Check both inboxes + spam.
 - Account Management listing: approved 2026-10-20, NOT yet visible in SPN directory search on 2026-10-21 afternoon (24h window). Recheck, then add website SPN line.
 - Still pending: AM 36-role review (case 22649993481), Cataloging/Training/Compliance role reviews; then set the four newer services' experience to 4-7 years.
+
+## SEO guides (2026-10-21)
+- Published 4 guides: how-to-open-amazon-seller-account, amazon-ppc-basics, amazon-listing-optimization-guide, selling-on-amazon-saudi-arabia-uae (footer links on all pages, sitemap.xml 14 URLs, llms.txt). Generator: scripts/make_guide.py + scripts/guides/*.json.
+- Google Search Console "Request indexing" done for the first 3; selling-on-amazon-saudi-arabia-uae.html STILL TO REQUEST (usage limit hit).
+- Weekly scheduled task "ampplify-weekly-seo-guide" (Mondays ~10:00) writes one more guide per week from a topic queue and pushes it; Request indexing stays manual.
+- Search Console 2026-10-21: 10 indexed, 2 not indexed, 0 clicks. Still TODO: Bing sitemap submit, backlinks (Facebook, YouTube, X, Crunchbase, Medium, LinkedIn personal profile website field), LinkedIn Company Page blocked.
