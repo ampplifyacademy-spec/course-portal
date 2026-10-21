@@ -74,3 +74,11 @@ Only role approved on AM was Fulfillment By Amazon (Edit). Applied for 35 additi
 ## SPN listing approved (2026-10-20)
 Account Management listing approved and published on SPN (case 22690719971), live within 12-24h. Two earlier rejections were about banners: banner text must not mention "Amazon" and must not show a web address or contact info (final banners: spn-banners/banner-1-brand-v2.png, banner-2-services-v3.png, banner-3-marketplaces-v3.png; lighter banner-2-services-v4.png kept in reserve).
 Next: after the listing is visible, add the SPN badge/line to the website; change experience on the other four services to 4-7 years; decide on the Compliance service (does not match Amazon's Compliance category).
+
+## Advertising Optimization (2026-10-21)
+- Roles: Amazon APPROVED all requested roles (case 22569711071, email to contact@ampplifyacademy.com). Qualification shows Completed.
+- SPN listing created via SPP -> Advertising Optimization -> Create Listing and SUBMITTED 2026-10-21 ("Solution Listing Submitted"). Content: display name Ampplify Academy, logo spn-banners/spn-logo-1000.png, specialties Running Ad Campaigns / PPC Ads / ACoS Optimization, languages English/Hindi/Bengali, ALL seller locations (41), ALL 21 marketplaces, service types Sponsored Brands + Sponsored Products + Brand Store Creation and Management, uniform price SAR 280/month each (placeholder = Performance Management plan; adjust later via Edit Listing). Banners: spn-banners/ads-banner-1/2/3.png (no Amazon word, no URL, few words; generator script not in repo).
+- Note: description still mentions "Sponsored Display" although the form has no Display service type.
+- Reply to the listing case goes to contact.24arafat@gmail.com (SPP login); role/access cases go to contact@ampplifyacademy.com. Check both inboxes + spam.
+- Account Management listing: approved 2026-10-20, NOT yet visible in SPN directory search on 2026-10-21 afternoon (24h window). Recheck, then add website SPN line.
+- Still pending: AM 36-role review (case 22649993481), Cataloging/Training/Compliance role reviews; then set the four newer services' experience to 4-7 years.
