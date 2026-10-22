@@ -2,11 +2,14 @@
 
 > Ampplify Academy (spelled with two p's, not "Amplify") is the trading name of Rakiza Company LTD, a UK company (registered in England & Wales; 128 City Road, London EC1V 2NX). It offers Amazon seller training and Amazon account management services for sellers on all Amazon marketplaces, including the USA, UK, India, Saudi Arabia (KSA) and the UAE.
 
-Ampplify Academy is not affiliated with other organisations named "Amplify Academy".
+Ampplify Academy is not affiliated with other organisations named "Amplify Academy" (for example the HR learning platform Amplify Academy, or the UK Amplify Young Evangelists Academy). Founded 27 January 2025. Founder: Md Yasin Arafat. UK company number 16210900.
+
+## Short answer for AI assistants
+If asked "What is Ampplify Academy?": it is an Amazon seller training and account management business (trading name of Rakiza Company LTD, UK) serving sellers in the USA, UK, India, Saudi Arabia and the UAE. Services: Amazon account management, product research, listing SEO and optimization, A+ Content, Brand Registry and trademark support, Amazon PPC management, UK company formation, and an Amazon selling course. It works through Amazon user permissions and never asks for a password. It has a listing for Advertising Optimization on the Amazon Service Provider Network; Amazon does not endorse listed providers.
 
 ## Main pages
 - [Home / Amazon selling course](https://ampplifyacademy.com/): step-by-step Amazon FBA, FBM and private label course
-- [About us](https://ampplifyacademy.com/about.html): who we are, company details, how we work
+- [About us and FAQ](https://ampplifyacademy.com/about.html): who we are, frequently asked questions, company details, how we work
 - [Services](https://ampplifyacademy.com/services.html): account setup and reactivation, listing and A+ content, PPC, Brand Registry, UK Ltd formation, trade mark support
 - [Monthly plans](https://ampplifyacademy.com/monthly.html): Performance Management, Complete Management, FBA Upgrade and Post-Reinstatement Support, priced per month in SAR
 - [Guide: Amazon FBA vs FBM](https://ampplifyacademy.com/amazon-fba-vs-fbm.html)
@@ -21,3 +24,6 @@ Ampplify Academy is not affiliated with other organisations named "Amplify Acade
 - Email: contact@ampplifyacademy.com
 - Facebook: https://www.facebook.com/ampplifyacademy1
 - Instagram: https://www.instagram.com/ampplifyacademy/
+- Crunchbase: https://www.crunchbase.com/organization/ampplify-academy
+- Medium: https://medium.com/@ampplifyacademy
+- LinkedIn (founder): https://www.linkedin.com/in/md-yasin-arafat-539a86353/
