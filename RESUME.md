@@ -91,3 +91,9 @@ Next: after the listing is visible, add the SPN badge/line to the website; chang
 
 ## Advertising Optimization LIVE on SPN (2026-10-22)
 Public SPN search (Advertising Optimization, provider name "Ampplify Academy") now lists us: "Starts at USD 74.67 per month" (= SAR 280), languages English/Hindi/Bengali. Support case 22726119711 open (asked Amazon to confirm; corrected to Ads only). Account Management listing: see next check. Website SPN line can now be added for Advertising Optimization only after the user agrees on wording (say "listed on Amazon Service Provider Network", never "Amazon partner/endorsed").
+
+## SEO status 2026-10-22
+- Search Console: all new guide pages (selling-on-amazon-saudi-arabia-uae, give-access-to-service-provider, plus the earlier three) show "URL is on Google / Page is indexed". Property is URL-prefix https://ampplifyacademy.com/ (not a domain property); logged in on the Chrome device that holds ampplifyacademy@gmail.com.
+- Bing Webmaster: sitemap.xml resubmitted 2026-10-22 ("Processing"); earlier 10 URLs discovered; site has 15 URLs now.
+- Weekly guide task still scheduled (Mondays ~10:00).
+- Still TODO (needs the user): backlinks / profiles (Facebook page done, YouTube, X, Crunchbase, Medium, LinkedIn personal profile website field); LinkedIn Company Page blocked by workplace verification; Facebook cover with SPN badge made (spn-banners/fb-cover-spn.png) but upload is the user's; site wording for SPN listing (safe wording: "Listed on Amazon Service Provider Network"); re-check SPN listing visibility.
