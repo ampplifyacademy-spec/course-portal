@@ -88,3 +88,6 @@ Next: after the listing is visible, add the SPN badge/line to the website; chang
 - Google Search Console "Request indexing" done for the first 3; selling-on-amazon-saudi-arabia-uae.html STILL TO REQUEST (usage limit hit).
 - Weekly scheduled task "ampplify-weekly-seo-guide" (Mondays ~10:00) writes one more guide per week from a topic queue and pushes it; Request indexing stays manual.
 - Search Console 2026-10-21: 10 indexed, 2 not indexed, 0 clicks. Still TODO: Bing sitemap submit, backlinks (Facebook, YouTube, X, Crunchbase, Medium, LinkedIn personal profile website field), LinkedIn Company Page blocked.
+
+## Advertising Optimization LIVE on SPN (2026-10-22)
+Public SPN search (Advertising Optimization, provider name "Ampplify Academy") now lists us: "Starts at USD 74.67 per month" (= SAR 280), languages English/Hindi/Bengali. Support case 22726119711 open (asked Amazon to confirm; corrected to Ads only). Account Management listing: see next check. Website SPN line can now be added for Advertising Optimization only after the user agrees on wording (say "listed on Amazon Service Provider Network", never "Amazon partner/endorsed").
