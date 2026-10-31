@@ -141,6 +141,15 @@
         </fieldset>
 
         <fieldset>
+          <legend>Exchange rate (shown on the invoice)</legend>
+          <div class="row2">
+            <label class="f"><span>Our service-charge currency</span><input id="fxBase" placeholder="SAR" maxlength="6" style="text-transform:uppercase;"></label>
+            <label class="f"><span>Rate: 1 of that currency = ? (client's currency)</span><input type="number" id="fxRate" min="0" step="0.0001" placeholder="e.g. 27.8"></label>
+          </div>
+          <p class="note">Enter the rate and the invoice shows our service charge in our own currency, the rate, and the amount in the client's currency. It also converts the advance. Leave the rate empty to hide this block. Changing the currency above and typing a rate fills this in automatically.</p>
+        </fieldset>
+
+        <fieldset>
           <legend>Services (line items)</legend>
           <div class="items" id="items"></div>
           <label class="f"><span>Add a service from the website</span>
@@ -223,6 +232,7 @@ $('invCur').addEventListener('change', function () {
       ITEMS.forEach(function (it) { it.p = Math.round(it.p * rate * 100) / 100; });
       ['disc', 'advPaid'].forEach(function (id) { if ($(id).value) $(id).value = Math.round(num($(id).value) * rate * 100) / 100; });
       $('items').innerHTML = '';
+      if (!$('fxRate').value) { $('fxBase').value = old; $('fxRate').value = rate; }
     }
   }
   LASTCUR = v; render();
@@ -342,6 +352,7 @@ function collectInvoice() {
     status: $('invStatus').value, paidDate: $('paidDate').value, advPaid: num($('advPaid').value), advDate: $('advDate').value,
     seller: { name: $('sName').value, addr: $('sAddr').value, contact: $('sContact').value },
     payInfo: $('payInfo').value, notes: $('notes').value, showSeal: $('showSeal').checked,
+    fx: { base: $('fxBase').value, rate: $('fxRate').value },
     rcv: { method: $('rcvMethod').value, amt: $('rcvAmt').value, from: $('rcvFrom').value, acct: $('rcvAcct').value, bank: $('rcvBank').value },
     updatedAt: firebase.firestore.FieldValue.serverTimestamp()
   };
@@ -397,6 +408,7 @@ function openInvoice(x) {
   $('disc').value = x.disc || ''; $('notes').value = x.notes || ''; $('payInfo').value = x.payInfo || '';
   if (x.seller) { $('sName').value = x.seller.name || ''; $('sAddr').value = x.seller.addr || ''; $('sContact').value = x.seller.contact || ''; }
   $('showSeal').checked = x.showSeal !== false;
+  var fx = x.fx || {}; $('fxBase').value = fx.base || ''; $('fxRate').value = fx.rate || '';
   var rc = x.rcv || {};
   $('rcvMethod').value = rc.method || 'Bank transfer'; $('rcvAmt').value = rc.amt || ''; $('rcvFrom').value = rc.from || ''; $('rcvAcct').value = rc.acct || ''; $('rcvBank').value = rc.bank || '';
   ITEMS = (x.items || []).map(function (r) { return { d: r.d, q: r.q, p: r.p, n: r.n || '' }; });
@@ -404,7 +416,7 @@ function openInvoice(x) {
 }
 function newInvoice() {
   CUR_N = null; ITEMS = [];
-  ['invNo', 'cName', 'cEmail', 'cPhone', 'cAddr', 'disc', 'notes', 'paidDate', 'advPaid', 'advDate', 'rcvAmt', 'rcvFrom', 'rcvAcct', 'rcvBank'].forEach(function (id) { $(id).value = ''; });
+  ['invNo', 'cName', 'cEmail', 'cPhone', 'cAddr', 'disc', 'notes', 'paidDate', 'advPaid', 'advDate', 'rcvAmt', 'rcvFrom', 'rcvAcct', 'rcvBank', 'fxBase', 'fxRate'].forEach(function (id) { $(id).value = ''; });
   $('loadClient').value = ''; $('invStatus').value = 'unpaid'; $('invDate').value = new Date().toISOString().slice(0, 10);
   $('items').innerHTML = ''; $('saveMsg').textContent = 'New invoice. The number is given automatically when you save.'; render();
 }
@@ -437,6 +449,19 @@ function renderItemsForm() {
     row.querySelector('button').addEventListener('click', function () { ITEMS.splice(i, 1); render(); });
     box.appendChild(row);
   });
+}
+
+/* Exchange-rate block: our service charge in our own currency, the rate, and the client-currency amount. */
+function fxBox(cur, total, advIn, paid) {
+  var base = ($('fxBase').value || '').trim().toUpperCase(), rate = num($('fxRate').value);
+  if (!(rate > 0) || !base || base === cur) return '';
+  var rp = String(Math.round(rate * 10000) / 10000);
+  var s = '<div class="box"><b>Exchange rate</b>\nOur service charge: ' + esc(money(total / rate)) + ' ' + esc(base) +
+    '\nRate: 1 ' + esc(base) + ' = ' + esc(rp) + ' ' + esc(cur) +
+    '\nInvoice total: ' + esc(money(total)) + ' ' + esc(cur);
+  var recv = num($('rcvAmt').value) || (paid ? total : advIn);
+  if (recv > 0) s += '\nReceived: ' + esc(money(recv)) + ' ' + esc(cur) + ' = ' + esc(money(recv / rate)) + ' ' + esc(base);
+  return s + '</div>';
 }
 
 function render() {
@@ -474,6 +499,7 @@ function render() {
     '<div class="g"><span>Total</span><span>' + money(total) + ' ' + esc(cur) + '</span></div>' +
     (settled ? '<div><span>Advance paid' + (advDt ? ' (' + esc(advDt) + ')' : '') + '</span><span>- ' + money(advIn) + ' ' + esc(cur) + '</span></div><div><span>Final payment received' + (pd ? ' (' + esc(pd) + ')' : '') + '</span><span>- ' + money(finalAmt) + ' ' + esc(cur) + '</span></div><div class="g"><span>Balance due</span><span>0.00 ' + esc(cur) + '</span></div>' : '') +
     (part ? '<div><span>Advance paid' + (advDt ? ' (' + esc(advDt) + ')' : '') + '</span><span>- ' + money(adv) + ' ' + esc(cur) + '</span></div><div class="g"><span>Balance due</span><span>' + money(due) + ' ' + esc(cur) + '</span></div>' : '') + '</div>' +
+    fxBox(cur, total, advIn, paid) +
     (($('rcvAmt').value || $('rcvFrom').value || $('rcvAcct').value || $('rcvBank').value) ? '<div class="box"><b>Payment received</b>\nMethod: ' + esc($('rcvMethod').value) +
       ($('rcvAmt').value ? '\nAmount: ' + esc(money(num($('rcvAmt').value))) + ' ' + esc(cur) : '') +
       ($('rcvFrom').value ? '\nFrom: ' + esc($('rcvFrom').value) : '') +
