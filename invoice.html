@@ -118,7 +118,7 @@
           </div>
           <label class="f" id="paidDateRow" style="display:none;"><span>Date payment was received</span><input type="date" id="paidDate"></label>
           <div class="row2" style="margin-top:10px;">
-            <label class="f"><span>Advance / part-payment received (amount, optional)</span><input type="number" id="advPaid" min="0" step="0.01" placeholder="0"></label>
+            <label class="f"><span>Advance / part-payment received (amount, optional)</span><input type="text" inputmode="decimal" data-comma id="advPaid" placeholder="0"></label>
             <label class="f"><span>Date the advance was received</span><input type="date" id="advDate"></label>
           </div>
           <p class="note" id="advNote">Enter only money that has really been received. The invoice then shows the advance and the balance still due.</p>
@@ -130,7 +130,7 @@
           <div class="row2">
             <label class="f"><span>Payment method</span>
               <select id="rcvMethod"><option value="Bank transfer" selected>Bank transfer</option><option value="Cash">Cash</option><option value="Mobile wallet">Mobile wallet</option><option value="Card">Card</option><option value="Other">Other</option></select></label>
-            <label class="f"><span>Amount received</span><input id="rcvAmt" placeholder="e.g. 550"></label>
+            <label class="f"><span>Amount received</span><input id="rcvAmt" inputmode="decimal" data-comma placeholder="e.g. 13,900"></label>
           </div>
           <label class="f" style="margin-top:10px;"><span>Received from (payer name)</span><input id="rcvFrom" placeholder="e.g. client full name"></label>
           <div class="row2" style="margin-top:10px;">
@@ -144,9 +144,9 @@
           <legend>Exchange rate (shown on the invoice)</legend>
           <div class="row2">
             <label class="f"><span>Our own currency</span><select id="fxBase"><option value="">- none -</option><option value="SAR">SAR</option><option value="AED">AED</option><option value="USD">USD</option><option value="GBP">GBP</option><option value="EUR">EUR</option></select></label>
-            <label class="f"><span>Amount received in our currency (e.g. 550)</span><input type="number" id="fxAmt" min="0" step="0.01" placeholder="e.g. 1100"></label>
+            <label class="f"><span>Amount received in our currency (e.g. 550)</span><input type="text" inputmode="decimal" data-comma id="fxAmt" placeholder="e.g. 550"></label>
           </div>
-          <label class="f" style="margin-top:10px;"><span>Rate: 1 of our currency = ? client's currency (leave empty - it is worked out from the two amounts)</span><input type="number" id="fxRate" min="0" step="0.0001" placeholder="e.g. 25.27"></label>
+          <label class="f" style="margin-top:10px;"><span>Rate: 1 of our currency = ? client's currency (leave empty - it is worked out from the two amounts)</span><input type="text" inputmode="decimal" data-comma id="fxRate" placeholder="e.g. 25.27"></label>
           <p class="note">Put the invoice prices in the client's currency. When money arrives, type the client-currency amount in "Amount received" above (e.g. 13900) and our-currency amount here (e.g. 550): the rate is worked out (13900 / 550 = 25.27), and the invoice shows our full service charge in our currency. Or type the rate yourself. Leave empty to hide the block.</p>
         </fieldset>
 
@@ -158,7 +158,7 @@
           <label class="f"><span>Add a full-service plan (PL / MPL: lists every included service)</span>
             <select id="addPlan"><option value="">&mdash; choose a plan &mdash;</option></select></label>
           <button type="button" class="ghost sm" id="addRowBtn">+ Add custom line</button>
-          <label class="f" style="margin-top:12px;"><span>Discount (amount, optional)</span><input type="number" id="disc" min="0" step="0.01"></label>
+          <label class="f" style="margin-top:12px;"><span>Discount (amount, optional)</span><input type="text" inputmode="decimal" data-comma id="disc"></label>
         </fieldset>
 
         <fieldset>
@@ -204,6 +204,16 @@ auth.onAuthStateChanged(function (user) {
 function $(id) { return document.getElementById(id); }
 function esc(s) { return String(s == null ? '' : s).replace(/[&<>"]/g, function (c) { return { '&':'&amp;', '<':'&lt;', '>':'&gt;', '"':'&quot;' }[c]; }); }
 function num(v) { var n = parseFloat(String(v).replace(/,/g, '')); return isNaN(n) ? 0 : n; }
+function fmtNum(v) { var t = String(v == null ? '' : v).replace(/[^0-9.]/g, ''); if (!t) return ''; var p = t.split('.'); var i = p.shift().replace(/^0+(?=\d)/, '').replace(/\B(?=(\d{3})+(?!\d))/g, ','); return p.length ? i + '.' + p.join('') : i; }
+document.addEventListener('input', function (e) {
+  var el = e.target; if (!el.hasAttribute || !el.hasAttribute('data-comma')) return;
+  var pos = el.selectionStart, digits = String(el.value).slice(0, pos).replace(/[^0-9.]/g, '').length;
+  var f = fmtNum(el.value); if (f === el.value) return;
+  el.value = f; var n = 0, k = 0;
+  while (k < f.length && n < digits) { if (/[0-9.]/.test(f[k])) n++; k++; }
+  try { el.setSelectionRange(k, k); } catch (x) {}
+});
+function fmtAllNums() { document.querySelectorAll('[data-comma]').forEach(function (el) { el.value = fmtNum(el.value); }); }
 function money(n) { return n.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 }); }
 
 /* The currency is a list (SAR, INR, PKR, BDT...). Changing it can also convert the prices already on the invoice,
@@ -234,6 +244,7 @@ $('invCur').addEventListener('change', function () {
       ['disc', 'advPaid'].forEach(function (id) { if ($(id).value) $(id).value = Math.round(num($(id).value) * rate * 100) / 100; });
       $('items').innerHTML = '';
       if (!$('fxRate').value && !$('fxAmt').value && $('fxBase').querySelector('[value="' + old + '"]')) { $('fxBase').value = old; $('fxRate').value = rate; }
+      fmtAllNums();
     }
   }
   LASTCUR = v; render();
@@ -412,6 +423,7 @@ function openInvoice(x) {
   var fx = x.fx || {}; $('fxBase').value = /^[A-Z]{3}$/.test(fx.base || '') ? fx.base : ''; $('fxAmt').value = fx.amt || ''; $('fxRate').value = fx.rate || '';
   var rc = x.rcv || {};
   $('rcvMethod').value = rc.method || 'Bank transfer'; $('rcvAmt').value = rc.amt || ''; $('rcvFrom').value = rc.from || ''; $('rcvAcct').value = rc.acct || ''; $('rcvBank').value = rc.bank || '';
+  fmtAllNums();
   ITEMS = (x.items || []).map(function (r) { return { d: r.d, q: r.q, p: r.p, n: r.n || '' }; });
   $('items').innerHTML = ''; render(); window.scrollTo(0, 0);
 }
@@ -442,7 +454,7 @@ function renderItemsForm() {
   box.innerHTML = '';
   ITEMS.forEach(function (r, i) {
     var row = document.createElement('div'); row.className = 'it';
-    row.innerHTML = '<input placeholder="Description" value="' + esc(r.d) + '"><input type="number" min="1" value="' + r.q + '"><input type="number" min="0" step="0.01" value="' + r.p + '"><button type="button" class="ghost sm" title="Remove">&times;</button>';
+    row.innerHTML = '<input placeholder="Description" value="' + esc(r.d) + '"><input type="number" min="1" value="' + r.q + '"><input type="text" inputmode="decimal" data-comma value="' + fmtNum(r.p) + '"><button type="button" class="ghost sm" title="Remove">&times;</button>';
     var ins = row.querySelectorAll('input');
     ins[0].addEventListener('input', function () { r.d = this.value; render(); });
     ins[1].addEventListener('input', function () { r.q = Math.max(1, num(this.value)); render(); });
