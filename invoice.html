@@ -479,6 +479,9 @@ function fxBox(cur, total, advIn, paid) {
     '\nClient charged: ' + esc(money(total)) + ' ' + esc(cur);
   var recv = rcv || (paid ? total : advIn);
   if (recv > 0) s += '\nReceived: ' + esc(money(recv)) + ' ' + esc(cur) + ' = ' + esc(money(fromRcv ? amt : recv / rate)) + ' ' + esc(base);
+  var left = Math.max(0, total - (paid ? total : advIn));
+  if (left > 0 && (paid ? 0 : advIn) > 0) s += '
+Balance due: ' + esc(money(left)) + ' ' + esc(cur) + ' = ' + esc(money(left / rate)) + ' ' + esc(base);
   return s + '</div>';
 }
 
@@ -517,12 +520,12 @@ function render() {
     '<div class="g"><span>Total</span><span>' + money(total) + ' ' + esc(cur) + '</span></div>' +
     (settled ? '<div><span>Advance paid' + (advDt ? ' (' + esc(advDt) + ')' : '') + '</span><span>- ' + money(advIn) + ' ' + esc(cur) + '</span></div><div><span>Final payment received' + (pd ? ' (' + esc(pd) + ')' : '') + '</span><span>- ' + money(finalAmt) + ' ' + esc(cur) + '</span></div><div class="g"><span>Balance due</span><span>0.00 ' + esc(cur) + '</span></div>' : '') +
     (part ? '<div><span>Advance paid' + (advDt ? ' (' + esc(advDt) + ')' : '') + '</span><span>- ' + money(adv) + ' ' + esc(cur) + '</span></div><div class="g"><span>Balance due</span><span>' + money(due) + ' ' + esc(cur) + '</span></div>' : '') + '</div>' +
-    fxBox(cur, total, advIn, paid) +
     (($('rcvAmt').value || $('rcvFrom').value || $('rcvAcct').value || $('rcvBank').value) ? '<div class="box"><b>Payment received</b>\nMethod: ' + esc($('rcvMethod').value) +
       ($('rcvAmt').value ? '\nAmount: ' + esc(money(num($('rcvAmt').value))) + ' ' + esc(cur) : '') +
       ($('rcvFrom').value ? '\nFrom: ' + esc($('rcvFrom').value) : '') +
       ($('rcvAcct').value ? '\nAccount: ' + esc($('rcvAcct').value) : '') +
       ($('rcvBank').value ? '\nBank: ' + esc($('rcvBank').value) : '') + '</div>' : '') +
+    fxBox(cur, total, advIn, paid) +
     ($('notes').value ? '<div class="box"><b>Notes</b>\n' + esc($('notes').value) + '</div>' : '') +
     ($('showSeal').checked ? '<div class="signoff"><div class="blk"><div class="ln"><img src="assets/provider-signature.png" alt="" onerror="this.remove()"></div>Authorised signature<br>For ' + esc($('sName').value) + '<br>Date: <span class="hw">' + esc(dateStr) + '</span><br><span class="sw"><img class="seal" src="assets/company-seal.png" alt="Company seal" onerror="this.remove()"><img class="sg" src="assets/provider-signature.png" alt="" onerror="this.remove()"></span></div></div>' : '') +
     '<div class="foot">Thank you for choosing Ampplify Academy.</div>';
