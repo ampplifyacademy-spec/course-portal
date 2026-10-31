@@ -123,10 +123,10 @@ const SITE_CONTENT_DEFAULTS = {
         'Copies of all filed documents'
       ],
       states: [
-        { state: 'Texas', stateFee: '300', agentFee: '', serviceFee: '' },
-        { state: 'Wyoming', stateFee: '100', agentFee: '', serviceFee: '' },
+        { state: 'Texas', stateFee: '310', agentFee: '', serviceFee: '' },
+        { state: 'Wyoming', stateFee: '103', agentFee: '', serviceFee: '' },
         { state: 'Delaware', stateFee: '110', agentFee: '', serviceFee: '' },
-        { state: 'New Mexico', stateFee: '50', agentFee: '', serviceFee: '' }
+        { state: 'New Mexico', stateFee: '52', agentFee: '', serviceFee: '' }
       ],
       note: 'State fees are set by each state and can change. Registered-agent fees are yearly. We are not a law firm and do not give legal or tax advice.'
     },
