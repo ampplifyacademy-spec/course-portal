@@ -126,6 +126,21 @@
         </fieldset>
 
         <fieldset>
+          <legend>Payment received (shown on the invoice)</legend>
+          <div class="row2">
+            <label class="f"><span>Payment method</span>
+              <select id="rcvMethod"><option value="Bank transfer" selected>Bank transfer</option><option value="Cash">Cash</option><option value="Mobile wallet">Mobile wallet</option><option value="Card">Card</option><option value="Other">Other</option></select></label>
+            <label class="f"><span>Amount received</span><input id="rcvAmt" placeholder="e.g. 550"></label>
+          </div>
+          <label class="f" style="margin-top:10px;"><span>Received from (payer name)</span><input id="rcvFrom" placeholder="e.g. client full name"></label>
+          <div class="row2" style="margin-top:10px;">
+            <label class="f"><span>Payer account (as shown in the transfer)</span><input id="rcvAcct" placeholder="e.g. SA** **** **** **** **** 1234"></label>
+            <label class="f"><span>Payer bank</span><input id="rcvBank" placeholder="e.g. bank name"></label>
+          </div>
+          <p class="note">Fill these in only for money that has really arrived. Leave them empty to hide this block.</p>
+        </fieldset>
+
+        <fieldset>
           <legend>Services (line items)</legend>
           <div class="items" id="items"></div>
           <label class="f"><span>Add a service from the website</span>
@@ -327,6 +342,7 @@ function collectInvoice() {
     status: $('invStatus').value, paidDate: $('paidDate').value, advPaid: num($('advPaid').value), advDate: $('advDate').value,
     seller: { name: $('sName').value, addr: $('sAddr').value, contact: $('sContact').value },
     payInfo: $('payInfo').value, notes: $('notes').value, showSeal: $('showSeal').checked,
+    rcv: { method: $('rcvMethod').value, amt: $('rcvAmt').value, from: $('rcvFrom').value, acct: $('rcvAcct').value, bank: $('rcvBank').value },
     updatedAt: firebase.firestore.FieldValue.serverTimestamp()
   };
 }
@@ -381,12 +397,14 @@ function openInvoice(x) {
   $('disc').value = x.disc || ''; $('notes').value = x.notes || ''; $('payInfo').value = x.payInfo || '';
   if (x.seller) { $('sName').value = x.seller.name || ''; $('sAddr').value = x.seller.addr || ''; $('sContact').value = x.seller.contact || ''; }
   $('showSeal').checked = x.showSeal !== false;
+  var rc = x.rcv || {};
+  $('rcvMethod').value = rc.method || 'Bank transfer'; $('rcvAmt').value = rc.amt || ''; $('rcvFrom').value = rc.from || ''; $('rcvAcct').value = rc.acct || ''; $('rcvBank').value = rc.bank || '';
   ITEMS = (x.items || []).map(function (r) { return { d: r.d, q: r.q, p: r.p, n: r.n || '' }; });
   $('items').innerHTML = ''; render(); window.scrollTo(0, 0);
 }
 function newInvoice() {
   CUR_N = null; ITEMS = [];
-  ['invNo', 'cName', 'cEmail', 'cPhone', 'cAddr', 'disc', 'notes', 'paidDate', 'advPaid', 'advDate'].forEach(function (id) { $(id).value = ''; });
+  ['invNo', 'cName', 'cEmail', 'cPhone', 'cAddr', 'disc', 'notes', 'paidDate', 'advPaid', 'advDate', 'rcvAmt', 'rcvFrom', 'rcvAcct', 'rcvBank'].forEach(function (id) { $(id).value = ''; });
   $('loadClient').value = ''; $('invStatus').value = 'unpaid'; $('invDate').value = new Date().toISOString().slice(0, 10);
   $('items').innerHTML = ''; $('saveMsg').textContent = 'New invoice. The number is given automatically when you save.'; render();
 }
@@ -456,6 +474,11 @@ function render() {
     '<div class="g"><span>Total</span><span>' + money(total) + ' ' + esc(cur) + '</span></div>' +
     (settled ? '<div><span>Advance paid' + (advDt ? ' (' + esc(advDt) + ')' : '') + '</span><span>- ' + money(advIn) + ' ' + esc(cur) + '</span></div><div><span>Final payment received' + (pd ? ' (' + esc(pd) + ')' : '') + '</span><span>- ' + money(finalAmt) + ' ' + esc(cur) + '</span></div><div class="g"><span>Balance due</span><span>0.00 ' + esc(cur) + '</span></div>' : '') +
     (part ? '<div><span>Advance paid' + (advDt ? ' (' + esc(advDt) + ')' : '') + '</span><span>- ' + money(adv) + ' ' + esc(cur) + '</span></div><div class="g"><span>Balance due</span><span>' + money(due) + ' ' + esc(cur) + '</span></div>' : '') + '</div>' +
+    (($('rcvAmt').value || $('rcvFrom').value || $('rcvAcct').value || $('rcvBank').value) ? '<div class="box"><b>Payment received</b>\nMethod: ' + esc($('rcvMethod').value) +
+      ($('rcvAmt').value ? '\nAmount: ' + esc(money(num($('rcvAmt').value))) + ' ' + esc(cur) : '') +
+      ($('rcvFrom').value ? '\nFrom: ' + esc($('rcvFrom').value) : '') +
+      ($('rcvAcct').value ? '\nAccount: ' + esc($('rcvAcct').value) : '') +
+      ($('rcvBank').value ? '\nBank: ' + esc($('rcvBank').value) : '') + '</div>' : '') +
     ($('payInfo').value && !paid ? '<div class="box"><b>Payment details</b>\n' + esc($('payInfo').value) + '</div>' : '') +
     ($('notes').value ? '<div class="box"><b>Notes</b>\n' + esc($('notes').value) + '</div>' : '') +
     ($('showSeal').checked ? '<div class="signoff"><div class="blk"><div class="ln"><img src="assets/provider-signature.png" alt="" onerror="this.remove()"></div>Authorised signature<br>For ' + esc($('sName').value) + '<br>Date: <span class="hw">' + esc(dateStr) + '</span><br><span class="sw"><img class="seal" src="assets/company-seal.png" alt="Company seal" onerror="this.remove()"><img class="sg" src="assets/provider-signature.png" alt="" onerror="this.remove()"></span></div></div>' : '') +
