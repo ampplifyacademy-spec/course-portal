@@ -480,8 +480,7 @@ function fxBox(cur, total, advIn, paid) {
   var recv = rcv || (paid ? total : advIn);
   if (recv > 0) s += '\nReceived: ' + esc(money(recv)) + ' ' + esc(cur) + ' = ' + esc(money(fromRcv ? amt : recv / rate)) + ' ' + esc(base);
   var left = Math.max(0, total - (paid ? total : advIn));
-  if (left > 0 && (paid ? 0 : advIn) > 0) s += '
-Balance due: ' + esc(money(left)) + ' ' + esc(cur) + ' = ' + esc(money(left / rate)) + ' ' + esc(base);
+  if (left > 0 && (paid ? 0 : advIn) > 0) s += '\nBalance due: ' + esc(money(left)) + ' ' + esc(cur) + ' = ' + esc(money(left / rate)) + ' ' + esc(base);
   return s + '</div>';
 }
 
