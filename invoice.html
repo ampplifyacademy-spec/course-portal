@@ -114,7 +114,7 @@
           <div class="row2" style="margin-top:10px;">
             <label class="f"><span>Status (mark Paid only after the money is received)</span>
               <select id="invStatus"><option value="unpaid" selected>Unpaid / Due</option><option value="paid">Paid</option></select></label>
-            <label class="f"><span>Currency</span><input id="invCur" value="SAR"></label>
+            <label class="f"><span>Currency the client paid in</span><select id="invCur"><option value="SAR">SAR - Saudi Riyal</option><option value="AED">AED - UAE Dirham</option><option value="USD">USD - US Dollar</option><option value="GBP">GBP - British Pound</option><option value="EUR">EUR - Euro</option><option value="INR">INR - Indian Rupee</option><option value="PKR">PKR - Pakistani Rupee</option><option value="BDT">BDT - Bangladeshi Taka</option><option value="__other">Other (type code)...</option></select></label>
           </div>
           <label class="f" id="paidDateRow" style="display:none;"><span>Date payment was received</span><input type="date" id="paidDate"></label>
           <div class="row2" style="margin-top:10px;">
@@ -181,6 +181,38 @@ function esc(s) { return String(s == null ? '' : s).replace(/[&<>"]/g, function 
 function num(v) { var n = parseFloat(String(v).replace(/,/g, '')); return isNaN(n) ? 0 : n; }
 function money(n) { return n.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 }); }
 
+/* The currency is a list (SAR, INR, PKR, BDT...). Changing it can also convert the prices already on the invoice,
+   so an invoice for a client who paid in rupees or taka shows the amount they really paid. */
+var LASTCUR = 'SAR';
+function setCur(v) {
+  var sel = $('invCur'); v = String(v || 'SAR').toUpperCase();
+  if (!Array.prototype.some.call(sel.options, function (o) { return o.value === v; })) {
+    var o = document.createElement('option'); o.value = v; o.textContent = v;
+    sel.insertBefore(o, sel.querySelector('[value="__other"]'));
+  }
+  sel.value = v; LASTCUR = v;
+}
+$('invCur').addEventListener('change', function () {
+  var v = this.value;
+  if (v === '__other') {
+    var code = (prompt('Currency code (for example QAR, KWD, MYR)', '') || '').trim().toUpperCase();
+    if (!code) { this.value = LASTCUR; return; }
+    setCur(code); v = code;
+  }
+  if (v === LASTCUR) return;
+  var old = LASTCUR;
+  if (ITEMS.length) {
+    var r = prompt('Convert the prices from ' + old + ' to ' + v + '? Type the rate: 1 ' + old + ' = ? ' + v + '. Leave empty or press Cancel to keep the same numbers and only change the currency name.', '');
+    var rate = num(r);
+    if (rate > 0) {
+      ITEMS.forEach(function (it) { it.p = Math.round(it.p * rate * 100) / 100; });
+      ['disc', 'advPaid'].forEach(function (id) { if ($(id).value) $(id).value = Math.round(num($(id).value) * rate * 100) / 100; });
+      $('items').innerHTML = '';
+    }
+  }
+  LASTCUR = v; render();
+});
+
 function init() {
   loadHistory();
   $('invDate').value = new Date().toISOString().slice(0, 10);
@@ -197,7 +229,7 @@ function init() {
       o.value = i; o.textContent = pl.title + ' \u2014 ' + (pl.basePrice || 0) + ' ' + (c.course.currency || '');
       $('addPlan').appendChild(o);
     });
-    $('invCur').value = c.course.currency || 'SAR';
+    setCur(c.course.currency || 'SAR');
     if (!$('sAddr').value && c.footer && c.footer.address) $('sAddr').value = c.footer.address;
     if (!$('payInfo').value && c.bankDetails && c.bankDetails.accounts && c.bankDetails.accounts.length) {
       $('payInfo').value = c.bankDetails.accounts.map(function (a) {
@@ -235,7 +267,7 @@ $('loadClient').addEventListener('change', function () {
   $('cName').value = u.name || ''; $('cEmail').value = u.email || ''; $('cPhone').value = u.whatsapp || '';
   ITEMS = [];
   var cur = u.serviceCurrency || u.currency || (SITE && SITE.course.currency) || 'SAR';
-  $('invCur').value = cur;
+  setCur(cur);
   if (u.selectedServices && u.selectedServices.length) {
     var all = (SITE && SITE.course.services) || [];
     u.selectedServices.forEach(function (name) {
@@ -343,7 +375,7 @@ function openInvoice(x) {
   CUR_N = x.n || null; $('invNo').value = x.no || '';
   $('cName').value = (x.client && x.client.name) || ''; $('cEmail').value = (x.client && x.client.email) || '';
   $('cPhone').value = (x.client && x.client.phone) || ''; $('cAddr').value = (x.client && x.client.addr) || '';
-  $('invDate').value = x.date || ''; $('invCur').value = x.cur || 'SAR';
+  $('invDate').value = x.date || ''; setCur(x.cur || 'SAR');
   $('invStatus').value = x.status || 'unpaid'; $('paidDate').value = x.paidDate || '';
   $('advPaid').value = x.advPaid || ''; $('advDate').value = x.advDate || '';
   $('disc').value = x.disc || ''; $('notes').value = x.notes || ''; $('payInfo').value = x.payInfo || '';
@@ -415,7 +447,7 @@ function render() {
   $('inv').innerHTML =
     '<div class="hd"><div><img src="' + esc(logo) + '" alt="Ampplify Academy" onerror="this.style.display=\'none\'">' +
     '<b>' + esc($('sName').value) + '</b><br><span style="white-space:pre-line;font-size:.86rem;color:#475569;">' + esc($('sAddr').value) + '</span><br><span style="font-size:.86rem;color:#475569;">' + esc($('sContact').value) + '</span></div>' +
-    '<div><h3>INVOICE</h3><div class="meta">No: <b>' + esc($('invNo').value || '—') + '</b><br>Date: ' + esc(dateStr) + '<br><span class="stamp ' + (paid ? 'paid' : (part ? 'part' : 'unpaid')) + '" style="margin-top:8px;">' + (paid ? 'PAID' : (part ? 'PART PAID' : 'DUE')) + '</span></div></div></div>' +
+    '<div><h3>INVOICE</h3><div class="meta">No: <b>' + esc($('invNo').value || '—') + '</b><br>Date: ' + esc(dateStr) + '<br>Currency: <b>' + esc(cur) + '</b><br><span class="stamp ' + (paid ? 'paid' : (part ? 'part' : 'unpaid')) + '" style="margin-top:8px;">' + (paid ? 'PAID' : (part ? 'PART PAID' : 'DUE')) + '</span></div></div></div>' +
     '<div class="parties"><div><b>Billed to</b>' + esc($('cName').value || '—') + '<br>' + esc($('cEmail').value) + (($('cPhone').value) ? '<br>' + esc($('cPhone').value) : '') + (($('cAddr').value) ? '<br><span style="white-space:pre-line;">' + esc($('cAddr').value) + '</span>' : '') + '</div>' +
     '<div><b>Payment status</b>' + (settled ? '<b style="color:#15803d;">Paid in full.</b><br>Invoice total: ' + money(total) + ' ' + esc(cur) + '<br>Advance: ' + money(advIn) + ' ' + esc(cur) + (advDt ? ' (' + esc(advDt) + ')' : '') + '<br>Final payment: ' + money(finalAmt) + ' ' + esc(cur) + (pd ? ' (' + esc(pd) + ')' : '') + '<br>Balance due: 0.00 ' + esc(cur) : paid ? 'Payment received' + (pd ? ' on ' + esc(pd) : '') + '. Thank you.' : (part ? 'Advance of ' + money(adv) + ' ' + esc(cur) + ' received' + (advDt ? ' on ' + esc(advDt) : '') + '.<br><b style="color:#b91c1c;">Balance due: ' + money(due) + ' ' + esc(cur) + '</b>' : 'Payment is due.')) + '</div></div>' +
     '<table><thead><tr><th style="width:36px;">#</th><th>Service</th><th class="r">Qty</th><th class="r">Price (' + esc(cur) + ')</th><th class="r">Amount (' + esc(cur) + ')</th></tr></thead><tbody>' + rows + '</tbody></table>' +
