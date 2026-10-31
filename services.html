@@ -153,7 +153,7 @@
   @media (max-width: 1180px) {
     .cnav-login { display: none; }
   }
-  @media (max-width: 1080px) {
+  @media (max-width: 1300px) {
     .cnav { flex-wrap: wrap; padding: 1rem clamp(1.1rem, 3vw, 2rem); }
     .cnav-links { display: none; width: 100%; order: 3; flex-direction: column; align-items: stretch; gap: 0; margin-top: .75rem; font-size: .95rem; }
     .cnav-links.open { display: flex; }
@@ -189,6 +189,8 @@
     <a href="course.html">Home</a>
     <a href="course.html#curriculum">Curriculum</a>
     <a href="services.html">Services</a>
+    <a href="llc.html">US LLC</a>
+    <a href="ltd.html">UK LTD</a>
     <a href="monthly.html">Monthly Plans</a>
     <a href="tools.html" id="navToolsLink">Tools</a>
     <a href="portfolio.html">Portfolio</a>
@@ -272,32 +274,6 @@
     </div>
   </div>
   <p class="lead" style="margin-top:1.75rem;"><strong>Who is behind it:</strong> Ampplify Academy is a trading name of Rakiza Company LTD (UK company no. 16210900). Our team has 4 years of hands-on, full-time experience managing live Amazon Seller Central accounts, led by Yasin Arafat. See real client work in our <a href="portfolio.html">portfolio</a> and in <a href="success-stories.html">success stories</a>, and read our <a href="about.html">about page</a> for company details.</p>
-</section>
-
-<section class="csection" style="padding-top:3.5rem;" id="llcSection">
-  <h2>US LLC &amp; UK LTD Formation</h2>
-  <p class="lead" id="llcIntro">We form your US LLC for you, in the state that suits your business, and hand over the finished documents in your name.</p>
-  <h3 class="company-sub">UK LTD — click to choose</h3>
-  <div class="service-grid" id="ltdGrid">
-<div class="service-card"><div class="body"><h4>UK LTD Creation </h4><p class="desc"></p><ol class="points"><li>Ready to trade Limited Company</li><li>Limited Company Included</li><li>Fastest Online Filing Submission</li><li>Registered Address, London</li><li>Directors Address, London</li><li>Printed Share Certificates</li><li>Printed Certificate of Incorporation</li><li>Digital Incorporation Certificate</li><li>Digital Articles of Association</li><li>Digital Share Certificates</li><li>Digital Company Register</li><li>Free Accountancy Consultation</li><li>HMRC UTR Number</li><li>Web authentication code</li><li>Online Company Manager to Maintain your Companies</li><li>PVC Code (Personal Verification Code)</li><li>Exclusive Partner Offers</li><li>Lifetime Support &amp; Advice</li><li>Free .co.uk Domain Name</li></ol></div></div>
-<div class="service-card"><div class="body"><h4>UK LTD Renewal and Confirm Statement Submite</h4><p class="desc"></p></div></div>
-  </div>
-  <h3 class="company-sub">US LLC — pick your state</h3>
-  <div class="llc-wrap">
-    <div class="llc-included">
-      <h4>What is included</h4>
-      <ul class="plan-included-list" id="llcIncludes"></ul>
-      <div class="plan-cost-row"><span>Our service charge</span><span id="llcGeneralCharge">On request</span></div>
-    </div>
-    <div class="llc-table-box">
-      <table class="llc-table">
-        <thead><tr><th>State</th><th>State filing fee</th><th>Registered agent (yearly)</th><th>Our service fee</th><th>Total</th><th></th></tr></thead>
-        <tbody id="llcRows"></tbody>
-      </table>
-    </div>
-  </div>
-  <p class="plan-note" id="llcNote" style="text-align:center; max-width:760px; margin:1rem auto 0;"></p>
-  <div style="text-align:center; margin-top:1.25rem;"><a href="mailto:contact@ampplifyacademy.com?subject=US%20LLC%20formation%20quote" class="llc-quote-btn">Ask for a quote</a></div>
 </section>
 
 <section class="csection" style="padding-top:3.5rem;" id="plansSection">
@@ -464,26 +440,6 @@ loadSiteContent().then(content => {
   allServices = c.services || [];
   allPlans = c.plans || [];
 
-  const llc = c.llc || {};
-  const llcCur = llc.currency || 'USD';
-  const llcMoney = v => (String(v == null ? '' : v).trim() !== '' && toNum(v) >= 0) ? formatMoney(toNum(v)) + ' ' + llcCur : null;
-  if (llc.intro) document.getElementById('llcIntro').textContent = llc.intro;
-  document.getElementById('llcIncludes').innerHTML = (llc.includes || []).map(s => `<li><span class="check-mark">✓</span>${s}</li>`).join('');
-  document.getElementById('llcGeneralCharge').textContent = llcMoney(llc.serviceCharge) || 'On request';
-  const llcRows = (llc.states || []).filter(st => st.state).map(st => {
-    const service = String(st.serviceFee || '').trim() !== '' ? st.serviceFee : llc.serviceCharge;
-    const parts = [st.stateFee, st.agentFee, service];
-    const filled = [st.stateFee, service].every(v => String(v == null ? '' : v).trim() !== ''); // agent fee is optional
-    const total = filled ? parts.reduce((sum, v) => sum + toNum(v), 0) : null;
-    const cell = v => llcMoney(v) || '<span class="na">On request</span>';
-    // Each state is a selectable entry in the same list as the other services, so it
-    // flows into the total bar, payment step and sign-up like any other service.
-    const idx = allServices.push({ title: 'US LLC Formation - ' + st.state, desc: '', price: '', docFolders: [], _company: true }) - 1;
-    return `<tr id="serviceCard${idx}"><td>${st.state}</td><td>${cell(st.stateFee)}</td><td>${cell(st.agentFee)}</td><td>${cell(service)}</td><td>${total === null ? '<span class="na">On request</span>' : formatMoney(total) + ' ' + llcCur}</td><td><button type="button" class="llc-pick" onclick="toggleService(${idx})">Choose</button></td></tr>`;
-  }).join('');
-  document.getElementById('llcRows').innerHTML = llcRows;
-  document.getElementById('llcNote').textContent = llc.note || '';
-
   const plansSection = document.getElementById('plansSection');
   if (!allPlans.length) {
     plansSection.style.display = 'none';
@@ -509,7 +465,8 @@ loadSiteContent().then(content => {
     }).join('');
   }
 
-  const isLtd = x => /ltd/i.test(x.title || '');
+  // UK LTD and US LLC have their own pages (ltd.html, llc.html)
+  const isLtd = x => /ltd|llc/i.test(x.title || '');
   const cardHtml = (s, i) => {
     const thumb = serviceThumb(s.title);
     return `
@@ -533,7 +490,6 @@ loadSiteContent().then(content => {
       </div>`;
   };
   const renderCards = pick => allServices.map((x, i) => pick(x) ? cardHtml(x, i) : '').join('');
-  document.getElementById('ltdGrid').innerHTML = renderCards(isLtd);
   document.getElementById('serviceGrid').innerHTML = allServices.some(x => !x._company && !isLtd(x))
     ? renderCards(x => !x._company && !isLtd(x))
     : '<p style="text-align:center; color:var(--text-muted); grid-column:1/-1;">Services coming soon.</p>';
