@@ -144,10 +144,10 @@
           <legend>Exchange rate (shown on the invoice)</legend>
           <div class="row2">
             <label class="f"><span>Our own currency</span><select id="fxBase"><option value="">- none -</option><option value="SAR">SAR</option><option value="AED">AED</option><option value="USD">USD</option><option value="GBP">GBP</option><option value="EUR">EUR</option></select></label>
-            <label class="f"><span>Our service charge in our currency (e.g. 1100)</span><input type="number" id="fxAmt" min="0" step="0.01" placeholder="e.g. 1100"></label>
+            <label class="f"><span>Amount received in our currency (e.g. 550)</span><input type="number" id="fxAmt" min="0" step="0.01" placeholder="e.g. 1100"></label>
           </div>
-          <label class="f" style="margin-top:10px;"><span>Rate: 1 of our currency = ? client's currency (leave empty to work it out from the charge above)</span><input type="number" id="fxRate" min="0" step="0.0001" placeholder="e.g. 25.27"></label>
-          <p class="note">Put the invoice prices in the client's currency (what they pay). Then enter our own currency and our charge in it: the invoice shows our charge, the rate (worked out for you) and what the client is charged. Or type the rate and our charge is worked out instead. Leave empty to hide the block.</p>
+          <label class="f" style="margin-top:10px;"><span>Rate: 1 of our currency = ? client's currency (leave empty - it is worked out from the two amounts)</span><input type="number" id="fxRate" min="0" step="0.0001" placeholder="e.g. 25.27"></label>
+          <p class="note">Put the invoice prices in the client's currency. When money arrives, type the client-currency amount in "Amount received" above (e.g. 13900) and our-currency amount here (e.g. 550): the rate is worked out (13900 / 550 = 25.27), and the invoice shows our full service charge in our currency. Or type the rate yourself. Leave empty to hide the block.</p>
         </fieldset>
 
         <fieldset>
@@ -456,14 +456,17 @@ function renderItemsForm() {
 function fxBox(cur, total, advIn, paid) {
   var base = ($('fxBase').value || '').trim().toUpperCase(), rate = num($('fxRate').value), amt = num($('fxAmt').value);
   if (!base || base === cur || !(total > 0)) return '';
-  if (!(rate > 0) && amt > 0) rate = total / amt;
+  var rcv = num($('rcvAmt').value), fromRcv = false;
+  if (!(rate > 0) && amt > 0 && rcv > 0) { rate = rcv / amt; fromRcv = true; }   // 13,900 INR received for 550 SAR
+  else if (!(rate > 0) && amt > 0) rate = total / amt;                          // amt = the full charge in our currency
   if (!(rate > 0)) return '';
   var rp = String(Math.round(rate * 10000) / 10000);
-  var s = '<div class="box"><b>Currency conversion</b>\nOur service charge: ' + esc(money(amt > 0 ? amt : total / rate)) + ' ' + esc(base) +
+  var charge = (!fromRcv && !(num($('fxRate').value) > 0) && amt > 0) ? amt : total / rate;
+  var s = '<div class="box"><b>Currency conversion</b>\nOur service charge: ' + esc(money(charge)) + ' ' + esc(base) +
     '\nRate: 1 ' + esc(base) + ' = ' + esc(rp) + ' ' + esc(cur) +
     '\nClient charged: ' + esc(money(total)) + ' ' + esc(cur);
-  var recv = num($('rcvAmt').value) || (paid ? total : advIn);
-  if (recv > 0) s += '\nReceived: ' + esc(money(recv)) + ' ' + esc(cur) + ' = ' + esc(money(recv / rate)) + ' ' + esc(base);
+  var recv = rcv || (paid ? total : advIn);
+  if (recv > 0) s += '\nReceived: ' + esc(money(recv)) + ' ' + esc(cur) + ' = ' + esc(money(fromRcv ? amt : recv / rate)) + ' ' + esc(base);
   return s + '</div>';
 }
 
