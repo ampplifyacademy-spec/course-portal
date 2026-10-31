@@ -422,7 +422,7 @@
 <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-auth-compat.js"></script>
 <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore-compat.js"></script>
 <script src="js/firebase-config.js"></script>
-<script src="js/site-content.js?v=9"></script>
+<script src="js/site-content.js?v=10"></script>
 <script src="js/feedback.js"></script>
 <script>
 function toggleMobileNav() {
@@ -465,7 +465,7 @@ loadSiteContent().then(content => {
   document.getElementById('llcRows').innerHTML = (llc.states || []).filter(s => s.state).map(s => {
     const service = String(s.serviceFee || '').trim() !== '' ? s.serviceFee : llc.serviceCharge;
     const parts = [s.stateFee, s.agentFee, service];
-    const filled = parts.every(v => String(v == null ? '' : v).trim() !== '');
+    const filled = [s.stateFee, service].every(v => String(v == null ? '' : v).trim() !== ''); // agent fee is optional
     const total = filled ? parts.reduce((sum, v) => sum + toNum(v), 0) : null;
     const cell = v => llcMoney(v) || '<span class="na">On request</span>';
     return `<tr><td>${s.state}</td><td>${cell(s.stateFee)}</td><td>${cell(s.agentFee)}</td><td>${cell(service)}</td><td>${total === null ? '<span class="na">On request</span>' : formatMoney(total) + ' ' + llcCur}</td></tr>`;
