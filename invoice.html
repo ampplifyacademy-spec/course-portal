@@ -325,18 +325,32 @@ $('loadClient').addEventListener('change', function () {
   render();
 });
 
+/* Plan/service list prices are in the site currency (e.g. SAR). If the invoice is in another currency, ask for the price there. */
+function priceFor(listPrice, title) {
+  var base = (SITE && SITE.course.currency) || 'SAR', cur = $('invCur').value;
+  if (!(listPrice > 0) || cur === base) return listPrice;
+  var r = num($('fxRate').value), fb = $('fxBase').value;
+  if (r > 0 && fb === base) return Math.round(listPrice * r * 100) / 100;
+  var v = prompt('"' + title + '" is ' + money(listPrice) + ' ' + base + ' on the site.\nHow much is it in ' + cur + ' (what this client pays)? You can edit it later in the price box.', '');
+  var p = num(v);
+  if (p > 0) {
+    if (!$('fxRate').value && $('fxBase').querySelector('[value="' + base + '"]')) { $('fxBase').value = base; $('fxRate').value = Math.round(p / listPrice * 10000) / 10000; fmtAllNums(); }
+    return p;
+  }
+  return 0;
+}
 $('addSite').addEventListener('change', function () {
   var s = SITE && SITE.course.services[this.value]; if (!s) return;
-  ITEMS.push({ d: s.title, q: 1, p: num(s.price) }); this.value = ''; render();
+  ITEMS.push({ d: s.title, q: 1, p: priceFor(num(s.price), s.title) }); this.value = ''; render();
 });
 $('addPlan').addEventListener('change', function () {
   var pl = SITE && SITE.course.plans && SITE.course.plans[this.value]; if (!pl) return;
   var inc = (pl.includedServices || []).map(function (x) { return String(x).trim(); }).filter(Boolean);
-  ITEMS.push({ d: pl.title + ' \u2014 full-service plan', q: 1, p: num(pl.basePrice),
+  ITEMS.push({ d: pl.title + ' \u2014 full-service plan', q: 1, p: priceFor(num(pl.basePrice), pl.title),
     n: 'Includes: ' + inc.join('; ') + '. This is one fixed service charge covering only the services listed.' });
   (pl.oneTimeCosts || []).forEach(function (ct) {
     if (!ct || !ct.label) return;
-    ITEMS.push({ d: String(ct.label).trim(), q: 1, p: num(ct.amount), n: 'One-time cost for the ' + pl.title + ' plan. Not part of the service charge.' });
+    ITEMS.push({ d: String(ct.label).trim(), q: 1, p: priceFor(num(ct.amount), String(ct.label).trim()), n: 'One-time cost for the ' + pl.title + ' plan. Not part of the service charge.' });
   });
   this.value = ''; render();
 });
