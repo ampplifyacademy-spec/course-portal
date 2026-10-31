@@ -108,6 +108,28 @@ const SITE_CONTENT_DEFAULTS = {
       { title: 'Private Label (PL)', desc: 'Full-service management for your own private-label brand.', basePrice: '', includedServices: [], oneTimeCosts: [] },
       { title: 'Micro Private Label (MPL)', desc: 'Full-service management on a smaller, lower-cost private-label setup.', basePrice: '', includedServices: [], oneTimeCosts: [] }
     ],
+    // US LLC formation (services.html #llcSection). Prices are left empty on purpose and filled in from the admin
+    // panel. A state row's own "serviceFee" wins; an empty one falls back to the general "serviceCharge".
+    llc: {
+      currency: 'USD',
+      intro: 'We form your US LLC for you, in the state that suits your business, and hand over the finished documents in your name.',
+      serviceCharge: '',
+      includes: [
+        'State name-availability check',
+        'Filing of the formation documents with the state',
+        'Registered agent set-up',
+        'Operating agreement (template)',
+        'EIN application support',
+        'Copies of all filed documents'
+      ],
+      states: [
+        { state: 'Texas', stateFee: '', agentFee: '', serviceFee: '' },
+        { state: 'Wyoming', stateFee: '', agentFee: '', serviceFee: '' },
+        { state: 'Delaware', stateFee: '', agentFee: '', serviceFee: '' },
+        { state: 'New Mexico', stateFee: '', agentFee: '', serviceFee: '' }
+      ],
+      note: 'State fees are set by each state and can change. Registered-agent fees are yearly. We are not a law firm and do not give legal or tax advice.'
+    },
     partnershipCosts: [
       { label: 'Listing image design & A+ content', amount: '' },
       { label: 'Trademark registration', amount: '' },

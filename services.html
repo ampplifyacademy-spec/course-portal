@@ -95,6 +95,18 @@
   .plan-total-row span:last-child { color: var(--accent-orange); font: 800 1.4rem var(--font-display); }
   .plan-note { color: var(--text-muted); font-size: .78rem; line-height: 1.4; margin: 0 0 1rem; font-style: italic; }
   .plan-card button { margin-top: auto; }
+  .llc-wrap { display: grid; grid-template-columns: minmax(240px, 1fr) 2fr; gap: 1.5rem; max-width: 1100px; margin: 0 auto; align-items: start; }
+  .llc-included, .llc-table-box { background: var(--surface); border: 1px solid var(--border); border-radius: var(--radius); padding: 1.5rem; box-shadow: var(--shadow-sm); }
+  .llc-included h4 { font-size: 1.05rem; margin-bottom: .4rem; color: var(--accent-orange); }
+  .llc-table-box { overflow-x: auto; }
+  .llc-table { width: 100%; border-collapse: collapse; font-size: .9rem; min-width: 520px; }
+  .llc-table th, .llc-table td { padding: .65rem .6rem; text-align: left; border-bottom: 1px solid var(--border); }
+  .llc-table th { font: 700 .78rem var(--font-body); color: var(--text-muted); }
+  .llc-table td:first-child { font-weight: 700; }
+  .llc-table td:last-child { color: var(--accent-orange); font-weight: 800; }
+  .llc-table .na { color: var(--text-faint); font-weight: 500; }
+  .llc-quote-btn { display: inline-block; background: var(--accent); color: #fff; text-decoration: none; font-weight: 700; padding: .8rem 1.75rem; border-radius: 999px; }
+  @media (max-width: 760px) { .llc-wrap { grid-template-columns: 1fr; } }
   .cta-band { background: linear-gradient(135deg, rgba(37,99,235,.13), rgba(253,125,1,.13)); padding: 3.5rem 4rem; text-align: center; }
   .cta-band h3 { font-size: 1.9rem; margin-bottom: .75rem; }
   .cta-band button { width: auto; margin: 0 auto; padding: 1rem 2.25rem; }
@@ -258,6 +270,26 @@
   <p class="lead" style="margin-top:1.75rem;"><strong>Who is behind it:</strong> Ampplify Academy is a trading name of Rakiza Company LTD (UK company no. 16210900). Our team has 4 years of hands-on, full-time experience managing live Amazon Seller Central accounts, led by Yasin Arafat. See real client work in our <a href="portfolio.html">portfolio</a> and in <a href="success-stories.html">success stories</a>, and read our <a href="about.html">about page</a> for company details.</p>
 </section>
 
+<section class="csection" style="padding-top:3.5rem;" id="llcSection">
+  <h2>US LLC Formation</h2>
+  <p class="lead" id="llcIntro">We form your US LLC for you, in the state that suits your business, and hand over the finished documents in your name.</p>
+  <div class="llc-wrap">
+    <div class="llc-included">
+      <h4>What is included</h4>
+      <ul class="plan-included-list" id="llcIncludes"></ul>
+      <div class="plan-cost-row"><span>Our service charge</span><span id="llcGeneralCharge">On request</span></div>
+    </div>
+    <div class="llc-table-box">
+      <table class="llc-table">
+        <thead><tr><th>State</th><th>State filing fee</th><th>Registered agent (yearly)</th><th>Our service fee</th><th>Total</th></tr></thead>
+        <tbody id="llcRows"></tbody>
+      </table>
+    </div>
+  </div>
+  <p class="plan-note" id="llcNote" style="text-align:center; max-width:760px; margin:1rem auto 0;"></p>
+  <div style="text-align:center; margin-top:1.25rem;"><a href="mailto:contact@ampplifyacademy.com?subject=US%20LLC%20formation%20quote" class="llc-quote-btn">Ask for a quote</a></div>
+</section>
+
 <section class="csection" style="padding-top:3.5rem;" id="plansSection">
   <h2>Full-Service Plans</h2>
   <p class="lead">Want us to handle everything? Pick a plan below — base charge plus any one-time costs, total shown upfront.</p>
@@ -390,7 +422,7 @@
 <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-auth-compat.js"></script>
 <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore-compat.js"></script>
 <script src="js/firebase-config.js"></script>
-<script src="js/site-content.js?v=8"></script>
+<script src="js/site-content.js?v=9"></script>
 <script src="js/feedback.js"></script>
 <script>
 function toggleMobileNav() {
@@ -423,6 +455,22 @@ loadSiteContent().then(content => {
   currency = c.currency || 'SAR';
   allServices = c.services || [];
   allPlans = c.plans || [];
+
+  const llc = c.llc || {};
+  const llcCur = llc.currency || 'USD';
+  const llcMoney = v => (String(v == null ? '' : v).trim() !== '' && toNum(v) >= 0) ? formatMoney(toNum(v)) + ' ' + llcCur : null;
+  if (llc.intro) document.getElementById('llcIntro').textContent = llc.intro;
+  document.getElementById('llcIncludes').innerHTML = (llc.includes || []).map(s => `<li><span class="check-mark">✓</span>${s}</li>`).join('');
+  document.getElementById('llcGeneralCharge').textContent = llcMoney(llc.serviceCharge) || 'On request';
+  document.getElementById('llcRows').innerHTML = (llc.states || []).filter(s => s.state).map(s => {
+    const service = String(s.serviceFee || '').trim() !== '' ? s.serviceFee : llc.serviceCharge;
+    const parts = [s.stateFee, s.agentFee, service];
+    const filled = parts.every(v => String(v == null ? '' : v).trim() !== '');
+    const total = filled ? parts.reduce((sum, v) => sum + toNum(v), 0) : null;
+    const cell = v => llcMoney(v) || '<span class="na">On request</span>';
+    return `<tr><td>${s.state}</td><td>${cell(s.stateFee)}</td><td>${cell(s.agentFee)}</td><td>${cell(service)}</td><td>${total === null ? '<span class="na">On request</span>' : formatMoney(total) + ' ' + llcCur}</td></tr>`;
+  }).join('');
+  document.getElementById('llcNote').textContent = llc.note || '';
 
   const plansSection = document.getElementById('plansSection');
   if (!allPlans.length) {

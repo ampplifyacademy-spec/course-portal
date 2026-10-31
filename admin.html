@@ -479,6 +479,21 @@
       <details class="panel acc-panel" style="margin-top:1rem;">
         <summary>
           <div>
+            <h2>US LLC Formation (services.html)</h2>
+            <p style="color:var(--text-muted); font-size:.82rem; margin-top:.3rem;">Our service charge, what is included, and a separate fee row for each state. Empty boxes show "On request" on the site. A state's own service fee overrides the general charge.</p>
+          </div>
+          <span class="acc-chevron">▾</span>
+        </summary>
+        <div class="acc-body">
+          <div id="llcEditor"></div>
+          <button onclick="saveLlc()" style="margin-top:.5rem;">Save LLC Section</button>
+          <p class="msg" id="llcMsg"></p>
+        </div>
+      </details>
+
+      <details class="panel acc-panel" style="margin-top:1rem;">
+        <summary>
+          <div>
             <h2>Monthly Plans &amp; Add-ons (monthly.html)</h2>
             <p style="color:var(--text-muted); font-size:.82rem; margin-top:.3rem;">Plans billed per month. Leave "Fixed price" empty to calculate it from the bundled services; keep these prices equal to the ones on the Amazon Solution Provider Portal listing.</p>
           </div>
@@ -1190,6 +1205,10 @@ function loadSiteContentIntoForm() {
     planRows = (content.course.plans || []).map(p => Object.assign({}, p, { oneTimeCosts: (p.oneTimeCosts || []).map(c => Object.assign({}, c)) }));
     renderPlanRows();
 
+    const l = content.course.llc || {};
+    llcData = Object.assign({}, l, { includes: (l.includes || []).slice(), states: (l.states || []).map(s => Object.assign({}, s)) });
+    renderLlc();
+
     partnershipCostRows = (content.course.partnershipCosts || []).map(c => Object.assign({}, c));
     renderPartnershipCostRows();
 
@@ -1536,6 +1555,57 @@ function savePlans() {
   db.collection('siteContent').doc('main').update({ 'course.plans': plans }).then(() => {
     msg.style.color = 'var(--success)';
     msg.textContent = 'Plans saved. Changes are live immediately.';
+  }).catch(err => {
+    msg.style.color = 'var(--danger)';
+    msg.textContent = err.message;
+  });
+}
+
+/* ---- US LLC formation (services.html) ---- */
+let llcData = { currency: 'USD', intro: '', serviceCharge: '', includes: [], states: [], note: '' };
+const lq = s => String(s == null ? '' : s).replace(/"/g, '&quot;');
+
+function renderLlc() {
+  const d = llcData;
+  document.getElementById('llcEditor').innerHTML = `
+    <div class="module-edit-card">
+      <input placeholder="Currency (e.g. USD)" value="${lq(d.currency)}" oninput="llcData.currency = this.value">
+      <input placeholder="Intro sentence" value="${lq(d.intro)}" oninput="llcData.intro = this.value" style="margin-top:.5rem;">
+      <input placeholder="General service charge (our fee, used when a state has none)" value="${lq(d.serviceCharge)}" oninput="llcData.serviceCharge = this.value" style="margin-top:.5rem;">
+      <label style="display:block; margin:.75rem 0 .4rem; font-size:.8rem; color:var(--text-muted);">What is included (one per line)</label>
+      <textarea rows="6" oninput="llcData.includes = this.value.split('\\n')">${(d.includes || []).join('\n').replace(/</g, '&lt;')}</textarea>
+      <input placeholder="Note under the table" value="${lq(d.note)}" oninput="llcData.note = this.value" style="margin-top:.5rem;">
+    </div>
+    <div style="display:flex; justify-content:space-between; align-items:center; margin:1rem 0 .75rem;">
+      <strong>States</strong>
+      <button onclick="llcData.states.push({ state: '', stateFee: '', agentFee: '', serviceFee: '' }); renderLlc();" style="width:auto; margin:0;">+ Add State</button>
+    </div>
+    ${(d.states || []).map((s, i) => `
+    <div class="module-edit-card">
+      <div class="row-top"><span>State ${i + 1}</span><button class="danger" onclick="llcData.states.splice(${i},1); renderLlc();">Remove</button></div>
+      <input placeholder="State name (e.g. Texas)" value="${lq(s.state)}" oninput="llcData.states[${i}].state = this.value">
+      <div style="display:flex; gap:.5rem; margin-top:.5rem;">
+        <input placeholder="State filing fee" value="${lq(s.stateFee)}" oninput="llcData.states[${i}].stateFee = this.value" style="margin:0; flex:1;">
+        <input placeholder="Registered agent (yearly)" value="${lq(s.agentFee)}" oninput="llcData.states[${i}].agentFee = this.value" style="margin:0; flex:1;">
+        <input placeholder="Our service fee (optional)" value="${lq(s.serviceFee)}" oninput="llcData.states[${i}].serviceFee = this.value" style="margin:0; flex:1;">
+      </div>
+    </div>`).join('')}`;
+}
+
+function saveLlc() {
+  const msg = document.getElementById('llcMsg');
+  const d = llcData;
+  const llc = {
+    currency: (d.currency || 'USD').trim(), intro: (d.intro || '').trim(), serviceCharge: String(d.serviceCharge || '').trim(),
+    includes: (d.includes || []).map(s => String(s).trim()).filter(Boolean),
+    states: (d.states || []).filter(s => (s.state || '').trim()).map(s => ({
+      state: s.state.trim(), stateFee: String(s.stateFee || '').trim(), agentFee: String(s.agentFee || '').trim(), serviceFee: String(s.serviceFee || '').trim()
+    })),
+    note: (d.note || '').trim()
+  };
+  db.collection('siteContent').doc('main').update({ 'course.llc': llc }).then(() => {
+    msg.style.color = 'var(--success)';
+    msg.textContent = 'LLC section saved. Changes are live immediately.';
   }).catch(err => {
     msg.style.color = 'var(--danger)';
     msg.textContent = err.message;
