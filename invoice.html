@@ -156,7 +156,7 @@
           <label class="f"><span>Seller / company name</span><input id="sName"></label>
           <label class="f"><span>Seller address</span><textarea id="sAddr"></textarea></label>
           <label class="f"><span>Seller email / contact</span><input id="sContact"></label>
-          <label class="f"><span>Payment details (bank / wallet)</span><textarea id="payInfo" style="min-height:90px;"></textarea></label>
+          <label class="f"><span>Payment details (bank / wallet) - kept for your reference, not printed on the invoice</span><textarea id="payInfo" style="min-height:90px;"></textarea></label>
           <label class="f"><span>Notes (optional)</span><textarea id="notes"></textarea></label>
           <button type="button" class="ghost sm" id="saveSellerBtn">Save seller details for next time</button>
           <span class="note" id="saveNote"></span>
@@ -479,7 +479,6 @@ function render() {
       ($('rcvFrom').value ? '\nFrom: ' + esc($('rcvFrom').value) : '') +
       ($('rcvAcct').value ? '\nAccount: ' + esc($('rcvAcct').value) : '') +
       ($('rcvBank').value ? '\nBank: ' + esc($('rcvBank').value) : '') + '</div>' : '') +
-    ($('payInfo').value && !paid ? '<div class="box"><b>Payment details</b>\n' + esc($('payInfo').value) + '</div>' : '') +
     ($('notes').value ? '<div class="box"><b>Notes</b>\n' + esc($('notes').value) + '</div>' : '') +
     ($('showSeal').checked ? '<div class="signoff"><div class="blk"><div class="ln"><img src="assets/provider-signature.png" alt="" onerror="this.remove()"></div>Authorised signature<br>For ' + esc($('sName').value) + '<br>Date: <span class="hw">' + esc(dateStr) + '</span><br><span class="sw"><img class="seal" src="assets/company-seal.png" alt="Company seal" onerror="this.remove()"><img class="sg" src="assets/provider-signature.png" alt="" onerror="this.remove()"></span></div></div>' : '') +
     '<div class="foot">Thank you for choosing Ampplify Academy.</div>';
