@@ -1253,6 +1253,17 @@ function buildDoc() {
   html += "<li>Each Party shall, on request, provide Amazon with a copy of this Agreement and any information Amazon requires about the relationship between the Parties, including the services performed, the level of access granted, and the period of the engagement.</li>";
   html += '</ol>';
 
+  // --- Best efforts, no guarantee of results --------------------------------
+  // DRAFT wording: have a lawyer review it before relying on it.
+  section('Best Efforts &amp; No Guarantee of Results');
+  html += '<ol class="clauses">';
+  html += '<li><strong>Best efforts.</strong> The Provider shall work on the ' + (includesPartner && !includesService ? 'Account and the business' : 'Services' + (includesPartner ? ', the Account and the business' : '')) + ' with full effort and care, as if it were its own business, from product research through to every other step covered by this Agreement, and shall keep working to bring sales. The Provider shall record the work it does (for example progress updates, reports and messages) so that both Parties can see what has been done.</li>';
+  html += '<li><strong>No guarantee of sales or profit.</strong> Both Parties want the Account to make sales' + (includesPartner ? ' and a profit' : '') + ', but neither Party promises or guarantees any level of sales, ranking, profit, reviews, approvals or any other result. Results depend on many things outside the Provider\'s control, including Amazon, competitors, customers, the market, suppliers, product choice, pricing, stock, advertising budget and the Client\'s own decisions and actions.</li>';
+  html += '<li><strong>Low or no sales is not a breach.</strong> If sales are low, slow or do not come, even though the Provider has done the work described in this Agreement with reasonable skill and care, this is not a breach by the Provider. The Client accepts this risk, and shall not claim a refund, damages or any other remedy only because the sales or profit are lower than hoped. This does not apply where the Provider has failed to do the work it agreed to do, or has acted dishonestly.</li>';
+  html += '<li><strong>Shared responsibility.</strong> Results depend on both Parties. The Client shall do its part on time: supplying accurate information and documents, approving decisions, funding agreed costs (such as stock and advertising), keeping the Account in good standing, and answering the Provider\'s messages.</li>';
+  if (includesPartner) html += '<li><strong>Partnership risk.</strong> A business can make a loss. Neither Party promises that the Account will make a profit, or that any amount invested will be returned. Where there is no Net Profit in a period, no profit share is due for that period, and the Provider\'s time and effort are not repaid by the Client unless this Agreement says so.</li>';
+  html += '</ol>';
+
   // --- Liability ------------------------------------------------------------
   section('Liability &amp; Indemnity');
   html += '<ol class="clauses">';
