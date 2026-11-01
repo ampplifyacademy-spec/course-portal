@@ -69,6 +69,13 @@
   .chero img { position: relative; z-index: 1; width: 100%; max-width: 380px; height: 440px; object-fit: contain; object-position: bottom; filter: drop-shadow(0 20px 30px rgba(16,24,40,.18)); }
   .chero-chip { position: absolute; z-index: 2; bottom: 10%; left: 0; background: var(--surface); border: 1px solid var(--border); border-radius: var(--radius); padding: .7rem 1.1rem; box-shadow: var(--shadow-md); font: 700 .82rem var(--font-display); display: flex; align-items: center; gap: .5rem; }
   .chero-chip.top { top: 8%; right: 0; bottom: auto; left: auto; }
+  .chero-chip.spn { bottom: 3%; left: auto; right: -2%; padding: .55rem .9rem; overflow: hidden; border-color: rgba(253,125,1,.35); }
+  .chero-chip.spn img { position: static; width: 150px; max-width: none; height: auto; filter: none; object-fit: contain; display: block; }
+  .chero-chip.spn::after { content: ""; position: absolute; top: 0; left: -60%; width: 40%; height: 100%; background: linear-gradient(100deg, transparent, rgba(255,255,255,.75), transparent); transform: skewX(-18deg); animation: spnShine 3.8s ease-in-out infinite; }
+  @keyframes spnShine { 0%, 55% { left: -60%; } 100% { left: 140%; } }
+  @media (prefers-reduced-motion: reduce) { .chero-chip.spn::after { animation: none; display: none; } }
+  .chero-spnline { font-size: .95rem; color: var(--text-soft); margin: -.9rem 0 1.4rem; }
+  .chero-spnline b { color: var(--text); }
   .instructor-strip { padding: 3rem 4rem; display: flex; justify-content: center; align-items: center; gap: 2rem; flex-wrap: wrap; }
   .instructor-strip .inner { max-width: 720px; }
   .instructor-strip .eyebrow { color: var(--accent-orange); font: 700 .85rem var(--font-display); margin-bottom: .5rem; }
@@ -221,6 +228,7 @@
       <span class="chero-badge">🚀 Trusted by 500+ Amazon sellers</span>
       <h1 id="heroTitle">Build a Real Amazon Business — <span id="heroHighlight">Without the Guesswork</span></h1>
       <p id="heroSubtitle">A step-by-step Amazon Selling Course that takes you from zero to your first profitable product — sourcing, listings, ads, and scaling, all in one place.</p>
+      <p class="chero-spnline"><b>Taught by a team that runs real Amazon accounts for clients</b> &mdash; listed in the Amazon Service Provider Network.</p>
       <div class="chero-ctas">
         <button onclick="location.href='signup.html'" id="heroEnrollBtn">Enroll Now — 320 SAR</button>
         <button class="secondary" onclick="document.getElementById('curriculum').scrollIntoView({behavior:'smooth'})">View Curriculum</button>
@@ -232,14 +240,11 @@
       <img src="https://lh3.googleusercontent.com/d/15SuGvVJEyZwh5vgq6hzEghaWalEWSGP7" alt="Instructor" id="heroImg" fetchpriority="high">
       <div class="chero-chip top" id="heroModuleCountChip">🎓 6+ Modules</div>
       <div class="chero-chip">⭐ 4.8 Rated by Students</div>
+      <div class="chero-chip spn" title="Listed in the Amazon Service Provider Network"><img src="assets/spn-badge.png" alt="Amazon Service Provider Network (SPN)" width="425" height="91"></div>
     </div>
   </div>
 </section>
 
-<div class="spn-strip">
-  <img src="assets/spn-badge.png" alt="Amazon Service Provider Network (SPN)" width="425" height="91" loading="lazy">
-  <p><b>Listed in the Amazon Service Provider Network.</b> Find Ampplify Academy under Advertising Optimization: open the Service Provider Network in Seller Central and search &ldquo;Ampplify Academy&rdquo;. Amazon does not endorse the providers listed there.</p>
-</div>
 <div class="instructor-strip">
   <div class="inner">
     <div class="eyebrow">MEET YOUR MENTOR</div>
