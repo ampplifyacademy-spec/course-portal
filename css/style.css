@@ -254,3 +254,10 @@ body.admin-shell { display: block; padding: 0; background: var(--bg); }
 .google-btn { display: flex; align-items: center; justify-content: center; gap: .6rem; width: 100%; margin: 0; background: #fff; color: #1c1d21; border: 1px solid var(--border-strong); font-weight: 600; }
 .google-btn:hover { border-color: var(--accent); }
 .google-hint { font-size: .78rem; color: var(--text-muted); line-height: 1.5; margin: .6rem 0 0; }
+
+/* Amazon SPN listing strip: badge used once per page, unaltered */
+.spn-strip { display: flex; align-items: center; gap: 1.4rem; max-width: 980px; margin: 1.6rem auto; padding: 1rem 1.4rem; background: var(--surface); border: 1px solid var(--border); border-left: 4px solid var(--accent-orange); border-radius: var(--radius); box-shadow: var(--shadow-sm); }
+.spn-strip img { width: 220px; height: auto; flex: none; }
+.spn-strip p { margin: 0; font-size: .92rem; color: var(--text-soft); line-height: 1.5; }
+.spn-strip p b { color: var(--text); }
+@media (max-width: 640px) { .spn-strip { flex-direction: column; text-align: center; margin-left: 16px; margin-right: 16px; } .spn-strip img { width: 190px; } }
