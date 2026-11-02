@@ -99,7 +99,7 @@
   .llc-included, .llc-table-box { background: var(--surface); border: 1px solid var(--border); border-radius: var(--radius); padding: 1.5rem; box-shadow: var(--shadow-sm); }
   .llc-included h4 { font-size: 1.05rem; margin-bottom: .4rem; color: var(--accent-orange); }
   .llc-table-box { overflow-x: auto; }
-  .llc-table { width: 100%; border-collapse: collapse; font-size: .9rem; min-width: 760px; }
+  .llc-table { width: 100%; border-collapse: collapse; font-size: .9rem; min-width: 600px; }
   .llc-table th, .llc-table td { padding: .65rem .6rem; text-align: left; border-bottom: 1px solid var(--border); }
   .llc-table th { font: 700 .78rem var(--font-body); color: var(--text-muted); }
   .llc-table td:first-child { font-weight: 700; }
@@ -185,7 +185,7 @@
   .llc-included, .llc-table-box { background: var(--surface); border: 1px solid var(--border); border-radius: var(--radius); padding: 1.5rem; box-shadow: var(--shadow-sm); }
   .llc-included h4 { font-size: 1.05rem; margin-bottom: .4rem; color: var(--accent-orange); }
   .llc-table-box { overflow-x: auto; }
-  .llc-table { width: 100%; border-collapse: collapse; font-size: .9rem; min-width: 760px; }
+  .llc-table { width: 100%; border-collapse: collapse; font-size: .9rem; min-width: 600px; }
   .llc-table th, .llc-table td { padding: .65rem .6rem; text-align: left; border-bottom: 1px solid var(--border); }
   .llc-table th { font: 700 .78rem var(--font-body); color: var(--text-muted); }
   .llc-table td:first-child { font-weight: 700; }
@@ -245,7 +245,7 @@
   <h3 class="company-sub">All states at a glance</h3>
   <div class="llc-table-box" style="max-width:1100px; margin:0 auto;">
     <table class="llc-table">
-      <thead><tr><th>State</th><th>State filing + card fee</th><th>Filing + registered agent (yr 1)</th><th>Business address</th><th>Our service fee</th><th>From year 2 (per year)</th><th>Total, year 1</th></tr></thead>
+      <thead><tr><th>State</th><th>Formation package (year 1)</th><th>Business address</th><th>From year 2 (per year)</th><th>Total, year 1</th></tr></thead>
       <tbody id="llcRows"></tbody>
     </table>
   </div>
@@ -315,7 +315,7 @@ const llcMoney = v => (String(v == null ? '' : v).trim() !== '' && toNum(v) >= 0
 const na = '<span class="na">On request</span>';
 function llcCalc(st) {
   const service = String(st.serviceFee || '').trim() !== '' ? st.serviceFee : llcGeneral;
-  const ok = [st.stateFee, service].every(v => String(v == null ? '' : v).trim() !== ''); // agent and address fees are optional
+  const ok = String(st.stateFee == null ? '' : st.stateFee).trim() !== ''; // stateFee is the whole formation package; the rest are optional
   return { service, total: ok ? [st.stateFee, st.agentFee, st.addressFee, service].reduce((s, v) => s + toNum(v), 0) : null };
 }
 function renderLlcOrder() {
@@ -325,10 +325,8 @@ function renderLlcOrder() {
   const { service, total } = llcCalc(st);
   const row = (a, b) => `<div class="plan-cost-row"><span>${a}</span><span>${b}</span></div>`;
   document.getElementById('llcBreakdown').innerHTML =
-    row('State filing fee + card fee (' + st.state + ')', llcMoney(st.stateFee) || na) +
-    row('Filing service + registered agent (year 1)', llcMoney(st.agentFee) || na) +
+    row('LLC formation package, ' + st.state + ' (state filing and card fee, filing service, registered agent year 1)', llcMoney(st.stateFee) || na) +
     row('Business address (own suite, mail scanning)', llcMoney(st.addressFee) || na) +
-    row('Our service fee', llcMoney(service) || na) +
     `<div class="plan-total-row"><span>Total, year 1</span><span>${total === null ? 'On request' : formatMoney(total) + ' ' + llcCur}</span></div>` +
     (total !== null && llcMoney(st.renewalFee) ? `<p class="plan-note">From year 2: ${llcMoney(st.renewalFee)} per year (registered agent, address${/wyoming/i.test(st.state) ? ' and annual report' : ''}).</p>` : '');
   document.getElementById('llcAction').innerHTML = total === null
@@ -354,7 +352,7 @@ loadSiteContent().then(content => {
   document.getElementById('llcState').innerHTML = llcStates.map((s, i) => `<option value="${i}">${s.state}</option>`).join('');
   document.getElementById('llcRows').innerHTML = llcStates.map((st, i) => {
     const { service, total } = llcCalc(st);
-    return `<tr style="cursor:pointer" onclick="pickLlc(${i})"><td>${st.state}</td><td>${llcMoney(st.stateFee) || na}</td><td>${llcMoney(st.agentFee) || na}</td><td>${llcMoney(st.addressFee) || na}</td><td>${llcMoney(service) || na}</td><td>${llcMoney(st.renewalFee) || na}</td><td>${total === null ? na : formatMoney(total) + ' ' + llcCur}</td></tr>`;
+    return `<tr style="cursor:pointer" onclick="pickLlc(${i})"><td>${st.state}</td><td>${llcMoney(st.stateFee) || na}</td><td>${llcMoney(st.addressFee) || na}</td><td>${llcMoney(st.renewalFee) || na}</td><td>${total === null ? na : formatMoney(total) + ' ' + llcCur}</td></tr>`;
   }).join('');
   renderLlcOrder();
   renderSocialNav(content.social, 'navSocial');

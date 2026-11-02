@@ -113,7 +113,7 @@ const SITE_CONTENT_DEFAULTS = {
     llc: {
       currency: 'SAR',
       intro: 'We form your US LLC for you, in the state that suits your business, and hand over the finished documents in your name. Every price below is the full year-1 total in Saudi riyals (SAR), our service fee included.',
-      serviceCharge: '400',
+      serviceCharge: '',
       includes: [
         'State filing fee and card fee, paid for you',
         'Filing of the formation documents with the state',
@@ -123,11 +123,11 @@ const SITE_CONTENT_DEFAULTS = {
         'Copies of all filed documents',
         'No hidden charges in year 1: everything is in the total'
       ],
-      // All amounts in SAR at 1 USD = 4 SAR. stateFee = state filing fee + 2.7% card fee (Texas) or $4 card fee (Wyoming);
-      // agentFee = filing and registered-agent service, year 1; addressFee = business address plan; renewalFee = per year from year 2.
+      // All amounts in SAR. stateFee = the whole formation package, year 1 (state filing, filing service, registered agent);
+      // addressFee = business address plan; renewalFee = per year from year 2.
       states: [
-        { state: 'Texas', stateFee: '1240', agentFee: '156', addressFee: '196', serviceFee: '', renewalFee: '696' },
-        { state: 'Wyoming', stateFee: '416', agentFee: '156', addressFee: '196', serviceFee: '', renewalFee: '936' },
+        { state: 'Texas', stateFee: '1796', agentFee: '', addressFee: '196', serviceFee: '', renewalFee: '696' },
+        { state: 'Wyoming', stateFee: '972', agentFee: '', addressFee: '196', serviceFee: '', renewalFee: '936' },
         { state: 'Delaware', stateFee: '', agentFee: '', addressFee: '', serviceFee: '', renewalFee: '' },
         { state: 'New Mexico', stateFee: '', agentFee: '', addressFee: '', serviceFee: '', renewalFee: '' }
       ],
