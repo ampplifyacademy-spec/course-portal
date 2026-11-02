@@ -97,3 +97,9 @@ Public SPN search (Advertising Optimization, provider name "Ampplify Academy") n
 - Bing Webmaster: sitemap.xml resubmitted 2026-10-22 ("Processing"); earlier 10 URLs discovered; site has 15 URLs now.
 - Weekly guide task still scheduled (Mondays ~10:00).
 - Still TODO (needs the user): backlinks / profiles (Facebook page done, YouTube, X, Crunchbase, Medium, LinkedIn personal profile website field); LinkedIn Company Page blocked by workplace verification; Facebook cover with SPN badge made (spn-banners/fb-cover-spn.png) but upload is the user's; site wording for SPN listing (safe wording: "Listed on Amazon Service Provider Network"); re-check SPN listing visibility.
+
+## SEO status 2026-11-02 (SEO session)
+- Audit: all 17 sitemap URLs 200. Added Course+FAQPage JSON-LD to index.html (was only on course.html), Service+BreadcrumbList JSON-LD on llc/ltd, llc/ltd in llms.txt (fe7b6ce).
+- Google AI Mode re-test: brand queries (incl. "Ampplify Academy Rakiza Company LTD", "...ampplifyacademy.com") now answer correctly and cite our site. "What is Ampplify Academy?" still shows only Amplify orgs. AI Mode repeated "Sponsored Display", "1-on-1 coaching calls", "6+ modules" vs "29 modules": check site wording.
+- Search Console (28 days): 1 click, 145 impressions, avg position 54.3; top queries amazon ppc (43), amazon fba or fbm (11), ampplify (9). 15 indexed, 3 not (2 alternate canonical, 1 discovered-not-indexed). Sitemap read 2026-11-01, 17 URLs, Success. Request indexing done 2026-11-02 for llc.html and ltd.html.
+- Weekly guide task: 2026-10-26 run stopped after 1 tool call (no commit, cause unknown); no guide since 2026-10-22. 2026-11-02 run in progress. Bing check still TODO.
