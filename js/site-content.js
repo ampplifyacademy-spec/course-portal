@@ -111,24 +111,27 @@ const SITE_CONTENT_DEFAULTS = {
     // US LLC formation (services.html #llcSection). Prices are left empty on purpose and filled in from the admin
     // panel. A state row's own "serviceFee" wins; an empty one falls back to the general "serviceCharge".
     llc: {
-      currency: 'USD',
-      intro: 'We form your US LLC for you, in the state that suits your business, and hand over the finished documents in your name.',
-      serviceCharge: '',
+      currency: 'SAR',
+      intro: 'We form your US LLC for you, in the state that suits your business, and hand over the finished documents in your name. Every price below is the full year-1 total in Saudi riyals (SAR), our service fee included.',
+      serviceCharge: '400',
       includes: [
-        'State name-availability check',
+        'State filing fee and card fee, paid for you',
         'Filing of the formation documents with the state',
-        'Registered agent set-up',
-        'Operating agreement (template)',
-        'EIN application support',
-        'Copies of all filed documents'
+        'Registered agent for the first year',
+        'Your own business address (own suite number, not shared with other clients) with mail scanning, 15 scans a year',
+        'EIN application handled by us',
+        'Copies of all filed documents',
+        'No hidden charges in year 1: everything is in the total'
       ],
+      // All amounts in SAR at 1 USD = 4 SAR. stateFee = state filing fee + 2.7% card fee (Texas) or $4 card fee (Wyoming);
+      // agentFee = filing and registered-agent service, year 1; addressFee = business address plan; renewalFee = per year from year 2.
       states: [
-        { state: 'Texas', stateFee: '310', agentFee: '', serviceFee: '' },
-        { state: 'Wyoming', stateFee: '103', agentFee: '', serviceFee: '' },
-        { state: 'Delaware', stateFee: '110', agentFee: '', serviceFee: '' },
-        { state: 'New Mexico', stateFee: '52', agentFee: '', serviceFee: '' }
+        { state: 'Texas', stateFee: '1240', agentFee: '156', addressFee: '196', serviceFee: '', renewalFee: '696' },
+        { state: 'Wyoming', stateFee: '416', agentFee: '156', addressFee: '196', serviceFee: '', renewalFee: '936' },
+        { state: 'Delaware', stateFee: '', agentFee: '', addressFee: '', serviceFee: '', renewalFee: '' },
+        { state: 'New Mexico', stateFee: '', agentFee: '', addressFee: '', serviceFee: '', renewalFee: '' }
       ],
-      note: 'State fees are set by each state and can change. Registered-agent fees are yearly. We are not a law firm and do not give legal or tax advice.'
+      note: 'Prices are year 1 in SAR at 1 USD = 4 SAR and follow the state and provider fees today, which can change. From year 2 you pay the renewal shown for your state (registered agent, address and, in Wyoming, the annual report). Not included: the yearly IRS Form 5472 / pro forma 1120 (free if you file it yourself, a CPA usually charges more), a US bank or Payoneer account, and your Amazon seller account (200 SAR separately). The business address cannot be used as an Amazon return address, and Amazon may ask for more proof of address; an optional lease address plan is available for +200 SAR. We are not a law firm and do not give legal or tax advice.'
     },
     partnershipCosts: [
       { label: 'Listing image design & A+ content', amount: '' },
