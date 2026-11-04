@@ -121,17 +121,36 @@ const SITE_CONTENT_DEFAULTS = {
         'Your own business address (own suite number, not shared with other clients) with mail scanning, 15 scans a year',
         'EIN application handled by us',
         'Copies of all filed documents',
-        'No hidden charges in year 1: everything is in the total'
+        'Everything we charge in year 1 is in the total, and the yearly costs from year 2 are listed below'
       ],
-      // All amounts in SAR. stateFee = the whole formation package, year 1 (state filing, filing service, registered agent);
-      // addressFee = business address plan; renewalFee = per year from year 2.
+      // All amounts in SAR (1 USD = 4 SAR). stateFee = the whole formation package, year 1 (state filing, filing service,
+      // registered agent); addressFee = business address plan; renewalFee = per year from year 2.
+      // parts = what stateFee is made of (gov = state filing fee, card = card fee, filing = filing service + registered
+      // agent year 1, ours = our service fee); a missing card means the card fee sits inside our fee.
+      // renew = what renewalFee is made of (agent, address, stateTax = yearly state charge); renewalWhat/extra = plain text.
       states: [
-        { state: 'Texas', stateFee: '1796', agentFee: '', addressFee: '196', serviceFee: '', renewalFee: '696' },
-        { state: 'Wyoming', stateFee: '972', agentFee: '', addressFee: '196', serviceFee: '', renewalFee: '936' },
-        { state: 'Delaware', stateFee: '', agentFee: '', addressFee: '', serviceFee: '', renewalFee: '' },
-        { state: 'New Mexico', stateFee: '', agentFee: '', addressFee: '', serviceFee: '', renewalFee: '' }
+        { state: 'Texas', stateFee: '1804', agentFee: '', addressFee: '196', serviceFee: '', renewalFee: '696',
+          parts: { gov: '1200', card: '40', filing: '156', ours: '408' },
+          renew: { agent: '500', address: '196', stateTax: '0' },
+          renewalWhat: 'registered agent and address',
+          extra: 'No yearly state fee. A free Public Information Report is due every May 15.' },
+        { state: 'Wyoming', stateFee: '974', agentFee: '', addressFee: '196', serviceFee: '', renewalFee: '936',
+          parts: { gov: '400', card: '16', filing: '156', ours: '402' },
+          renew: { agent: '500', address: '196', stateTax: '240' },
+          renewalWhat: 'registered agent, address and the state annual report',
+          extra: 'Yearly state annual report: 240 SAR (the minimum, for companies with under 300,000 USD of assets in Wyoming).' },
+        { state: 'Delaware', stateFee: '1004', agentFee: '', addressFee: '196', serviceFee: '', renewalFee: '2296',
+          parts: { gov: '440', card: '', filing: '156', ours: '408' },
+          renew: { agent: '500', address: '196', stateTax: '1600' },
+          renewalWhat: 'registered agent, address and the Delaware yearly tax',
+          extra: 'Delaware charges a yearly LLC tax of 1,600 SAR (400 USD) due June 1; late payment adds an 800 SAR penalty. A Delaware business licence (about 300 SAR a year, by industry) and a gross receipts tax can also apply and are not in our price.' },
+        { state: 'New Mexico', stateFee: '764', agentFee: '', addressFee: '196', serviceFee: '', renewalFee: '696',
+          parts: { gov: '208', card: '', filing: '156', ours: '400' },
+          renew: { agent: '500', address: '196', stateTax: '0' },
+          renewalWhat: 'registered agent and address',
+          extra: 'No yearly state fee is charged at the moment. New Mexico only accepts the formation filing online.' }
       ],
-      note: 'Prices are year 1 in SAR at 1 USD = 4 SAR and follow the state and provider fees today, which can change. From year 2 you pay the renewal shown for your state (registered agent, address and, in Wyoming, the annual report). Not included: the yearly IRS Form 5472 / pro forma 1120 (free if you file it yourself, a CPA usually charges more), a US bank or Payoneer account, and your Amazon seller account (200 SAR separately). The business address cannot be used as an Amazon return address, and Amazon may ask for more proof of address; an optional lease address plan is available for +200 SAR. We are not a law firm and do not give legal or tax advice.'
+      note: 'Prices are year 1 in SAR at 1 USD = 4 SAR and follow the state and provider fees today, which can change. From year 2 you pay the renewal shown for your state (registered agent, address and, where a state charges one, its yearly report or tax: Wyoming and Delaware). Not included: the yearly IRS Form 5472 / pro forma 1120 (free if you file it yourself, a CPA usually charges more), a US bank or Payoneer account, and your Amazon seller account (200 SAR separately). The business address cannot be used as an Amazon return address, and Amazon may ask for more proof of address; an optional lease address plan is available for +200 SAR. We are not a law firm and do not give legal or tax advice.'
     },
     partnershipCosts: [
       { label: 'Listing image design & A+ content', amount: '' },
