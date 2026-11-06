@@ -124,8 +124,7 @@ const SITE_CONTENT_DEFAULTS = {
         'The total above is your full cost for year 1'
       ],
       // All amounts in SAR (1 USD = 4 SAR). stateFee = the whole formation package, year 1 (state filing, filing service,
-      // registered agent); addressFee = business address plan; renewalFee = per year from year 2.
-      // renew = what renewalFee is made of (agent, address, stateTax = yearly state charge); renewalWhat/extra = plain text.
+      // registered agent); addressFee = business address plan.
       states: [
         { state: 'Texas', stateFee: '1804', agentFee: '', addressFee: '196', serviceFee: '', renewalFee: '',
           extra: 'No yearly state fee. A free Public Information Report is due every May 15.' },
