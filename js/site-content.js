@@ -121,7 +121,7 @@ const SITE_CONTENT_DEFAULTS = {
         'Your own business address (own suite number, not shared with other clients) with mail scanning, 15 scans a year',
         'EIN application handled by us',
         'Copies of all filed documents',
-        'The yearly costs from year 2 are listed below'
+        'The total above is your full cost for year 1. Yearly costs from year 2 are listed below'
       ],
       // All amounts in SAR (1 USD = 4 SAR). stateFee = the whole formation package, year 1 (state filing, filing service,
       // registered agent); addressFee = business address plan; renewalFee = per year from year 2.
