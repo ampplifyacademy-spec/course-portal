@@ -254,28 +254,6 @@
     </table>
   </div>
 
-  <!-- Hidden for now: the year-1 charge-by-charge table stays off until our own service fee is decided.
-       Remove the "hidden" attribute on this div to show it again; the numbers are in site-content.js (parts). -->
-  <div id="llcPartsSection" hidden>
-  <h3 class="company-sub">What each charge pays for (year 1)</h3>
-  <div class="llc-table-box" style="max-width:1100px; margin:0 auto;">
-    <table class="llc-table" style="min-width:760px;">
-      <thead><tr><th>State</th><th>State filing fee</th><th>Card fee</th><th>Filing service + registered agent</th><th>Business address</th><th>Our service fee</th><th>Total, year 1</th></tr></thead>
-      <tbody id="llcPartsRows"></tbody>
-    </table>
-  </div>
-  <div class="llc-legend">
-    <h4>What these charges mean</h4>
-    <ul>
-      <li><b>State filing fee:</b> paid to the state government to register your LLC. It goes to the state, not to us.</li>
-      <li><b>Card fee:</b> the extra charge for paying the state by card. Where it shows "In our fee", we cover it.</li>
-      <li><b>Filing service + registered agent:</b> the provider that files your documents and acts as your US registered agent for the first year. Every LLC must have a registered agent with a street address in its state.</li>
-      <li><b>Business address:</b> your own suite number at a US business address, with 15 scanned letters a year. It is used for the state record and as your business address.</li>
-      <li><b>Our service fee:</b> our work for you: your EIN application, handling and checking the documents, copies of everything filed, and support.</li>
-    </ul>
-  </div>
-  </div>
-
   <h3 class="company-sub">Yearly cost from year 2</h3>
   <div class="llc-table-box" style="max-width:1100px; margin:0 auto;">
     <table class="llc-table">
@@ -396,11 +374,6 @@ loadSiteContent().then(content => {
     return `<tr style="cursor:pointer" onclick="pickLlc(${i})"><td>${st.state}</td><td>${llcMoney(st.stateFee) || na}</td><td>${llcMoney(st.addressFee) || na}</td><td>${llcMoney(st.renewalFee) || na}</td><td>${total === null ? na : formatMoney(total) + ' ' + llcCur}</td></tr>`;
   }).join('');
   const cell = (v, empty) => llcMoney(v) || empty;
-  document.getElementById('llcPartsRows').innerHTML = llcStates.map(st => {
-    const p = st.parts, { total } = llcCalc(st);
-    if (!p || total === null) return `<tr><td>${st.state}</td><td colspan="6">${na}</td></tr>`;
-    return `<tr><td>${st.state}</td><td>${cell(p.gov, na)}</td><td>${cell(p.card, 'In our fee')}</td><td>${cell(p.filing, na)}</td><td>${cell(st.addressFee, na)}</td><td>${cell(p.ours, na)}</td><td>${formatMoney(total) + ' ' + llcCur}</td></tr>`;
-  }).join('');
   document.getElementById('llcRenewRows').innerHTML = llcStates.map(st => {
     const r = st.renew;
     if (!r || !llcMoney(st.renewalFee)) return `<tr><td>${st.state}</td><td colspan="4">${na}</td></tr>`;

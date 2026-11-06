@@ -125,27 +125,21 @@ const SITE_CONTENT_DEFAULTS = {
       ],
       // All amounts in SAR (1 USD = 4 SAR). stateFee = the whole formation package, year 1 (state filing, filing service,
       // registered agent); addressFee = business address plan; renewalFee = per year from year 2.
-      // parts = what stateFee is made of (gov = state filing fee, card = card fee, filing = filing service + registered
-      // agent year 1, ours = our service fee); a missing card means the card fee sits inside our fee.
       // renew = what renewalFee is made of (agent, address, stateTax = yearly state charge); renewalWhat/extra = plain text.
       states: [
         { state: 'Texas', stateFee: '1804', agentFee: '', addressFee: '196', serviceFee: '', renewalFee: '696',
-          parts: { gov: '1200', card: '40', filing: '156', ours: '408' },
           renew: { agent: '500', address: '196', stateTax: '0' },
           renewalWhat: 'registered agent and address',
           extra: 'No yearly state fee. A free Public Information Report is due every May 15.' },
         { state: 'Wyoming', stateFee: '974', agentFee: '', addressFee: '196', serviceFee: '', renewalFee: '936',
-          parts: { gov: '400', card: '16', filing: '156', ours: '402' },
           renew: { agent: '500', address: '196', stateTax: '240' },
           renewalWhat: 'registered agent, address and the state annual report',
           extra: 'Yearly state annual report: 240 SAR (the minimum, for companies with under 300,000 USD of assets in Wyoming).' },
         { state: 'Delaware', stateFee: '1004', agentFee: '', addressFee: '196', serviceFee: '', renewalFee: '2296',
-          parts: { gov: '440', card: '', filing: '156', ours: '408' },
           renew: { agent: '500', address: '196', stateTax: '1600' },
           renewalWhat: 'registered agent, address and the Delaware yearly tax',
           extra: 'Delaware charges a yearly LLC tax of 1,600 SAR (400 USD) due June 1; late payment adds an 800 SAR penalty. A Delaware business licence (about 300 SAR a year, by industry) and a gross receipts tax can also apply and are not in our price.' },
         { state: 'New Mexico', stateFee: '764', agentFee: '', addressFee: '196', serviceFee: '', renewalFee: '696',
-          parts: { gov: '208', card: '', filing: '156', ours: '400' },
           renew: { agent: '500', address: '196', stateTax: '0' },
           renewalWhat: 'registered agent and address',
           extra: 'No yearly state fee is charged at the moment. New Mexico only accepts the formation filing online.' }
