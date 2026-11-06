@@ -249,16 +249,8 @@
   <h3 class="company-sub">All states at a glance</h3>
   <div class="llc-table-box" style="max-width:1100px; margin:0 auto;">
     <table class="llc-table">
-      <thead><tr><th>State</th><th>Formation package (year 1)</th><th>Business address</th><th>From year 2 (per year)</th><th>Total, year 1</th></tr></thead>
+      <thead><tr><th>State</th><th>Formation package (year 1)</th><th>Business address</th><th>Total, year 1</th></tr></thead>
       <tbody id="llcRows"></tbody>
-    </table>
-  </div>
-
-  <h3 class="company-sub">Yearly cost from year 2</h3>
-  <div class="llc-table-box" style="max-width:1100px; margin:0 auto;">
-    <table class="llc-table">
-      <thead><tr><th>State</th><th>Registered agent</th><th>Business address</th><th>Yearly state charge</th><th>Total per year</th></tr></thead>
-      <tbody id="llcRenewRows"></tbody>
     </table>
   </div>
 
@@ -346,7 +338,6 @@ function renderLlcOrder() {
     row('LLC formation package, ' + st.state + ' (state filing and card fee, filing service, registered agent year 1)', llcMoney(st.stateFee) || na) +
     row('Business address (own suite, mail scanning)', llcMoney(st.addressFee) || na) +
     `<div class="plan-total-row"><span>Total, year 1</span><span>${total === null ? 'On request' : formatMoney(total) + ' ' + llcCur}</span></div>` +
-    (total !== null && llcMoney(st.renewalFee) ? `<p class="plan-note">From year 2: ${llcMoney(st.renewalFee)} per year (${st.renewalWhat || 'registered agent and address'}).</p>` : '') +
     (st.extra ? `<p class="plan-note">${st.extra}</p>` : '');
   document.getElementById('llcAction').innerHTML = total === null
     ? `<a class="llc-quote-btn" href="mailto:contact@ampplifyacademy.com?subject=${encodeURIComponent('US LLC formation - ' + st.state)}">Ask for a quote</a>`
@@ -371,13 +362,7 @@ loadSiteContent().then(content => {
   document.getElementById('llcState').innerHTML = llcStates.map((s, i) => `<option value="${i}">${s.state}</option>`).join('');
   document.getElementById('llcRows').innerHTML = llcStates.map((st, i) => {
     const { service, total } = llcCalc(st);
-    return `<tr style="cursor:pointer" onclick="pickLlc(${i})"><td>${st.state}</td><td>${llcMoney(st.stateFee) || na}</td><td>${llcMoney(st.addressFee) || na}</td><td>${llcMoney(st.renewalFee) || na}</td><td>${total === null ? na : formatMoney(total) + ' ' + llcCur}</td></tr>`;
-  }).join('');
-  const cell = (v, empty) => llcMoney(v) || empty;
-  document.getElementById('llcRenewRows').innerHTML = llcStates.map(st => {
-    const r = st.renew;
-    if (!r || !llcMoney(st.renewalFee)) return `<tr><td>${st.state}</td><td colspan="4">${na}</td></tr>`;
-    return `<tr><td>${st.state}</td><td>${cell(r.agent, na)}</td><td>${cell(r.address, na)}</td><td>${toNum(r.stateTax) > 0 ? llcMoney(r.stateTax) : 'None'}</td><td>${llcMoney(st.renewalFee)}</td></tr>`;
+    return `<tr style="cursor:pointer" onclick="pickLlc(${i})"><td>${st.state}</td><td>${llcMoney(st.stateFee) || na}</td><td>${llcMoney(st.addressFee) || na}</td><td>${total === null ? na : formatMoney(total) + ' ' + llcCur}</td></tr>`;
   }).join('');
   document.getElementById('llcExtra').innerHTML = llcStates.filter(st => st.extra).map(st => `<li><b>${st.state}:</b> ${st.extra}</li>`).join('');
   renderLlcOrder();
