@@ -112,7 +112,7 @@ const SITE_CONTENT_DEFAULTS = {
     // panel. A state row's own "serviceFee" wins; an empty one falls back to the general "serviceCharge".
     llc: {
       currency: 'SAR',
-      intro: 'We form your US LLC for you, in the state that suits your business, and hand over the finished documents in your name. Every price below is the full year-1 total in Saudi riyals (SAR), our service fee included.',
+      intro: 'We form your US LLC for you, in the state that suits your business, and hand over the finished documents in your name. Every price below is the full year-1 total in Saudi riyals (SAR).',
       serviceCharge: '',
       includes: [
         'State filing fee and card fee, paid for you',
@@ -121,7 +121,7 @@ const SITE_CONTENT_DEFAULTS = {
         'Your own business address (own suite number, not shared with other clients) with mail scanning, 15 scans a year',
         'EIN application handled by us',
         'Copies of all filed documents',
-        'Everything we charge in year 1 is in the total, and the yearly costs from year 2 are listed below'
+        'The yearly costs from year 2 are listed below'
       ],
       // All amounts in SAR (1 USD = 4 SAR). stateFee = the whole formation package, year 1 (state filing, filing service,
       // registered agent); addressFee = business address plan; renewalFee = per year from year 2.
