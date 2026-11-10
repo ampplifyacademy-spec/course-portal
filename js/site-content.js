@@ -221,6 +221,8 @@ function mergeSiteContent(data) {
       if (!data.course || !data.course.successStories || !data.course.successStories.length) {
         merged.course.successStories = merged.showSampleReviews ? SITE_CONTENT_DEFAULTS.course.successStories : [];
       }
+      // Amazon account set-up: show the crossed-out old price unless the admin has set one
+      merged.course.services = (merged.course.services || []).map(sv => /amazon (seller )?account set-?up/i.test(sv.title || '') && !String(sv.oldPrice || '').trim() ? Object.assign({}, sv, { oldPrice: '320' }) : sv);
       applySiteTheme(merged.theme);
       return merged;
     }
