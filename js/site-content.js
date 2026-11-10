@@ -135,7 +135,7 @@ const SITE_CONTENT_DEFAULTS = {
         { state: 'New Mexico', stateFee: '764', agentFee: '', addressFee: '196', serviceFee: '', renewalFee: '',
           extra: 'No yearly state fee and no annual report. Owner names are not on the public record. This is why the New Mexico price is the lowest: the state filing itself is the cheapest of the four, and there is nothing to file every year.' }
       ],
-      note: 'Prices are year 1 in SAR at 1 USD = 4 SAR and follow the state and provider fees today, which can change. Not included: the yearly IRS Form 5472 / pro forma 1120 (free if you file it yourself, a CPA usually charges more), a US bank or Payoneer account, and your Amazon seller account (200 SAR separately). The business address cannot be used as an Amazon return address, and Amazon may ask for more proof of address; an optional lease address plan is available for +200 SAR. We are not a law firm and do not give legal or tax advice.'
+      note: ''
     },
     partnershipCosts: [
       { label: 'Listing image design & A+ content', amount: '' },
