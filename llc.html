@@ -199,6 +199,14 @@
   .llc-legend h4 { font-size: 1.05rem; margin-bottom: .5rem; color: var(--accent-orange); }
   .llc-legend ul { margin: 0; padding-left: 1.2rem; color: var(--text-soft); font-size: .88rem; line-height: 1.6; }
   .llc-legend li { padding: .15rem 0; }
+  .llc-addons { margin: 0 0 1rem; }
+  .llc-addons h5 { font: 700 .85rem var(--font-body); margin: 0 0 .5rem; }
+  .llc-addon { display: flex; align-items: flex-start; gap: .7rem; border: 1.5px solid var(--border); border-radius: var(--radius-sm); padding: .75rem .9rem; margin-bottom: .5rem; cursor: pointer; background: var(--surface); }
+  .llc-addon.on { border-color: var(--accent); background: rgba(37,99,235,.06); }
+  .llc-addon input { width: auto; margin: .25rem 0 0; flex-shrink: 0; }
+  .llc-addon .t { font-weight: 700; font-size: .9rem; }
+  .llc-addon .d { color: var(--text-soft); font-size: .8rem; line-height: 1.45; margin-top: .15rem; }
+  .llc-addon .p { margin-left: auto; font-weight: 800; color: var(--accent-orange); font-size: .88rem; white-space: nowrap; padding-left: .5rem; }
   .llc-bene td:last-child { color: inherit; font-weight: inherit; }
   .llc-bene th, .llc-bene td { text-align: center; }
   .llc-bene th:first-child, .llc-bene td:first-child { text-align: left; }
@@ -247,6 +255,7 @@
     <div class="llc-table-box">
       <label for="llcState" style="display:block; font:700 .85rem var(--font-body); margin-bottom:.4rem;">Choose your state</label>
       <select id="llcState" onchange="renderLlcOrder()" style="width:100%; margin:0 0 1rem;"></select>
+      <div id="llcAddons" class="llc-addons"></div>
       <div id="llcBreakdown"></div>
       <div id="llcAction" style="margin-top:1.25rem;"></div>
     </div>
@@ -330,7 +339,7 @@
 <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-auth-compat.js"></script>
 <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore-compat.js"></script>
 <script src="js/firebase-config.js"></script>
-<script src="js/site-content.js?v=16"></script>
+<script src="js/site-content.js?v=17"></script>
 <script src="js/feedback.js"></script>
 <script>
 function toggleMobileNav() { document.querySelector('.cnav-links').classList.toggle('open'); }
@@ -338,6 +347,20 @@ function toggleMobileNav() { document.querySelector('.cnav-links').classList.tog
 let llcCur = 'USD', llcStates = [], llcGeneral = '';
 const llcMoney = v => (String(v == null ? '' : v).trim() !== '' && toNum(v) >= 0) ? formatMoney(toNum(v)) + ' ' + llcCur : null;
 const na = '<span class="na">On request</span>';
+// Optional extras the client can tick. An empty price shows "Price on request" and is not added to the total.
+const LLC_ADDONS_DEFAULT = [
+  { title: 'Amazon seller account set-up', desc: 'We open your Amazon seller account for you, on top of the LLC.', price: '200' },
+  { title: 'Business bank account set-up', desc: 'We guide you through opening a business bank account for the LLC.', price: '' }
+];
+let llcAddons = [];
+const llcPicked = new Set();
+function llcAddonTotal() { return llcAddons.reduce((s, a, k) => s + (llcPicked.has(k) ? toNum(a.price) : 0), 0); }
+function renderLlcAddons() {
+  document.getElementById('llcAddons').innerHTML = llcAddons.length
+    ? '<h5>Optional add-ons</h5>' + llcAddons.map((a, k) => `<label class="llc-addon${llcPicked.has(k) ? ' on' : ''}"><input type="checkbox" ${llcPicked.has(k) ? 'checked' : ''} onchange="toggleLlcAddon(${k})"><span><div class="t">${a.title}</div><div class="d">${a.desc || ''}</div></span><span class="p">${String(a.price || '').trim() !== '' ? '+' + formatMoney(toNum(a.price)) + ' ' + llcCur : 'Price on request'}</span></label>`).join('')
+    : '';
+}
+function toggleLlcAddon(k) { llcPicked.has(k) ? llcPicked.delete(k) : llcPicked.add(k); renderLlcAddons(); renderLlcOrder(); }
 function llcCalc(st) {
   const service = String(st.serviceFee || '').trim() !== '' ? st.serviceFee : llcGeneral;
   const ok = String(st.stateFee == null ? '' : st.stateFee).trim() !== ''; // stateFee is the whole formation package; the rest are optional
@@ -352,7 +375,8 @@ function renderLlcOrder() {
   document.getElementById('llcBreakdown').innerHTML =
     row('LLC formation package, ' + st.state + ' (state filing and card fee, filing service, registered agent year 1)', llcMoney(st.stateFee) || na) +
     row('Business address (own suite, mail scanning)', llcMoney(st.addressFee) || na) +
-    `<div class="plan-total-row"><span>Total, year 1</span><span>${total === null ? 'On request' : formatMoney(total) + ' ' + llcCur}</span></div>` +
+    llcAddons.map((a, k) => llcPicked.has(k) ? row(a.title, String(a.price || '').trim() !== '' ? formatMoney(toNum(a.price)) + ' ' + llcCur : 'Price on request') : '').join('') +
+    `<div class="plan-total-row"><span>Total, year 1</span><span>${total === null ? 'On request' : formatMoney(total + llcAddonTotal()) + ' ' + llcCur}</span></div>` +
     (st.extra ? `<p class="plan-note">${st.extra}</p>` : '');
   document.getElementById('llcAction').innerHTML = total === null
     ? `<a class="llc-quote-btn" href="mailto:contact@ampplifyacademy.com?subject=${encodeURIComponent('US LLC formation - ' + st.state)}">Ask for a quote</a>`
@@ -361,8 +385,10 @@ function renderLlcOrder() {
 }
 function orderLlc(i) {
   const st = llcStates[i];
-  const { total } = llcCalc(st);
-  sessionStorage.setItem('selectedServices', JSON.stringify({ names: ['US LLC Formation - ' + st.state], total, currency: llcCur, docFolders: [], needsScheduling: false }));
+  const { total: base } = llcCalc(st);
+  const total = base + llcAddonTotal();
+  const extras = llcAddons.filter((a, k) => llcPicked.has(k)).map(a => 'Add-on: ' + a.title + (String(a.price || '').trim() === '' ? ' (price on request)' : ''));
+  sessionStorage.setItem('selectedServices', JSON.stringify({ names: ['US LLC Formation - ' + st.state].concat(extras), total, currency: llcCur, docFolders: [], needsScheduling: false }));
   location.href = 'signup.html';
 }
 // ✓/✗ rules per state. true = a benefit for you. No amounts here on purpose.
@@ -387,6 +413,8 @@ loadSiteContentFast().then(content => {
   llcCur = llc.currency || 'USD';
   llcGeneral = llc.serviceCharge;
   llcStates = (llc.states || []).filter(s => s.state);
+  llcAddons = (llc.addons && llc.addons.length ? llc.addons : LLC_ADDONS_DEFAULT).filter(a => a.title);
+  renderLlcAddons();
   if (llc.intro) document.getElementById('llcIntro').textContent = llc.intro;
   document.getElementById('llcIncludes').innerHTML = (llc.includes || []).map(s => `<li><span class="check-mark">✓</span>${s}</li>`).join('');
   document.getElementById('llcNote').textContent = llc.note || '';

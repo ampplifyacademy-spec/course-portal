@@ -426,19 +426,19 @@ let currency = 'SAR';
 const selected = new Set();
 
 const SERVICE_THUMBS = [
-  { match: /ppc|sponsored|ad(s|vert)/i, emoji: '📈', gradient: 'linear-gradient(135deg,#2563eb,#5fd0ff)', tag: 'Advertising' },
-  { match: /design|image|a\+|content|store/i, emoji: '🎨', gradient: 'linear-gradient(135deg,#fd7d01,#ffab5c)', tag: 'Design' },
-  { match: /trademark|registration|brand registr|ltd|confirm statement|renewal/i, emoji: '📄', gradient: 'linear-gradient(135deg,#16a34a,#5fe0a0)', tag: 'Legal & Setup' },
-  { match: /bank|paypal|payoneer|stripe|wise/i, emoji: '🏦', gradient: 'linear-gradient(135deg,#7c3aed,#c084fc)', tag: 'Finance' },
-  { match: /keyword|listing|optimi/i, emoji: '🔍', gradient: 'linear-gradient(135deg,#0891b2,#67e8f9)', tag: 'Optimization' },
-  { match: /research|supplier/i, emoji: '🔬', gradient: 'linear-gradient(135deg,#db2777,#fb7185)', tag: 'Research' },
-  { match: /coach|call|consult/i, emoji: '🎧', gradient: 'linear-gradient(135deg,#2563eb,#fd7d01)', tag: 'Coaching' },
-  { match: /account setup|seller account|reactivat/i, emoji: '🛠️', gradient: 'linear-gradient(135deg,#334155,#64748b)', tag: 'Account' },
-  { match: /writ|title|bullet|description/i, emoji: '✍️', gradient: 'linear-gradient(135deg,#ca8a04,#fde047)', tag: 'Copywriting' }
+  { match: /ppc|sponsored|ad(s|vert)/i, emoji: '<svg viewBox="0 0 24 24" width="58" height="58" fill="none" stroke="#fff" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><polyline points="3 17 9 11 13 15 21 7"/><polyline points="15 7 21 7 21 13"/></svg>', gradient: 'linear-gradient(135deg,#2563eb,#5fd0ff)', tag: 'Advertising' },
+  { match: /design|image|a\+|content|store/i, emoji: '<svg viewBox="0 0 24 24" width="58" height="58" fill="none" stroke="#fff" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 3a9 9 0 1 0 0 18c1.4 0 2-.9 2-2 0-1.6-1-1.8-1-3 0-1 .8-2 2-2h2.5A3.5 3.5 0 0 0 21 10.5C21 6.4 17 3 12 3Z"/><circle cx="7.5" cy="11" r="1"/><circle cx="10" cy="7" r="1"/><circle cx="14.5" cy="7" r="1"/></svg>', gradient: 'linear-gradient(135deg,#fd7d01,#ffab5c)', tag: 'Design' },
+  { match: /trademark|registration|brand registr|ltd|confirm statement|renewal/i, emoji: '<svg viewBox="0 0 24 24" width="58" height="58" fill="none" stroke="#fff" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M14 3H7a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h10a2 2 0 0 0 2-2V8Z"/><polyline points="14 3 14 8 19 8"/><line x1="9" y1="13" x2="15" y2="13"/><line x1="9" y1="17" x2="13" y2="17"/></svg>', gradient: 'linear-gradient(135deg,#16a34a,#5fe0a0)', tag: 'Legal & Setup' },
+  { match: /bank|paypal|payoneer|stripe|wise/i, emoji: '<svg viewBox="0 0 24 24" width="58" height="58" fill="none" stroke="#fff" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M3 10 12 4l9 6"/><line x1="5" y1="10" x2="5" y2="18"/><line x1="10" y1="10" x2="10" y2="18"/><line x1="14" y1="10" x2="14" y2="18"/><line x1="19" y1="10" x2="19" y2="18"/><line x1="3" y1="21" x2="21" y2="21"/></svg>', gradient: 'linear-gradient(135deg,#7c3aed,#c084fc)', tag: 'Finance' },
+  { match: /keyword|listing|optimi/i, emoji: '<svg viewBox="0 0 24 24" width="58" height="58" fill="none" stroke="#fff" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="11" cy="11" r="7"/><line x1="16.5" y1="16.5" x2="21" y2="21"/></svg>', gradient: 'linear-gradient(135deg,#0891b2,#67e8f9)', tag: 'Optimization' },
+  { match: /research|supplier/i, emoji: '<svg viewBox="0 0 24 24" width="58" height="58" fill="none" stroke="#fff" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M9 3h6M10 3v6l-5 9a2 2 0 0 0 1.8 3h10.4a2 2 0 0 0 1.8-3l-5-9V3"/><line x1="8" y1="15" x2="16" y2="15"/></svg>', gradient: 'linear-gradient(135deg,#db2777,#fb7185)', tag: 'Research' },
+  { match: /coach|call|consult/i, emoji: '<svg viewBox="0 0 24 24" width="58" height="58" fill="none" stroke="#fff" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M4 15v-3a8 8 0 0 1 16 0v3"/><rect x="3" y="14" width="4" height="6" rx="1.5"/><rect x="17" y="14" width="4" height="6" rx="1.5"/></svg>', gradient: 'linear-gradient(135deg,#2563eb,#fd7d01)', tag: 'Coaching' },
+  { match: /account setup|seller account|reactivat/i, emoji: '<svg viewBox="0 0 24 24" width="58" height="58" fill="none" stroke="#fff" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M14.5 6.5a4 4 0 0 0-5 5L3.5 17.5a1.8 1.8 0 0 0 2.5 2.5l6-6a4 4 0 0 0 5-5l-2.5 2.5-2-.5-.5-2Z"/></svg>', gradient: 'linear-gradient(135deg,#334155,#64748b)', tag: 'Account' },
+  { match: /writ|title|bullet|description/i, emoji: '<svg viewBox="0 0 24 24" width="58" height="58" fill="none" stroke="#fff" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M4 20l1-4L16.5 4.5a2.1 2.1 0 0 1 3 3L8 19Z"/><line x1="14" y1="7" x2="17" y2="10"/></svg>', gradient: 'linear-gradient(135deg,#ca8a04,#fde047)', tag: 'Copywriting' }
 ];
 function serviceThumb(title) {
   const found = SERVICE_THUMBS.find(t => t.match.test(title || ''));
-  return found || { emoji: '🛒', gradient: 'linear-gradient(135deg,#2563eb,#fd7d01)', tag: 'Service' };
+  return found || { emoji: '<svg viewBox="0 0 24 24" width="58" height="58" fill="none" stroke="#fff" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="9" cy="20" r="1.5"/><circle cx="18" cy="20" r="1.5"/><path d="M2 3h3l2.7 12.4a1 1 0 0 0 1 .8h8.8a1 1 0 0 0 1-.8L20 7H6"/></svg>', gradient: 'linear-gradient(135deg,#2563eb,#fd7d01)', tag: 'Service' };
 }
 
 loadSiteContentFast().then(content => {
@@ -490,7 +490,7 @@ loadSiteContentFast().then(content => {
             <ol class="points" id="servicePoints${i}" style="display:none;">${s.points.map(p => `<li>${p}</li>`).join('')}</ol>` : ''}
           ${s.price ? `
             <div class="service-price-row">
-              <span class="one-time">🏷️ One-time</span>
+              <span class="one-time"><svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M20.6 13.4 13.4 20.6a2 2 0 0 1-2.8 0L3 13V3h10l7.6 7.6a2 2 0 0 1 0 2.8Z"/><circle cx="7.5" cy="7.5" r="1.2"/></svg> One-time</span>
               <span class="service-price-wrap">${s.oldPrice ? `<span class="service-price-old">${s.oldPrice} ${currency}</span>` : ''}<span class="service-price">${s.price} ${currency}</span></span>
             </div>` : ''}
         </div>
