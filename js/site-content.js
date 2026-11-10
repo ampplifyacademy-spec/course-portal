@@ -223,6 +223,8 @@ function mergeSiteContent(data) {
       }
       // Amazon account set-up: show the crossed-out old price unless the admin has set one
       merged.course.services = (merged.course.services || []).map(sv => /amazon (seller )?account set-?up/i.test(sv.title || '') && !String(sv.oldPrice || '').trim() ? Object.assign({}, sv, { oldPrice: '320' }) : sv);
+      // Bank account service: 150 SAR with the old 200 crossed out, unless the admin has set an old price
+      merged.course.services = merged.course.services.map(sv => /bank account/i.test(sv.title || '') && !String(sv.oldPrice || '').trim() ? Object.assign({}, sv, { price: '150', oldPrice: '200' }) : sv);
       applySiteTheme(merged.theme);
       return merged;
     }
