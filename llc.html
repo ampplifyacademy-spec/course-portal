@@ -206,7 +206,7 @@
   .llc-addon input { width: auto; margin: .25rem 0 0; flex-shrink: 0; }
   .llc-addon .t { font-weight: 700; font-size: .9rem; }
   .llc-addon .d { color: var(--text-soft); font-size: .8rem; line-height: 1.45; margin-top: .15rem; }
-  .llc-addon .p s.old { color: var(--danger); text-decoration-color: var(--danger); font-weight: 700; margin-right: .2rem; }
+  .llc-addon .p s.old { display: block; text-align: right; color: var(--danger); text-decoration-color: var(--danger); font-weight: 700; font-size: .78rem; }
   .llc-addon .p { margin-left: auto; font-weight: 800; color: var(--accent-orange); font-size: .88rem; white-space: nowrap; padding-left: .5rem; }
   .llc-bene td:last-child { color: inherit; font-weight: inherit; }
   .llc-bene th, .llc-bene td { text-align: center; }
@@ -340,7 +340,7 @@
 <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-auth-compat.js"></script>
 <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore-compat.js"></script>
 <script src="js/firebase-config.js"></script>
-<script src="js/site-content.js?v=18"></script>
+<script src="js/site-content.js?v=19"></script>
 <script src="js/feedback.js"></script>
 <script>
 function toggleMobileNav() { document.querySelector('.cnav-links').classList.toggle('open'); }
@@ -358,7 +358,7 @@ const llcPicked = new Set();
 function llcAddonTotal() { return llcAddons.reduce((s, a, k) => s + (llcPicked.has(k) ? toNum(a.price) : 0), 0); }
 function renderLlcAddons() {
   document.getElementById('llcAddons').innerHTML = llcAddons.length
-    ? '<h5>Optional add-ons</h5>' + llcAddons.map((a, k) => `<label class="llc-addon${llcPicked.has(k) ? ' on' : ''}"><input type="checkbox" ${llcPicked.has(k) ? 'checked' : ''} onchange="toggleLlcAddon(${k})"><span><div class="t">${a.title}</div><div class="d">${a.desc || ''}</div></span><span class="p">${String(a.price || '').trim() !== '' ? (String(a.oldPrice || '').trim() !== '' ? `<s class="old">${formatMoney(toNum(a.oldPrice))}</s> ` : '') + '+' + formatMoney(toNum(a.price)) + ' ' + llcCur : 'Price on request'}</span></label>`).join('')
+    ? '<h5>Optional add-ons</h5>' + llcAddons.map((a, k) => `<label class="llc-addon${llcPicked.has(k) ? ' on' : ''}"><input type="checkbox" ${llcPicked.has(k) ? 'checked' : ''} onchange="toggleLlcAddon(${k})"><span><div class="t">${a.title}</div><div class="d">${a.desc || ''}</div></span><span class="p">${String(a.price || '').trim() !== '' ? '+' + formatMoney(toNum(a.price)) + ' ' + llcCur + (String(a.oldPrice || '').trim() !== '' ? `<s class="old">${formatMoney(toNum(a.oldPrice))} ${llcCur}</s>` : '') : 'Price on request'}</span></label>`).join('')
     : '';
 }
 function toggleLlcAddon(k) { llcPicked.has(k) ? llcPicked.delete(k) : llcPicked.add(k); renderLlcAddons(); renderLlcOrder(); }

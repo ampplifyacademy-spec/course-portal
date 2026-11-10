@@ -77,7 +77,9 @@
   .see-more-btn { width: auto; margin: .6rem 0 0; padding: 0; background: none; border: none; color: var(--info); font-size: .82rem; font-weight: 600; cursor: pointer; text-align: left; }
   .service-price-row { display: flex; align-items: center; justify-content: space-between; gap: .6rem; margin-top: auto; padding-top: .9rem; border-top: 1px solid var(--border); }
   .service-price-row .one-time { display: flex; align-items: center; gap: .4rem; color: var(--text-muted); font-size: .78rem; font-weight: 600; }
-  .service-price-wrap { display: flex; align-items: baseline; gap: .5rem; }
+  .service-price-wrap { display: flex; flex-direction: column; align-items: flex-end; gap: .05rem; }
+  .service-price-wrap .service-price { order: 1; }
+  .service-price-wrap .service-price-old { order: 2; }
   .service-price { color: var(--accent-orange); font: 800 1.25rem var(--font-display); }
   .service-price-old { text-decoration: line-through; text-decoration-color: var(--danger); color: var(--text-faint); font-size: .85rem; font-weight: 700; }
 
