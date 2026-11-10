@@ -436,7 +436,7 @@
 <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-auth-compat.js"></script>
 <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore-compat.js"></script>
 <script src="js/firebase-config.js"></script>
-<script src="js/site-content.js?v=8"></script>
+<script src="js/site-content.js?v=13"></script>
 <script src="js/feedback.js"></script>
 <script>
 function toggleMobileNav() {
@@ -505,7 +505,7 @@ function startOfferCountdown(offerEndsAt) {
   offerCountdownTimer = setInterval(tick, 1000);
 }
 
-loadSiteContent().then(content => {
+loadSiteContentFast().then(content => {
   const c = content.course;
   document.getElementById('heroTitle').firstChild.textContent = c.heroTitlePrefix + ' ';
   document.getElementById('heroHighlight').textContent = c.heroHighlight;

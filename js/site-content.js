@@ -127,13 +127,13 @@ const SITE_CONTENT_DEFAULTS = {
       // registered agent); addressFee = business address plan.
       states: [
         { state: 'Texas', stateFee: '1804', agentFee: '', addressFee: '196', serviceFee: '', renewalFee: '',
-          extra: 'No yearly state fee. A free Public Information Report is due every May 15.' },
+          extra: 'No yearly state fee. A yearly franchise tax report with a Public Information Report is due every May 15; no tax is due while your revenue is below the state limit. The report lists the names of the LLC managers or members publicly.' },
         { state: 'Wyoming', stateFee: '974', agentFee: '', addressFee: '196', serviceFee: '', renewalFee: '',
-          extra: '' },
+          extra: 'A yearly annual report is required with the state. Owner names are not on the public record.' },
         { state: 'Delaware', stateFee: '1004', agentFee: '', addressFee: '196', serviceFee: '', renewalFee: '',
-          extra: '' },
+          extra: 'A yearly annual tax and report is required with the state. Owner names are not on the public record. Well known with investors and banks.' },
         { state: 'New Mexico', stateFee: '764', agentFee: '', addressFee: '196', serviceFee: '', renewalFee: '',
-          extra: 'No yearly state fee is charged at the moment. New Mexico only accepts the formation filing online.' }
+          extra: 'No yearly state fee and no annual report. Owner names are not on the public record. This is why the New Mexico price is the lowest: the state filing itself is the cheapest of the four, and there is nothing to file every year.' }
       ],
       note: 'Prices are year 1 in SAR at 1 USD = 4 SAR and follow the state and provider fees today, which can change. Not included: the yearly IRS Form 5472 / pro forma 1120 (free if you file it yourself, a CPA usually charges more), a US bank or Payoneer account, and your Amazon seller account (200 SAR separately). The business address cannot be used as an Amazon return address, and Amazon may ask for more proof of address; an optional lease address plan is available for +200 SAR. We are not a law firm and do not give legal or tax advice.'
     },
@@ -159,10 +159,39 @@ function applySiteTheme(theme) {
   }
 }
 
+// Fast path for public read-only pages: show the copy saved from the last visit at once and refresh it in the
+// background, so the page does not wait for Firestore. Raw Firestore data is cached (not the merged result), so
+// changes to the built-in defaults above always apply immediately. Admin, signup and invoice pages keep using
+// loadSiteContent(), which always reads live.
+function loadSiteContentFast() {
+  let cached = null;
+  try {
+    const c = JSON.parse(localStorage.getItem('siteContentCache') || 'null');
+    if (c && c.data && Date.now() - c.t < 6 * 3600 * 1000) cached = c.data;
+  } catch (e) {}
+  if (!cached) return loadSiteContent();
+  db.collection('siteContent').doc('main').get().then(doc => {
+    try { localStorage.setItem('siteContentCache', JSON.stringify({ t: Date.now(), data: doc.exists ? doc.data() : {} })); } catch (e) {}
+  }).catch(() => {});
+  return Promise.resolve(mergeSiteContent(cached));
+}
+
 function loadSiteContent() {
   return db.collection('siteContent').doc('main').get()
     .then(doc => {
       const data = doc.exists ? doc.data() : {};
+      try { localStorage.setItem('siteContentCache', JSON.stringify({ t: Date.now(), data })); } catch (e) {}
+      return mergeSiteContent(data);
+    })
+    .catch(() => {
+      applySiteTheme(SITE_CONTENT_DEFAULTS.theme);
+      return SITE_CONTENT_DEFAULTS;
+    });
+}
+
+function mergeSiteContent(data) {
+  {
+    {
       const merged = {
         theme: Object.assign({}, SITE_CONTENT_DEFAULTS.theme, data.theme || {}),
         social: Object.assign({}, SITE_CONTENT_DEFAULTS.social, data.social || {}),
@@ -194,11 +223,8 @@ function loadSiteContent() {
       }
       applySiteTheme(merged.theme);
       return merged;
-    })
-    .catch(() => {
-      applySiteTheme(SITE_CONTENT_DEFAULTS.theme);
-      return SITE_CONTENT_DEFAULTS;
-    });
+    }
+  }
 }
 
 const SOCIAL_ICONS = {

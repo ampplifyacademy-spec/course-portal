@@ -413,7 +413,7 @@
 <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-auth-compat.js"></script>
 <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore-compat.js"></script>
 <script src="js/firebase-config.js"></script>
-<script src="js/site-content.js?v=11"></script>
+<script src="js/site-content.js?v=13"></script>
 <script src="js/feedback.js"></script>
 <script>
 function toggleMobileNav() {
@@ -441,7 +441,7 @@ function serviceThumb(title) {
   return found || { emoji: '🛒', gradient: 'linear-gradient(135deg,#2563eb,#fd7d01)', tag: 'Service' };
 }
 
-loadSiteContent().then(content => {
+loadSiteContentFast().then(content => {
   const c = content.course;
   currency = c.currency || 'SAR';
   allServices = c.services || [];
