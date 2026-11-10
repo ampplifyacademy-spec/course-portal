@@ -331,7 +331,7 @@
 <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-auth-compat.js"></script>
 <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore-compat.js"></script>
 <script src="js/firebase-config.js"></script>
-<script src="js/site-content.js?v=13"></script>
+<script src="js/site-content.js?v=14"></script>
 <script src="js/feedback.js"></script>
 <script>
 function toggleMobileNav() { document.querySelector('.cnav-links').classList.toggle('open'); }
@@ -369,7 +369,7 @@ function orderLlc(i) {
 // ✓/✗ rules per state. true = a benefit for you. No amounts here on purpose.
 const LLC_BENEFITS = [
   ['No yearly state fee',                  { 'Texas': true,  'Wyoming': false, 'Delaware': false, 'New Mexico': true }],
-  ['No annual report to file',             { 'Texas': false, 'Wyoming': false, 'Delaware': false, 'New Mexico': true }],
+  ['No annual report to file',             { 'Texas': false, 'Wyoming': false, 'Delaware': true,  'New Mexico': true }],
   ['Owner names kept off public record',   { 'Texas': false, 'Wyoming': true,  'Delaware': true,  'New Mexico': true }],
   ['Lowest year-1 total',                  null]
 ];

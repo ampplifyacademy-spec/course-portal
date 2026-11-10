@@ -127,11 +127,11 @@ const SITE_CONTENT_DEFAULTS = {
       // registered agent); addressFee = business address plan.
       states: [
         { state: 'Texas', stateFee: '1804', agentFee: '', addressFee: '196', serviceFee: '', renewalFee: '',
-          extra: 'No yearly state fee. A yearly franchise tax report with a Public Information Report is due every May 15; no tax is due while your revenue is below the state limit. The report lists the names of the LLC managers or members publicly.' },
+          extra: 'No yearly state fee. A yearly franchise tax report with a Public Information Report is due every May 15; franchise tax is only due if your revenue is above about $2.65 million a year. The addresses of the managers or members are on the public record.' },
         { state: 'Wyoming', stateFee: '974', agentFee: '', addressFee: '196', serviceFee: '', renewalFee: '',
-          extra: 'A yearly annual report is required with the state. Owner names are not on the public record.' },
+          extra: 'A yearly annual report with the state is required, with its yearly state fee. Owner names are not on the public record.' },
         { state: 'Delaware', stateFee: '1004', agentFee: '', addressFee: '196', serviceFee: '', renewalFee: '',
-          extra: 'A yearly annual tax and report is required with the state. Owner names are not on the public record. Well known with investors and banks.' },
+          extra: 'No annual report, but a yearly state tax is due on or before June 1 every year. Owner names are not on the public record. Well known with investors and banks.' },
         { state: 'New Mexico', stateFee: '764', agentFee: '', addressFee: '196', serviceFee: '', renewalFee: '',
           extra: 'No yearly state fee and no annual report. Owner names are not on the public record. This is why the New Mexico price is the lowest: the state filing itself is the cheapest of the four, and there is nothing to file every year.' }
       ],
