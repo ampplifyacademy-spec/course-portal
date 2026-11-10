@@ -96,7 +96,7 @@
   .plan-total-row span:last-child { color: var(--accent-orange); font: 800 1.4rem var(--font-display); }
   .plan-note { color: var(--text-muted); font-size: .78rem; line-height: 1.4; margin: 0 0 1rem; font-style: italic; }
   .plan-card button { margin-top: auto; }
-  .llc-wrap { display: grid; grid-template-columns: minmax(240px, 1fr) 2fr; gap: 1.5rem; max-width: 1100px; margin: 0 auto; align-items: start; }
+  .llc-wrap { display: grid; grid-template-columns: minmax(230px, .8fr) 2.2fr; gap: 1.5rem; max-width: 1240px; margin: 0 auto; align-items: start; }
   .llc-included, .llc-table-box { background: var(--surface); border: 1px solid var(--border); border-radius: var(--radius); padding: 1.5rem; box-shadow: var(--shadow-sm); }
   .llc-included h4 { font-size: 1.05rem; margin-bottom: .4rem; color: var(--accent-orange); }
   .llc-table-box { overflow-x: auto; }
@@ -182,7 +182,7 @@
 </style>
 <link rel="stylesheet" href="css/animations.css?v=1">
 <style>
-  .llc-wrap { display: grid; grid-template-columns: minmax(240px, 1fr) 2fr; gap: 1.5rem; max-width: 1100px; margin: 0 auto; align-items: start; }
+  .llc-wrap { display: grid; grid-template-columns: minmax(230px, .8fr) 2.2fr; gap: 1.5rem; max-width: 1240px; margin: 0 auto; align-items: start; }
   .llc-included, .llc-table-box { background: var(--surface); border: 1px solid var(--border); border-radius: var(--radius); padding: 1.5rem; box-shadow: var(--shadow-sm); }
   .llc-included h4 { font-size: 1.05rem; margin-bottom: .4rem; color: var(--accent-orange); }
   .llc-table-box { overflow-x: auto; }
@@ -205,12 +205,14 @@
   .llc-addon.on { border-color: var(--accent); background: rgba(37,99,235,.06); }
   .llc-addon .t { font-weight: 700; font-size: .9rem; }
   .llc-addon .d { color: var(--text-soft); font-size: .8rem; line-height: 1.45; margin-top: .15rem; }
-  .llc-addon .side { display: flex; flex-direction: column; align-items: flex-end; gap: .4rem; flex-shrink: 0; }
+  .llc-addon .side { display: flex; flex-direction: row; align-items: center; gap: 1.4rem; flex-shrink: 0; }
+  .llc-addon .p { min-width: 92px; }
+  .llc-table-box .plan-cost-row span:last-child { white-space: nowrap; padding-left: 1rem; }
   .llc-addon .p { font-weight: 800; color: var(--accent-orange); font-size: .95rem; white-space: nowrap; text-align: right; }
   .llc-addon .p s.old { display: block; color: var(--danger); text-decoration-color: var(--danger); font-weight: 700; font-size: .78rem; }
   .llc-cart { display: inline-flex; align-items: center; gap: .4rem; width: auto; margin: 0; padding: .4rem .85rem; border-radius: 999px; border: 1.5px solid var(--accent); background: var(--surface); color: var(--accent); font: 700 .8rem var(--font-body); cursor: pointer; white-space: nowrap; }
   .llc-cart.added { background: var(--accent); color: #fff; }
-  @media (max-width: 480px) { .llc-addon { flex-direction: column; align-items: stretch; } .llc-addon .side { flex-direction: row; justify-content: space-between; align-items: center; } }
+  @media (max-width: 560px) { .llc-addon { flex-direction: column; align-items: stretch; } .llc-addon .side { justify-content: space-between; } }
   .llc-bene td:last-child { color: inherit; font-weight: inherit; }
   .llc-bene th, .llc-bene td { text-align: center; }
   .llc-bene th:first-child, .llc-bene td:first-child { text-align: left; }
@@ -343,7 +345,7 @@
 <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-auth-compat.js"></script>
 <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore-compat.js"></script>
 <script src="js/firebase-config.js"></script>
-<script src="js/site-content.js?v=20"></script>
+<script src="js/site-content.js?v=21"></script>
 <script src="js/feedback.js"></script>
 <script>
 function toggleMobileNav() { document.querySelector('.cnav-links').classList.toggle('open'); }
