@@ -201,13 +201,16 @@
   .llc-legend li { padding: .15rem 0; }
   .llc-addons { margin: 0 0 1rem; }
   .llc-addons h5 { font: 700 .85rem var(--font-body); margin: 0 0 .5rem; }
-  .llc-addon { display: flex; align-items: flex-start; gap: .7rem; border: 1.5px solid var(--border); border-radius: var(--radius-sm); padding: .75rem .9rem; margin-bottom: .5rem; cursor: pointer; background: var(--surface); }
+  .llc-addon { display: flex; align-items: center; justify-content: space-between; gap: .9rem; border: 1.5px solid var(--border); border-radius: var(--radius-sm); padding: .75rem .9rem; margin-bottom: .5rem; background: var(--surface); }
   .llc-addon.on { border-color: var(--accent); background: rgba(37,99,235,.06); }
-  .llc-addon input { width: auto; margin: .25rem 0 0; flex-shrink: 0; }
   .llc-addon .t { font-weight: 700; font-size: .9rem; }
   .llc-addon .d { color: var(--text-soft); font-size: .8rem; line-height: 1.45; margin-top: .15rem; }
-  .llc-addon .p s.old { display: block; text-align: right; color: var(--danger); text-decoration-color: var(--danger); font-weight: 700; font-size: .78rem; }
-  .llc-addon .p { margin-left: auto; font-weight: 800; color: var(--accent-orange); font-size: .88rem; white-space: nowrap; padding-left: .5rem; }
+  .llc-addon .side { display: flex; flex-direction: column; align-items: flex-end; gap: .4rem; flex-shrink: 0; }
+  .llc-addon .p { font-weight: 800; color: var(--accent-orange); font-size: .95rem; white-space: nowrap; text-align: right; }
+  .llc-addon .p s.old { display: block; color: var(--danger); text-decoration-color: var(--danger); font-weight: 700; font-size: .78rem; }
+  .llc-cart { display: inline-flex; align-items: center; gap: .4rem; width: auto; margin: 0; padding: .4rem .85rem; border-radius: 999px; border: 1.5px solid var(--accent); background: var(--surface); color: var(--accent); font: 700 .8rem var(--font-body); cursor: pointer; white-space: nowrap; }
+  .llc-cart.added { background: var(--accent); color: #fff; }
+  @media (max-width: 480px) { .llc-addon { flex-direction: column; align-items: stretch; } .llc-addon .side { flex-direction: row; justify-content: space-between; align-items: center; } }
   .llc-bene td:last-child { color: inherit; font-weight: inherit; }
   .llc-bene th, .llc-bene td { text-align: center; }
   .llc-bene th:first-child, .llc-bene td:first-child { text-align: left; }
@@ -340,7 +343,7 @@
 <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-auth-compat.js"></script>
 <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore-compat.js"></script>
 <script src="js/firebase-config.js"></script>
-<script src="js/site-content.js?v=19"></script>
+<script src="js/site-content.js?v=20"></script>
 <script src="js/feedback.js"></script>
 <script>
 function toggleMobileNav() { document.querySelector('.cnav-links').classList.toggle('open'); }
@@ -356,9 +359,13 @@ const LLC_ADDONS_DEFAULT = [
 let llcAddons = [];
 const llcPicked = new Set();
 function llcAddonTotal() { return llcAddons.reduce((s, a, k) => s + (llcPicked.has(k) ? toNum(a.price) : 0), 0); }
+const CART_SVG = '<svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="9" cy="20" r="1.5"/><circle cx="18" cy="20" r="1.5"/><path d="M2 3h3l2.7 12.4a1 1 0 0 0 1 .8h8.8a1 1 0 0 0 1-.8L20 7H6"/></svg>';
 function renderLlcAddons() {
   document.getElementById('llcAddons').innerHTML = llcAddons.length
-    ? '<h5>Optional add-ons</h5>' + llcAddons.map((a, k) => `<label class="llc-addon${llcPicked.has(k) ? ' on' : ''}"><input type="checkbox" ${llcPicked.has(k) ? 'checked' : ''} onchange="toggleLlcAddon(${k})"><span><div class="t">${a.title}</div><div class="d">${a.desc || ''}</div></span><span class="p">${String(a.price || '').trim() !== '' ? '+' + formatMoney(toNum(a.price)) + ' ' + llcCur + (String(a.oldPrice || '').trim() !== '' ? `<s class="old">${formatMoney(toNum(a.oldPrice))} ${llcCur}</s>` : '') : 'Price on request'}</span></label>`).join('')
+    ? '<h5>Optional add-ons</h5>' + llcAddons.map((a, k) => {
+        const on = llcPicked.has(k), priced = String(a.price || '').trim() !== '';
+        return `<div class="llc-addon${on ? ' on' : ''}"><div class="info"><div class="t">${a.title}</div><div class="d">${a.desc || ''}</div></div><div class="side"><div class="p">${priced ? formatMoney(toNum(a.price)) + ' ' + llcCur : 'Price on request'}${priced && String(a.oldPrice || '').trim() !== '' ? `<s class="old">${formatMoney(toNum(a.oldPrice))} ${llcCur}</s>` : ''}</div><button type="button" class="llc-cart${on ? ' added' : ''}" onclick="toggleLlcAddon(${k})">${on ? '✓ Added · Remove' : CART_SVG + ' Add to cart'}</button></div></div>`;
+      }).join('')
     : '';
 }
 function toggleLlcAddon(k) { llcPicked.has(k) ? llcPicked.delete(k) : llcPicked.add(k); renderLlcAddons(); renderLlcOrder(); }
