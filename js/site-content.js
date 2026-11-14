@@ -288,10 +288,25 @@ function renderSiteFooter(footer, social) {
 function videoReviewCards(list) {
   return (list || []).map(v => `
     <div class="video-review-card">
-      <div class="video-review-frame"><iframe src="${fbVideoEmbedUrl(v.videoUrl)}" scrolling="no" frameborder="0" allowfullscreen="true" allow="autoplay; clipboard-write; encrypted-media; picture-in-picture; web-share"></iframe></div>
+      <div class="video-review-frame"><button type="button" class="video-review-play" data-src="${fbVideoEmbedUrl(v.videoUrl)}" data-title="${v.name ? 'Video review: ' + v.name : 'Video review'}" aria-label="Play ${v.name ? 'video review from ' + v.name : 'video review'}" style="width:100%;height:100%;border:0;background:#111;color:#fff;cursor:pointer;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:.6rem;font:600 .9rem var(--font-display, sans-serif);"><span aria-hidden="true" style="width:64px;height:64px;border-radius:50%;background:rgba(255,255,255,.18);display:flex;align-items:center;justify-content:center;font-size:1.6rem;">&#9654;</span>Play video</button></div>
       ${v.name ? `<div class="video-review-name">${v.name}</div>` : ''}
     </div>`).join('');
 }
+
+// Facebook's video player pulls several megabytes of video and scripts per card,
+// so each card starts as a play button and only loads the player when clicked.
+document.addEventListener('click', e => {
+  const btn = e.target.closest && e.target.closest('.video-review-play');
+  if (!btn) return;
+  const f = document.createElement('iframe');
+  f.src = btn.dataset.src;
+  f.title = btn.dataset.title || 'Video review';
+  f.setAttribute('scrolling', 'no');
+  f.setAttribute('frameborder', '0');
+  f.setAttribute('allowfullscreen', 'true');
+  f.allow = 'autoplay; clipboard-write; encrypted-media; picture-in-picture; web-share';
+  btn.replaceWith(f);
+});
 
 function fbVideoEmbedUrl(videoUrl) {
   const raw = (videoUrl || '').trim();

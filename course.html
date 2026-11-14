@@ -204,7 +204,7 @@
   <a class="brand" href="course.html"><img class="brand-mark" src="assets/logo-sm.webp" alt="Ampplify Academy" width="933" height="262"></a>
   <div class="cnav-links">
     <a href="course.html">Home</a>
-    <a onclick="document.getElementById('curriculum').scrollIntoView({behavior:'smooth'}); closeMobileNav()">Curriculum</a>
+    <a href="#curriculum" onclick="event.preventDefault(); document.getElementById('curriculum').scrollIntoView({behavior:'smooth'}); closeMobileNav()">Curriculum</a>
     <a href="services.html">Services</a>
     <a href="llc.html">US LLC</a>
     <a href="ltd.html">UK LTD</a>
@@ -213,8 +213,8 @@
     <a href="portfolio.html">Portfolio</a>
     <a href="success-stories.html">Success Stories</a>
     <a href="partnership.html">Partnership</a>
-    <a onclick="document.getElementById('pricing').scrollIntoView({behavior:'smooth'}); closeMobileNav()">Pricing</a>
-    <a onclick="document.getElementById('faq').scrollIntoView({behavior:'smooth'}); closeMobileNav()">FAQ</a>
+    <a href="#pricing" onclick="event.preventDefault(); document.getElementById('pricing').scrollIntoView({behavior:'smooth'}); closeMobileNav()">Pricing</a>
+    <a href="#faq" onclick="event.preventDefault(); document.getElementById('faq').scrollIntoView({behavior:'smooth'}); closeMobileNav()">FAQ</a>
     <a href="login.html">Log in</a>
     <a href="signup.html">Sign up</a>
   </div>
@@ -244,7 +244,7 @@
       <img src="assets/hero-instructor.webp" alt="Instructor" id="heroImg" width="700" height="874" fetchpriority="high">
       <div class="chero-chip top" id="heroModuleCountChip">🎓 29+ Modules</div>
       <div class="chero-chip">⭐ 4.8 Rated by Students</div>
-      <div class="chero-chip spn" title="Listed in the Amazon Service Provider Network"><img src="assets/spn-badge.png" alt="Amazon Service Provider Network (SPN)" width="425" height="91"></div>
+      <div class="chero-chip spn" title="Listed in the Amazon Service Provider Network"><img src="assets/spn-badge.webp" alt="Amazon Service Provider Network (SPN)" width="425" height="91"></div>
     </div>
   </div>
 </section>
@@ -335,7 +335,7 @@
     <label>Your name</label>
     <input id="courseFbName" placeholder="Your name">
     <label>Rating</label>
-    <select id="courseFbRating">
+    <select id="courseFbRating" aria-label="Your rating">
       <option value="5">★★★★★ (5)</option>
       <option value="4">★★★★ (4)</option>
       <option value="3">★★★ (3)</option>
@@ -435,7 +435,7 @@
 <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-auth-compat.js"></script>
 <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore-compat.js"></script>
 <script src="js/firebase-config.js"></script>
-<script src="js/site-content.js?v=15"></script>
+<script src="js/site-content.js?v=24"></script>
 <script src="js/feedback.js"></script>
 <script>
 function toggleMobileNav() {
