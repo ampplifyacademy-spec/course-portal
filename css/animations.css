@@ -29,16 +29,18 @@
   .cnav { animation: navIn .7s cubic-bezier(.2,.7,.2,1) both; }
   @keyframes navIn { from { opacity: 0; transform: translateY(-24px); } to { opacity: 1; transform: none; } }
 
-  .chero-content > * { animation: heroUp .8s cubic-bezier(.2,.7,.2,1) both; }
-  .chero-content > *:nth-child(1) { animation-delay: .10s; }
-  .chero-content > *:nth-child(2) { animation-delay: .22s; }
-  .chero-content > *:nth-child(3) { animation-delay: .34s; }
-  .chero-content > *:nth-child(4) { animation-delay: .46s; }
-  .chero-content > *:nth-child(5) { animation-delay: .58s; }
-  @keyframes heroUp { from { opacity: 0; transform: translateY(36px); } to { opacity: 1; transform: none; } }
+  /* The hero text is the largest thing on the first screen, so it stays fully
+     visible from the first frame (no fade from transparent) and only slides a
+     little; a fade made phones count the page as painted much later. */
+  .chero-content > * { animation: heroUp .45s cubic-bezier(.2,.7,.2,1) both; }
+  .chero-content > *:nth-child(2) { animation-delay: .05s; }
+  .chero-content > *:nth-child(3) { animation-delay: .1s; }
+  .chero-content > *:nth-child(4) { animation-delay: .15s; }
+  .chero-content > *:nth-child(5) { animation-delay: .2s; }
+  @keyframes heroUp { from { transform: translateY(14px); } to { transform: none; } }
 
-  .chero-media { animation: heroZoom 1s cubic-bezier(.2,.7,.2,1) .2s both; }
-  @keyframes heroZoom { from { opacity: 0; transform: translateX(40px) scale(.92); } to { opacity: 1; transform: none; } }
+  .chero-media { animation: heroZoom .5s cubic-bezier(.2,.7,.2,1) both; }
+  @keyframes heroZoom { from { transform: translateX(16px) scale(.97); } to { transform: none; } }
 
   /* ---------- hero: things that keep moving ---------- */
   .chero img { animation: floaty 6.5s ease-in-out infinite; }
