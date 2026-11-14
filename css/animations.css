@@ -131,3 +131,20 @@
     transform: scaleX(0); transform-origin: left;
   }
 }
+
+/* Phones: the never-ending decorative animations (blurred background glows,
+   pulsing and shining buttons, floating hero photo and chips, glowing price
+   card, shifting gradients) kept a phone's CPU busy repainting the page and
+   slowed the first screen. On small screens they stay still; desktop keeps
+   them. */
+@media (max-width: 768px) {
+  body.course-page::before, body.course-page::after,
+  .cnav-cta, .chero-ctas button:not(.secondary), .cta-band button, .pricing-card button,
+  .cnav-cta::after, .chero-ctas button:not(.secondary)::after, .cta-band button::after,
+  .plan-card button::after, .pricing-card button::after,
+  .chero img, .chero-chip, .chero-shape, .chero-chip.spn::after,
+  .pricing-card, .service-card .thumb, .batch-thumb:not(img) { animation: none !important; }
+  .cnav-cta::after, .chero-ctas button:not(.secondary)::after, .cta-band button::after,
+  .plan-card button::after, .pricing-card button::after, .chero-chip.spn::after { display: none; }
+  body.course-page::before, body.course-page::after { filter: none; opacity: .12; }
+}
