@@ -146,5 +146,5 @@
   .pricing-card, .service-card .thumb, .batch-thumb:not(img) { animation: none !important; }
   .cnav-cta::after, .chero-ctas button:not(.secondary)::after, .cta-band button::after,
   .plan-card button::after, .pricing-card button::after, .chero-chip.spn::after { display: none; }
-  body.course-page::before, body.course-page::after { filter: none; opacity: .12; }
+  body.course-page::before, body.course-page::after { display: none; }
 }
