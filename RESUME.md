@@ -90,6 +90,7 @@ Next: after the listing is visible, add the SPN badge/line to the website; chang
 - 2026-11-08: Amazon Brand Registry and trademarks — https://ampplifyacademy.com/amazon-brand-registry-and-trademarks.html (live 200; indexed on Google, checked 2026-11-16)
 - 2026-11-11: Amazon account health and suspensions — https://ampplifyacademy.com/amazon-account-health-and-suspensions.html (was "Crawled - currently not indexed"; Request indexing done 2026-11-16)
 - 2026-11-16: Amazon product research basics (demand, competition, margin) — https://ampplifyacademy.com/amazon-product-research-basics.html (live 200; Request indexing done 2026-11-16)
+- 2026-11-16: Bing Webmaster sitemap.xml resubmitted (Processing; 18 URLs discovered before resubmit).
 - Search Console 2026-10-21: 10 indexed, 2 not indexed, 0 clicks. Still TODO: Bing sitemap submit, backlinks (Facebook, YouTube, X, Crunchbase, Medium, LinkedIn personal profile website field), LinkedIn Company Page blocked.
 
 ## Advertising Optimization LIVE on SPN (2026-10-22)
