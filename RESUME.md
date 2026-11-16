@@ -88,6 +88,7 @@ Next: after the listing is visible, add the SPN badge/line to the website; chang
 - Google Search Console "Request indexing" done for the first 3; selling-on-amazon-saudi-arabia-uae.html STILL TO REQUEST (usage limit hit).
 - Weekly scheduled task "ampplify-weekly-seo-guide" (Mondays ~10:00) writes one more guide per week from a topic queue and pushes it; Request indexing stays manual.
 - 2026-11-08: Amazon Brand Registry and trademarks — https://ampplifyacademy.com/amazon-brand-registry-and-trademarks.html (live 200; Request indexing TODO)
+- 2026-11-16: Amazon product research basics (demand, competition, margin) — https://ampplifyacademy.com/amazon-product-research-basics.html (live 200; Request indexing TODO)
 - Search Console 2026-10-21: 10 indexed, 2 not indexed, 0 clicks. Still TODO: Bing sitemap submit, backlinks (Facebook, YouTube, X, Crunchbase, Medium, LinkedIn personal profile website field), LinkedIn Company Page blocked.
 
 ## Advertising Optimization LIVE on SPN (2026-10-22)
