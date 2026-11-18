@@ -62,6 +62,10 @@
   .chero h1 { font-size: clamp(2rem, 4vw, 3.2rem); font-weight: 800; line-height: 1.14; margin-bottom: 1.25rem; }
   .chero h1 span { color: var(--accent-orange); }
   .chero p { font-size: 1.08rem; color: var(--text-soft); max-width: 520px; margin-bottom: 2rem; line-height: 1.6; }
+  .hero-price { display: flex; align-items: baseline; flex-wrap: wrap; gap: .6rem; margin: 0 0 1rem; }
+  .hero-price-now { font-size: 1.9rem; font-weight: 800; color: #111827; line-height: 1; }
+  .hero-price-old { font-size: 1.05rem; font-weight: 600; color: #6b7280; text-decoration: line-through; text-decoration-color: #dc2626; text-decoration-thickness: 2px; }
+  .hero-price-off { align-self: center; background: #dc2626; color: #fff; font-size: .78rem; font-weight: 700; padding: .25rem .55rem; border-radius: 999px; letter-spacing: .02em; }
   .chero-ctas { display: flex; gap: 1rem; flex-wrap: wrap; margin-bottom: 2.25rem; }
   .chero-ctas button, .chero-ctas a.btn { width: auto; margin-top: 0; padding: 1rem 2rem; }
   .chero-trust { display: flex; align-items: center; gap: .6rem; font-size: .88rem; color: var(--text-muted); font-weight: 600; }
@@ -184,6 +188,8 @@
     .chero-grid { grid-template-columns: 1fr; gap: 2.5rem; text-align: center; }
     .chero p { margin-left: auto; margin-right: auto; }
     .chero-ctas { flex-direction: column; align-items: stretch; }
+    .hero-price { justify-content: center; }
+    .hero-price-now { font-size: 1.6rem; }
     .chero-ctas button, .chero-ctas a.btn { padding: .85rem 1.25rem; font-size: .9rem; width: 100%; }
     .chero-trust { justify-content: center; }
     .chero-media { order: 1; margin-top: .5rem; }
@@ -234,8 +240,9 @@
       <h1 id="heroTitle">Build a Real Amazon Business — <span id="heroHighlight">Without the Guesswork</span></h1>
       <p id="heroSubtitle">A step-by-step Amazon Selling Course that takes you from zero to your first profitable product — sourcing, listings, ads, and scaling, all in one place.</p>
       <p class="chero-spnline"><b>Taught by a team that runs real Amazon accounts for clients</b> &mdash; listed in the Amazon Service Provider Network.</p>
+      <div class="hero-price" id="heroPrice"><span class="hero-price-now" id="heroPriceNow">320 SAR</span><s class="hero-price-old" id="heroPriceOld">1200 SAR</s><span class="hero-price-off" id="heroPriceOff">73% OFF</span></div>
       <div class="chero-ctas">
-        <button onclick="location.href='signup.html'" id="heroEnrollBtn">Enroll Now — 320 SAR</button>
+        <button onclick="location.href='signup.html'" id="heroEnrollBtn">Enroll Now</button>
         <button class="secondary" onclick="document.getElementById('curriculum').scrollIntoView({behavior:'smooth'})">View Curriculum</button>
       </div>
       <div class="chero-trust"><span class="dot"></span> Trusted by 500+ students · one-time payment, lifetime access</div>
@@ -520,7 +527,13 @@ loadSiteContentFast().then(content => {
     if (p.strike) { priceOldEl.textContent = p.strike + ' ' + c.currency; priceOldEl.style.display = ''; }
     else { priceOldEl.style.display = 'none'; }
     document.getElementById('priceNew').textContent = p.current + ' ' + c.currency;
-    document.getElementById('heroEnrollBtn').textContent = 'Enroll Now — ' + p.current + ' ' + c.currency;
+    document.getElementById('heroPriceNow').textContent = p.current + ' ' + c.currency;
+    const hOld = document.getElementById('heroPriceOld'), hOff = document.getElementById('heroPriceOff');
+    const nNow = parseFloat(p.current), nOld = parseFloat(p.strike);
+    if (p.strike && nOld > nNow) {
+      hOld.textContent = p.strike + ' ' + c.currency; hOld.style.display = '';
+      hOff.textContent = Math.round((1 - nNow / nOld) * 100) + '% OFF'; hOff.style.display = '';
+    } else { hOld.style.display = 'none'; hOff.style.display = 'none'; }
   };
   renderCoursePrices();
   startOfferCountdown(c.offerEndsAt);
